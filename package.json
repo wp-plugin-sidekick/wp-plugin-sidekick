@@ -1,0 +1,17 @@
+{
+	"name": "addonbuilder",
+	"version": "1.0.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/johnstonphilip/addonbuilder/"
+	},
+	"scripts": {
+		"installation": "sh ./.scripts/install-scripts.sh",
+		"dev": "sh ./.scripts/dev-scripts.sh",
+		"build": "sh ./.scripts/dev-scripts.sh",
+		"lint": "sh ./.scripts/lint-scripts.sh"
+	},
+	"dependencies": {
+		"react-keyed-file-browser": "^1.11.0"
+	}
+}
