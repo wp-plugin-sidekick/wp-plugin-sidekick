@@ -20,3 +20,4 @@ function module_data() {
 }
 
 require 'includes/php/class-api-run-shell-command.php';
+require 'includes/php/do-shell-command.php';

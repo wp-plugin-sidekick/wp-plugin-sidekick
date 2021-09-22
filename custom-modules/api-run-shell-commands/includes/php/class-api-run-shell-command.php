@@ -65,6 +65,19 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 				'schema' => 'response_item_schema',
 			)
 		);
+		register_rest_route(
+			$namespace,
+			'/phpcs',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'phpcs' ),
+					'permission_callback' => array( $this, 'run_shell_command_permission_check' ),
+					'args'                => $this->request_args( 'phpcs', false ),
+				),
+				'schema' => 'response_item_schema',
+			)
+		);
 	}
 
 	/**
@@ -90,103 +103,16 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 
 		// Change to this modules directory first, then run the command(s).
 		$set_path       = 'export PATH="$PATH:"/usr/local/bin/; ';
-		$go_to_module   = 'cd ' . $wp_filesystem->wp_plugins_dir() . $params['plugin_dir_name'] . '/custom-modules/' . $params['module'] . '; ';
-		$command        = $set_path . $go_to_module . $params['command'];
+		$go_to_location = 'cd ' . $wp_filesystem->wp_plugins_dir() . $params['location'] . '; ';
+		$command        = $set_path . $go_to_location . $params['command'];
 		$job_identifier = $params['job_identifier'];
 
-		// Run the command.
-		$descriptorspec = array(
-			0 => array( 'pipe', 'r' ), // stdin.
-			1 => array( 'pipe', 'w' ), // stdout.
-			2 => array( 'pipe', 'w' ), // stderr.
-		);
+		$result = do_shell_command( $command, $job_identifier );
 
-		$proc = proc_open( $command, $descriptorspec, $pipes ); // phpcs:ignore
-
-		$proc_details = proc_get_status( $proc );
-		$pid          = $proc_details['pid'];
-
-		if ( is_resource( $proc ) ) {
-			// Set streams to non blocking mode.
-			stream_set_blocking( $pipes[2], false );
-			stream_set_blocking( $pipes[1], false );
-
-			$error  = trim( stream_get_contents( $pipes[2] ) );
-			$output = trim( stream_get_contents( $pipes[1] ) );
-
-			// Set a database option which we'll use to keep this command alive indefinitely, until stopped.
-			$this->update_option( 'wpps_' . $job_identifier, true, $params['plugin_dir_name'], $params['module'] );
-			$this->update_option( 'wpps_error_' . $job_identifier, $error, $params['plugin_dir_name'], $params['module'] );
-			$this->update_option( 'wpps_output_' . $job_identifier, $output, $params['plugin_dir_name'], $params['module'] );
+		if ( is_wp_error( $result ) ) {
+			return new \WP_REST_Response( $result, 400 );
 		} else {
-			return new WP_REST_Response( array( 'error' => __( 'Something went wrong.', '' ) ), 400 );
-		}
-
-		// Initialize the loop to remain or kill the process.
-		$stay_alive = true;
-		$output = '';
-
-		while ( $stay_alive ) {
-			// Check the database to see if a command came in to kill this process, or if it should stay alive (true).
-			$stay_alive = boolval( $this->get_option( 'wpps_' . $job_identifier, $params['plugin_dir_name'], $params['module'] ) );
-
-			// And regardless of the database, if the command itself has finished, close this request.
-			if ( connection_aborted() === 1 ) {
-				$stay_alive = false;
-			}
-
-			// If this process should stay alive.
-			if ( boolval( $stay_alive ) ) {
-
-				// Extend the PHP timeout to 10 seconds from now so we don't hit a limit there.
-				set_time_limit( time() + 10 );
-
-				$error  = trim( stream_get_contents( $pipes[2] ) );
-				$output = trim( stream_get_contents( $pipes[1] ) );
-
-				$error_appended = $error . $this->get_option(
-					'wpps_error_' . $job_identifier,
-					$params['plugin_dir_name'],
-					$params['module']
-				);
-
-				$output_appended = $output . $this->get_option(
-					'wpps_output_' . $job_identifier,
-					$params['plugin_dir_name'],
-					$params['module']
-				);
-
-				$this->update_option(
-					'wpps_error_' . $job_identifier,
-					$error_appended,
-					$params['plugin_dir_name'],
-					$params['module']
-				);
-
-				$this->update_option(
-					'wpps_output_' . $job_identifier,
-					$output_appended,
-					$params['plugin_dir_name'],
-					$params['module']
-				);
-
-				// Wait 5 seconds before checking if we should keep this process alive.
-				sleep( 5 );
-
-			} else {
-				// Kill the process.
-				shell_exec( 'kill -9 ' . $pid ); // phpcs:ignore
-
-				$output .= wp_json_encode(
-					array(
-						'pid'    => $proc_details,
-						'error'  => isset( $error ) ? $error : '',
-						'output' => isset( $output ) ? $output : '',
-					)
-				);
-				// The item was successfully created.
-				return new \WP_REST_Response( $output, 200 );
-			}
+			return new \WP_REST_Response( $result, 200 );
 		}
 
 	}
@@ -202,7 +128,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
-		$this->update_option( 'wpps_' . $params['job_identifier'], false, $params['plugin_dir_name'], $params['module'] );
+		update_file_option( $params['job_identifier'], false );
 
 		// The item was successfully created.
 		return new \WP_REST_Response( true, 200 );
@@ -221,55 +147,38 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 
 		$response = array();
 
-		$response['errors'] = $this->get_option( 'wpps_error_' . $job_identifier, $params['plugin_dir_name'], $params['module'] );
-		$response['output'] = $this->get_option( 'wpps_output_' . $job_identifier, $params['plugin_dir_name'], $params['module'] );
+		$response['errors'] = get_file_option( 'wpps_error_' . $job_identifier );
+		$response['output'] = get_file_option( 'wpps_output_' . $job_identifier );
 
 		// The item was successfully created.
 		return new \WP_REST_Response( $response, 200 );
 	}
 
 	/**
-	 * Update an option stored in a file. Using a file like this bypasses WP object caching.
+	 * Run phpcs for a module.
 	 *
-	 * @param string $option_name The name of the option.
-	 * @param string $option_value The value of the option.
-	 * @param string $plugin The name of the plugin.
-	 * @param string $module The value of the module.
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_Error|WP_REST_Request
 	 */
-	public function update_option( $option_name, $option_value, $plugin, $module ) {
+	public function phpcs( $request ) {
+
+		$params = wp_parse_args( $request->get_params(), $this->default_args() );
+
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
-		$module_data = module_data();
+		// Change to the wp-plugin-studio directory first so we can use it's phpcs functions without needing them in each plugin/module.
+		$set_path       = 'export PATH="$PATH:"/usr/local/bin/; ';
+		$go_to          = 'cd ' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio; ';
+		$command        = $set_path . $go_to . './vendor/bin/phpcs --standard=' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/phpcs.xml ' . $wp_filesystem->wp_plugins_dir() . $params['location'];
+		$job_identifier = $params['job_identifier'];
 
-		if ( ! $wp_filesystem->is_dir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' ) ) {
-			/* directory didn't exist, so let's create it */
-			$wp_filesystem->mkdir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' );
+		$result = do_shell_command( $command, $job_identifier );
+
+		if ( is_wp_error( $result ) ) {
+			return new \WP_REST_Response( $result, 400 );
+		} else {
+			return new \WP_REST_Response( $result, 200 );
 		}
-
-		if ( ! $wp_filesystem->is_dir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $plugin ) ) {
-			/* directory didn't exist, so let's create it */
-			$wp_filesystem->mkdir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $plugin );
-			$wp_filesystem->mkdir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $plugin . '/custom-modules/' );
-		}
-
-		if ( ! $wp_filesystem->is_dir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $plugin . '/custom-modules/' . $module ) ) {
-			/* directory didn't exist, so let's create it */
-			$wp_filesystem->mkdir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $plugin . '/custom-modules/' . $module );
-		}
-
-		$wp_filesystem->put_contents( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $plugin . '/custom-modules/' . $module . '/' . $option_name, $option_value );
-	}
-
-	/**
-	 * Update an option stored in a file. Using a file like this bypasses WP object caching.
-	 *
-	 * @param string $option_name The name of the option.
-	 * @param string $plugin The name of the plugin.
-	 * @param string $module The value of the module.
-	 */
-	public function get_option( $option_name, $plugin, $module ) {
-		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
-		return $wp_filesystem->get_contents( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $plugin . '/custom-modules/' . $module . '/' . $option_name );
 	}
 
 	/**
@@ -291,21 +200,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 	public function request_args( $type ) {
 
 		$return_args = array(
-			'plugin_dir_name' => array(
-				'required'          => true,
-				'type'              => 'string',
-				'description'       => __( 'The directory name of the plugin where the module exists.', 'wpps' ),
-				'validate_callback' => array( $this, 'validate_arg_is_string' ),
-				'sanitize_callback' => 'sanitize_text_field',
-			),
-			'module'          => array(
-				'required'          => true,
-				'type'              => 'string',
-				'description'       => __( 'The name of the directory of the module in question.', 'wpps' ),
-				'validate_callback' => array( $this, 'validate_arg_is_string' ),
-				'sanitize_callback' => 'sanitize_text_field',
-			),
-			'job_identifier'  => array(
+			'job_identifier' => array(
 				'required'          => true,
 				'type'              => 'string',
 				'description'       => __( 'A unique slug that represents this action.', 'wpps' ),
@@ -313,6 +208,16 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 				'sanitize_callback' => 'sanitize_text_field',
 			),
 		);
+
+		if ( 'runshellcommand' === $type || 'phpcs' === $type ) {
+			$return_args['location'] = array(
+				'required'          => true,
+				'type'              => 'string',
+				'description'       => __( 'The directory name of the plugin where the module exists.', 'wpps' ),
+				'validate_callback' => array( $this, 'validate_arg_is_string' ),
+				'sanitize_callback' => 'sanitize_text_field',
+			);
+		}
 
 		// Require the command paramater if running a 'runshellcommand'.
 		if ( 'runshellcommand' === $type ) {

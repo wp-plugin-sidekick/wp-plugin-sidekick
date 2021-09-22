@@ -1,12 +1,15 @@
 # Loop through each plugin-module in the plugin.
 
-for DIR in add-on-modules/*/; do
-	# Go to the directory of this add-on-module.
+for DIR in custom-modules/*/; do
+	# Go to the directory of this custom-module.
 	cd "$DIR";
-	echo "$DIR";
+	echo "Module: $DIR";
 
 	# Run the "npm run dev" command in its package.json file.
-	npm run dev;
+	if [[ -f "package.json" ]]
+	then
+		npm run dev;
+	fi
 
 	# Go back to main directory, which includes the plugin modules.   
 	cd -;

@@ -4,58 +4,67 @@
 
 import React, {useState, useContext} from 'react';
 import { __ } from '@wordpress/i18n';
-import { AomContext, useCurrentAddOn, useManageableAddons, runShellCommand, killModuleShellCommand } from './../non-visual/non-visual-logic.js';
-import SuitcaseIcon from './suitcase-icon.js';
+import {
+	AomContext,
+	useCurrentAddOn,
+	createManageableAddons,
+	runShellCommand,
+	killModuleShellCommand,
+	phpcsDo,
+	enableDevelopmentMode,
+	disableDevelopmentMode
+} from './../non-visual/non-visual-logic.js';
 
 export function AddonMaintainerApp() {
 
-	const manageableAddOns = useManageableAddons( aomManageableAddOns );
+	const manageableAddOns = createManageableAddons( aomManageableAddOns );
 	const currentAddOnController = useCurrentAddOn();
-	const currentAddOn = manageableAddOns[currentAddOnController.currentAddOn];
-	let currentModule;
-	if ( currentAddOnController.currentAddOn && currentAddOnController.currentModule ) {
-		currentModule = currentAddOn.data.modules[currentAddOnController.currentModule];
-	} else {
-		currentModule = null;
-	}
+	const currentAddOn = currentAddOnController.currentAddOn ? manageableAddOns[currentAddOnController.currentAddOn] : false;
 
 	return <AomContext.Provider
 		// Pass data into the context, which is availale in all of our components.
 		value={ {
-			manageableAddOns,
-			currentAddOn: currentAddOn,
+			manageableAddOns: manageableAddOns,
+			currentAddOn,
 			setCurrentAddOn: currentAddOnController.setCurrentAddOn,
-			currentModule: currentModule,
-			setCurrentModule: currentAddOnController.setCurrentModule,
 		} }
 		>
-		<div className="mx-auto p-5">
-			<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
-				<div className="px-2 mx-2">
+		<div className="mx-auto p-5 relative">
+			<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box p-5 z-10 relative">
+				<div className="flex-grow px-2 mx-2">
 					<span className="text-lg font-bold">
-					WP Plugin Studio
+					WP Plugin Studio - A Place To Invent.
 					</span>
 				</div> 
-				<div className="flex flex-grow">
-					<ManageableAddOns />
-				</div>
 				<div className="flex flex-grow-0">
-					<div className="btn btn-secondary">Deploy Plugin</div>
+					<ManageableAddOns />
+					<div className="flex p-5">
+						Or
+					</div>
+					<div className="flex">
+						<button className="btn btn-secondary" disabled={ currentAddOn ? false : true }>Create A New Plugin</button>
+					</div>
 				</div>
+				
 			</div>
+			<AddOnHeader />
 			<div className="main-work-area mx-auto">
 				<div>
 					<AddOnData />
 				</div>
+				<DevArea />
 				<div>
 					<div className="card lg:card-side bordered bg-base-100">
 						<div className="card-body">
-							<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+							<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box p-5">
 								<div className="flex px-2 mx-2 w-full">
 									<div className="flex-grow">
 										<span className="text-lg font-bold">
 										Custom Modules
 										</span>
+									</div>
+									<div className="flex flex-grow-0">
+										<button className="btn btn-secondary" disabled={ currentAddOn ? false : true }>Add Module</button>
 									</div>
 								</div> 
 							</div>
@@ -68,16 +77,72 @@ export function AddonMaintainerApp() {
 	</AomContext.Provider>
 }
 
-function SearchField() {
+function AddOnHeader() {
+	const {currentAddOn} = useContext(AomContext);
 	
-	return(
-		<div className="form-control">
-			<label className="label">
-				<span className="label-text">connected</span>
-			</label> 
-			<div className="relative">
-				<input type="text" placeholder="Search" className="w-full pr-16 input input-bordered" /> 
-				<button className="absolute top-0 right-0 rounded-l-none btn">go</button>
+	if ( ! currentAddOn ) {
+		return '';	
+	}
+
+	return (
+		<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box -mt-8 mx-8 pt-10 z-0 relative">
+			<div className="flex flex-grow px-2 mx-2">
+				<span className="text-lg font-bold">
+				{currentAddOn.data.Name}
+				</span>
+			</div> 
+			<div className="flex flex-grow-0">
+				<button className="btn btn-secondary" disabled={ currentAddOn ? false : true }>Deploy Plugin</button>
+			</div>
+		</div>
+	)
+}
+
+function DevArea() {
+	const {currentAddOn} = useContext(AomContext);
+	
+	if ( ! currentAddOn ) {
+		return '';	
+	}
+
+	return (
+		<div>
+			<div className="card lg:card-side bordered bg-base-100">
+				<div className="card-body">
+					<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box p-5">
+						<div className="flex px-2 mx-2 w-full">
+							<div className="flex-grow">
+								<span className="text-lg font-bold">
+								Development
+								</span>
+							</div>
+							<span className="text-lg mr-4">
+								Enable development mode
+							</span>
+							<input type="checkbox" className="toggle" onChange={ (event) => {
+								if ( event.target.checked ) {
+									enableDevelopmentMode( currentAddOn );
+								} else {
+									disableDevelopmentMode( currentAddOn );
+								}
+							}
+							} />
+						</div>
+					</div>
+					<div className="card lg:card-side bordered bg-base-100">
+						<div className="card-body">
+							<div className="flex flex-grow gap-4 mx-4">
+								{(() => {
+									const statusBadges = [];
+									for( const thisDevStatus in currentAddOn.data.devStatus ) {
+										statusBadges.push( <StatusBadge key={thisDevStatus} label={thisDevStatus} status={ currentAddOn.data.devStatus[ thisDevStatus ] } /> );
+									}
+									return statusBadges;
+								})()}
+							</div> 
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	)
@@ -110,7 +175,7 @@ function ManageableAddOns( props ) {
 	}
 	
 	return <>
-		<div className="flex mx-auto">
+		<div className="flex">
 			<label className="label mr-4">
 				<span className="label-text">Current Plugin</span> 
 			</label> 
@@ -159,49 +224,30 @@ function ManageableModules( props ) {
 		for ( const module in modules ) {
 			modulesRendered.push(
 				<div
-					key={modules[module].slug}
+					key={modules[module].data.slug}
 					className="alert alert-info"
 					onClick={() => {
-						setCurrentModule(modules[module].slug);
+						setCurrentModule(modules[module].data.slug);
 					}}
 				>
 					<div className="flex flex-1 w-full">
-						<div className="flex flex-grow">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 mx-2 stroke-current">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
-							</svg> 
-							<p>{modules[module].name}</p>
-						</div>
-						<div className="flex gap-4 mx-4 place-items-end flex-grow-0">
-							<StatusBadge label="javascript" status="error" />
-							<StatusBadge label="js-lint" status ="success" />
-							<StatusBadge label="css" />
-							<StatusBadge label="css-lint" />
-							<StatusBadge label="translation (i18n)" />
-						</div>
-						<div className="flex-grow-0">
-							<div className="form-control">
-								<label className="cursor-pointer label">
-									<span className="label-text mr-2">Enable Development Mode</span> 
-									<input type="checkbox" className="toggle" onChange={ (event) => {
-										if ( event.target.checked ) {
-											runShellCommand(
-												currentAddOn.data.dirname,
-												modules[module].slug,
-												'npm run dev:js;',
-												'npm_run_devjs',
-											);
-										} else {
-											killModuleShellCommand(
-												currentAddOn.data.dirname,
-												modules[module].slug,
-												'npm_run_devjs',
-											);
-										}
-									}
-									} />
-								</label>
+						<div className="flex title-area w-full mr-4">
+							<div className="flex">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 mx-2 stroke-current">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+								</svg>
 							</div>
+							<div className="block">
+								<p className="block text-lg">{modules[module].data.name}</p>
+								<p className="block">{modules[module].data.description}</p>
+							</div>
+						</div>
+						<div className="close-button flex flex-grow-0">
+							<button className="btn btn-circle btn-xs md:btn-sm lg:btn-md xl:btn-lg">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-4 h-4 stroke-current md:w-6 md:h-6">   
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>                       
+								</svg>
+							</button>
 						</div>
 					</div>
 				</div>
@@ -220,11 +266,8 @@ function ManageableModules( props ) {
 
 function StatusBadge( props ) {
 	
+	// Using inline style because DaisyUi sets the background color in the .btn .badge, making it hard to override otherwise.
 	function getStatusColor() {
-		if ( ! props.status ) {
-			return {};
-		}
-		
 		if ( props.status == 'error' ) {
 			return {backgroundColor: 'hsla(var(--er)/var(--tw-bg-opacity,1))'};
 		}
@@ -233,10 +276,16 @@ function StatusBadge( props ) {
 			return {backgroundColor: 'hsla(var(--su)/var(--tw-bg-opacity,1))'};
 		}
 	}
+	
+	function maybeRenderStatusIndicator() {
+		if ( props.status ) {
+			return <div className="indicator-item badge" style={getStatusColor()}></div>
+		}
+	}
 
 	return (
 		<div className="btn indicator">
-			<div class="indicator-item badge" style={getStatusColor()}></div> 
+			{ maybeRenderStatusIndicator() }
 			{ props.label }
 		</div> 
 	)
@@ -265,7 +314,11 @@ function AddOnData( props ) {
 							name="email"
 							placeholder={ __( 'Plugin Name', 'addonbuilder' ) }
 							value={ currentAddOn.data.Name }
-							onChange={ (event) => setPluginName( event.target.value ) }
+							onChange={ (event) => {
+								const newCurrentAddon = JSON.parse( JSON.stringify( currentAddOn.data ) );
+								newCurrentAddon.Name = event.target.value;
+								currentAddOn.set( newCurrentAddon );
+							}}
 						/>
 					</div>
 				
