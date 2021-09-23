@@ -62,7 +62,13 @@ function useAddon( addOn ) {
 function useModule( module ) {
 	const [data, set] = useState(module);
 	
-	function setModuleStatus( statusName, statusValue ) {
+	// Keeps the state and ref equal. See https://css-tricks.com/dealing-with-stale-props-and-states-in-reacts-functional-components/
+	function setDataAsync(newState) {
+		ref.current = newState;
+		set(newState);
+	}
+
+	function setModuleDevStatus( statusName, statusValue ) {
 		const newModuleData = JSON.parse( JSON.stringify( data ) );
 		if ( ! newModuleData.status ) {
 			newModuleData.status = {}
@@ -74,7 +80,7 @@ function useModule( module ) {
 	return {
 		data,
 		set,
-		setModuleStatus,
+		setModuleDevStatus,
 	}
 }
 
@@ -115,8 +121,7 @@ export function runShellCommand( props ) {
 		})
 		.then( response => response.json())
 		.then( ( data ) => {
-			//console.log(data);
-			props.currentAddOn.setDevStatus( props.job_identifier, data );
+			props.currentAddOn.setDevStatus( props.job_identifier, JSON.parse( data ) );
 			resolve( data );
 		});
 
@@ -154,9 +159,11 @@ export function phpcsDo( props ) {
 				'Content-Type': 'application/json'
 			},
 		})
-		.then( response => response.json())
+		.then( response => response.json() )
 		.then( ( data ) => {
-			props.currentAddOn.setDevStatus( props.job_identifier, data );
+			const response = JSON.parse( data );
+			console.log( 'Parsed response', JSON.parse(response.output) );
+			props.currentAddOn.setDevStatus( props.job_identifier, JSON.parse(response.output) );
 			resolve( data );
 		});
 

@@ -48,28 +48,28 @@ export function AddonMaintainerApp() {
 				
 			</div>
 			<AddOnHeader />
-			<div className="main-work-area mx-auto">
-				<div>
-					<AddOnData />
+			<div className="flex w-full gap-4 mx-auto">
+				<div className="card lg:card-side bordered bg-base-100 w-full">
+					<div className="card-body">
+						<DevArea />
+					</div>
 				</div>
-				<DevArea />
-				<div>
-					<div className="card lg:card-side bordered bg-base-100">
-						<div className="card-body">
-							<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box p-5">
-								<div className="flex px-2 mx-2 w-full">
-									<div className="flex-grow">
-										<span className="text-lg font-bold">
-										Custom Modules
-										</span>
-									</div>
-									<div className="flex flex-grow-0">
-										<button className="btn btn-secondary" disabled={ currentAddOn ? false : true }>Add Module</button>
-									</div>
-								</div> 
-							</div>
-							<ManageableModules />
+				<div className="card lg:card-side bordered bg-base-100 w-full">
+					<div className="card-body">
+						<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+							<div className="flex px-2 mx-2 w-full">
+								<div className="flex-grow">
+									<span className="text-lg font-bold">
+									Custom Modules
+									</span>
+								</div>
+								<div className="flex flex-grow-0">
+									<button className="btn btn-secondary mr-4" disabled={ currentAddOn ? false : true }>Create Module</button>
+									<button className="btn btn-secondary" disabled={ currentAddOn ? false : true }>Module Library</button>
+								</div>
+							</div> 
 						</div>
+						<ManageableModules />
 					</div>
 				</div>
 			</div>
@@ -85,7 +85,7 @@ function AddOnHeader() {
 	}
 
 	return (
-		<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box -mt-8 mx-8 pt-10 z-0 relative">
+		<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box z-0 relative">
 			<div className="flex flex-grow px-2 mx-2">
 				<span className="text-lg font-bold">
 				{currentAddOn.data.Name}
@@ -100,52 +100,87 @@ function AddOnHeader() {
 
 function DevArea() {
 	const {currentAddOn} = useContext(AomContext);
+	const [currentTab, setCurrentTab] = useState(1);
 	
 	if ( ! currentAddOn ) {
 		return '';	
 	}
 
 	return (
-		<div>
-			<div className="card lg:card-side bordered bg-base-100">
-				<div className="card-body">
-					<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box p-5">
-						<div className="flex px-2 mx-2 w-full">
-							<div className="flex-grow">
-								<span className="text-lg font-bold">
-								Development
-								</span>
-							</div>
-							<span className="text-lg mr-4">
-								Enable development mode
-							</span>
-							<input type="checkbox" className="toggle" onChange={ (event) => {
-								if ( event.target.checked ) {
-									enableDevelopmentMode( currentAddOn );
-								} else {
-									disableDevelopmentMode( currentAddOn );
-								}
-							}
-							} />
-						</div>
-					</div>
-					<div className="card lg:card-side bordered bg-base-100">
-						<div className="card-body">
-							<div className="flex flex-grow gap-4 mx-4">
-								{(() => {
-									const statusBadges = [];
-									for( const thisDevStatus in currentAddOn.data.devStatus ) {
-										statusBadges.push( <StatusBadge key={thisDevStatus} label={thisDevStatus} status={ currentAddOn.data.devStatus[ thisDevStatus ] } /> );
-									}
-									return statusBadges;
-								})()}
-							</div> 
-						</div>
-					</div>
+		<>
+		<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+			<div className="flex px-2 mx-2 w-full">
+				<div className="flex-grow">
+					<span className="text-lg font-bold">
+					Development
+					</span>
 				</div>
+				<span className="text-lg mr-4">
+					Enable development mode
+				</span>
+				<input type="checkbox" className="toggle" onChange={ (event) => {
+					if ( event.target.checked ) {
+						enableDevelopmentMode( currentAddOn );
+					} else {
+						disableDevelopmentMode( currentAddOn );
+					}
+				}
+				} />
 			</div>
 		</div>
+		<div className="">
+			<div className="tabs tabs-boxed">
+				{(() => {
+					const statusBadges = [];
+					let tabNumber = 1;
+					for( const thisDevStatus in currentAddOn.data.devStatus ) {
+						const active = currentTab === tabNumber;
+						
+						statusBadges.push( <StatusBadge key={thisDevStatus} label={thisDevStatus} status={ currentAddOn.data.devStatus[ thisDevStatus ] } active={active} /> );
+						tabNumber++;
+					}
+					return statusBadges;
+				})()}
+			</div>
+			<div className="card">
+				{(() => {
+					const statusOutputs = [];
+					let tabNumber = 1;
+					// Loop through each dev status (phpcs, npm_run_dev_js, etc).
+					for( const thisDevStatus in currentAddOn.data.devStatus ) {
+						const active = currentTab === tabNumber;
+						
+						if ( 'phpcs' === thisDevStatus ) {
+							console.log( currentAddOn.data.devStatus[ thisDevStatus ] );
+							statusOutputs.push( <RenderPhpCsOutput phpcsData={ currentAddOn.data.devStatus[ thisDevStatus ] } /> );
+						} else {
+							//statusOutputs.push( <div key={thisDevStatus} hidden={ ! active }>{ currentAddOn.data.devStatus[ thisDevStatus ] }</div> );
+						}
+						tabNumber++;
+					}
+					return statusOutputs;
+				})()}
+			</div>
+		</div>
+		</>
 	)
+}
+
+function RenderPhpCsOutput(props) {
+	console.log( props );
+	function renderErrors() {
+		const renderedFiles = [];
+		for( const fileName in props.phpcsData.files ) {
+			renderedFiles.push(
+				<div key={fileName} className="">
+					{ fileName }
+				</div>
+			); 
+		}
+		return renderedFiles;
+	}
+	
+	return renderErrors();
 }
 
 function ManageableAddOns( props ) {
@@ -265,26 +300,15 @@ function ManageableModules( props ) {
 }
 
 function StatusBadge( props ) {
-	
-	// Using inline style because DaisyUi sets the background color in the .btn .badge, making it hard to override otherwise.
-	function getStatusColor() {
-		if ( props.status == 'error' ) {
-			return {backgroundColor: 'hsla(var(--er)/var(--tw-bg-opacity,1))'};
-		}
-		
-		if ( props.status == 'success' ) {
-			return {backgroundColor: 'hsla(var(--su)/var(--tw-bg-opacity,1))'};
-		}
-	}
-	
+
 	function maybeRenderStatusIndicator() {
 		if ( props.status ) {
-			return <div className="indicator-item badge" style={getStatusColor()}></div>
+			return <div className="indicator-item badge" style={{backgroundColor: 'hsla(var(--er)/var(--tw-bg-opacity,1))'}}></div>
 		}
 	}
 
 	return (
-		<div className="btn indicator">
+		<div className={'tab indicator' + ( props.active ? ' tab-active' : '' )}>
 			{ maybeRenderStatusIndicator() }
 			{ props.label }
 		</div> 

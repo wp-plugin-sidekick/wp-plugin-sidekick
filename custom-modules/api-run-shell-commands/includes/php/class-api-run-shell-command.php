@@ -169,10 +169,13 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		// Change to the wp-plugin-studio directory first so we can use it's phpcs functions without needing them in each plugin/module.
 		$set_path       = 'export PATH="$PATH:"/usr/local/bin/; ';
 		$go_to          = 'cd ' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio; ';
-		$command        = $set_path . $go_to . './vendor/bin/phpcs --standard=' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/phpcs.xml ' . $wp_filesystem->wp_plugins_dir() . $params['location'];
+		$command        = $set_path . $go_to . './vendor/bin/phpcs --report=json -q --standard=' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/phpcs.xml ' . $wp_filesystem->wp_plugins_dir() . $params['location'];
 		$job_identifier = $params['job_identifier'];
 
 		$result = do_shell_command( $command, $job_identifier );
+
+		// PHPcs is returning JSON, so lets decode it before we re-encode it with the output.
+		//$result['output'] = json_decode( $result['output'] );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );

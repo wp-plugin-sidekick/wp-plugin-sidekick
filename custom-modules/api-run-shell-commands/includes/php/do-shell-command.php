@@ -109,7 +109,7 @@ function do_shell_command( $command, $job_identifier ) {
 				)
 			);
 			// The item was successfully created.
-			return new \WP_REST_Response( $output, 200 );
+			return $output;
 		}
 	}
 }
