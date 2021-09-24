@@ -6,8 +6,8 @@ import React, {useState, useContext} from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	AomContext,
-	useCurrentAddOn,
-	createManageableAddons,
+	useCurrentPluginPointer,
+	usePlugins,
 	runShellCommand,
 	killModuleShellCommand,
 	phpcsDo,
@@ -17,16 +17,19 @@ import {
 
 export function AddonMaintainerApp() {
 
-	const manageableAddOns = createManageableAddons( aomManageableAddOns );
-	const currentAddOnController = useCurrentAddOn();
-	const currentAddOn = currentAddOnController.currentAddOn ? manageableAddOns[currentAddOnController.currentAddOn] : false;
-
+	const plugins = usePlugins( aomManageableAddOns );
+	console.log( plugins.data );
+	
+	const currentPluginPointer = useCurrentPluginPointer();
+	const currentPluginData = currentPluginPointer.data ? plugins.data[currentPluginPointer.data] : false;
+	console.log( currentPluginData );
+	
 	return <AomContext.Provider
 		// Pass data into the context, which is availale in all of our components.
 		value={ {
-			manageableAddOns: manageableAddOns,
-			currentAddOn,
-			setCurrentAddOn: currentAddOnController.setCurrentAddOn,
+			plugins: plugins,
+			currentPluginData: currentPluginData,
+			setCurrentPlugin: currentPluginPointer.set,
 		} }
 		>
 		<div className="mx-auto p-5 relative">
@@ -42,7 +45,7 @@ export function AddonMaintainerApp() {
 						Or
 					</div>
 					<div className="flex">
-						<button className="btn btn-secondary" disabled={ currentAddOn ? false : true }>Create A New Plugin</button>
+						<button className="btn btn-secondary" disabled={ currentPluginData ? false : true }>Create A New Plugin</button>
 					</div>
 				</div>
 				
@@ -64,8 +67,8 @@ export function AddonMaintainerApp() {
 									</span>
 								</div>
 								<div className="flex flex-grow-0">
-									<button className="btn btn-secondary mr-4" disabled={ currentAddOn ? false : true }>Create Module</button>
-									<button className="btn btn-secondary" disabled={ currentAddOn ? false : true }>Module Library</button>
+									<button className="btn btn-secondary mr-4" disabled={ currentPluginData ? false : true }>Create Module</button>
+									<button className="btn btn-secondary" disabled={ currentPluginData ? false : true }>Module Library</button>
 								</div>
 							</div> 
 						</div>
@@ -78,9 +81,9 @@ export function AddonMaintainerApp() {
 }
 
 function AddOnHeader() {
-	const {currentAddOn} = useContext(AomContext);
+	const {currentPluginData} = useContext(AomContext);
 	
-	if ( ! currentAddOn ) {
+	if ( ! currentPluginData ) {
 		return '';	
 	}
 
@@ -88,21 +91,21 @@ function AddOnHeader() {
 		<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box z-0 relative">
 			<div className="flex flex-grow px-2 mx-2">
 				<span className="text-lg font-bold">
-				{currentAddOn.data.Name}
+				{currentPluginData.Name}
 				</span>
 			</div> 
 			<div className="flex flex-grow-0">
-				<button className="btn btn-secondary" disabled={ currentAddOn ? false : true }>Deploy Plugin</button>
+				<button className="btn btn-secondary" disabled={ currentPluginData ? false : true }>Deploy Plugin</button>
 			</div>
 		</div>
 	)
 }
 
 function DevArea() {
-	const {currentAddOn} = useContext(AomContext);
+	const {plugins, currentPluginData} = useContext(AomContext);
 	const [currentTab, setCurrentTab] = useState(1);
 	
-	if ( ! currentAddOn ) {
+	if ( ! currentPluginData ) {
 		return '';	
 	}
 
@@ -120,9 +123,9 @@ function DevArea() {
 				</span>
 				<input type="checkbox" className="toggle" onChange={ (event) => {
 					if ( event.target.checked ) {
-						enableDevelopmentMode( currentAddOn );
+						enableDevelopmentMode( plugins, currentPluginData );
 					} else {
-						disableDevelopmentMode( currentAddOn );
+						disableDevelopmentMode( plugins, currentPluginData );
 					}
 				}
 				} />
@@ -133,10 +136,10 @@ function DevArea() {
 				{(() => {
 					const statusBadges = [];
 					let tabNumber = 1;
-					for( const thisDevStatus in currentAddOn.data.devStatus ) {
+					for( const thisDevStatus in currentPluginData.devStatus ) {
 						const active = currentTab === tabNumber;
 						
-						statusBadges.push( <StatusBadge key={thisDevStatus} label={thisDevStatus} status={ currentAddOn.data.devStatus[ thisDevStatus ] } active={active} /> );
+						statusBadges.push( <StatusBadge key={thisDevStatus} label={thisDevStatus} status={ currentPluginData.devStatus[ thisDevStatus ] } active={active} /> );
 						tabNumber++;
 					}
 					return statusBadges;
@@ -147,14 +150,13 @@ function DevArea() {
 					const statusOutputs = [];
 					let tabNumber = 1;
 					// Loop through each dev status (phpcs, npm_run_dev_js, etc).
-					for( const thisDevStatus in currentAddOn.data.devStatus ) {
+					for( const thisDevStatus in currentPluginData.devStatus ) {
 						const active = currentTab === tabNumber;
 						
 						if ( 'phpcs' === thisDevStatus ) {
-							console.log( currentAddOn.data.devStatus[ thisDevStatus ] );
-							statusOutputs.push( <RenderPhpCsOutput phpcsData={ currentAddOn.data.devStatus[ thisDevStatus ] } /> );
+							statusOutputs.push( <RenderPhpCsOutput phpcsData={ currentPluginData.devStatus[ thisDevStatus ] } /> );
 						} else {
-							//statusOutputs.push( <div key={thisDevStatus} hidden={ ! active }>{ currentAddOn.data.devStatus[ thisDevStatus ] }</div> );
+							//statusOutputs.push( <div key={thisDevStatus} hidden={ ! active }>{ currentPluginData.devStatus[ thisDevStatus ] }</div> );
 						}
 						tabNumber++;
 					}
@@ -167,7 +169,6 @@ function DevArea() {
 }
 
 function RenderPhpCsOutput(props) {
-	console.log( props );
 	function renderErrors() {
 		const renderedFiles = [];
 		for( const fileName in props.phpcsData.files ) {
@@ -184,28 +185,24 @@ function RenderPhpCsOutput(props) {
 }
 
 function ManageableAddOns( props ) {
-	const {manageableAddOns, setCurrentAddOn} = useContext(AomContext);
+	const {plugins, setCurrentPlugin} = useContext(AomContext);
 	
-	const addOns = manageableAddOns;
-	
-	function rendermanageableAddOns() {
+	function renderplugins() {
 		
-		const manageableAddOnsRendered = [];
+		const pluginsRendered = [];
 		
-		for ( const addOn in addOns ) {
-			const currentAddOn = addOns[addOn].data.dirname;
-			manageableAddOnsRendered.push(
+		for ( const plugin in plugins.data ) {
+			pluginsRendered.push(
 				<option
-					key={addOns[addOn].data.dirname}
-					value={currentAddOn}
+					key={plugins.data[plugin].dirname}
+					value={plugins.data[plugin].dirname}
 				>
-					{addOns[addOn].data.Name}	
+					{plugins.data[plugin].Name}	
 				</option>
-				
 			);
 		}
 		
-		return manageableAddOnsRendered;
+		return pluginsRendered;
 		
 	}
 	
@@ -218,24 +215,25 @@ function ManageableAddOns( props ) {
 				className="select select-bordered max-w-xs text-base-content"
 				tabIndex="0"
 				onChange={(event) => {
-					setCurrentAddOn(event.target.value)
+					setCurrentPlugin(event.target.value)
 				}}
 			>
 				<option disabled="">Choose a plugin to work on</option> 
-				{ rendermanageableAddOns() }
+				{ renderplugins() }
 			</select>
 		</div>
 	</>
 }
 
 function ManageableModules( props ) {
-	const {currentAddOn, currentModule, setCurrentModule} = useContext(AomContext);
+	const {plugins, currentPluginData} = useContext(AomContext);
 	
-	if ( ! currentAddOn ) {
+	if ( ! currentPluginData ) {
 		return '';	
 	}
-
-	const modules = currentAddOn.data.modules;
+	
+	console.log( currentPluginData )
+	const modules = currentPluginData.modules;
 	
 	if ( ! modules ) {
 		return 'No modules found';
@@ -259,10 +257,10 @@ function ManageableModules( props ) {
 		for ( const module in modules ) {
 			modulesRendered.push(
 				<div
-					key={modules[module].data.slug}
+					key={modules[module].slug}
 					className="alert alert-info"
 					onClick={() => {
-						setCurrentModule(modules[module].data.slug);
+						//setCurrentModule(modules[module].slug);
 					}}
 				>
 					<div className="flex flex-1 w-full">
@@ -273,11 +271,34 @@ function ManageableModules( props ) {
 								</svg>
 							</div>
 							<div className="block">
-								<p className="block text-lg">{modules[module].data.name}</p>
-								<p className="block">{modules[module].data.description}</p>
+								<input type="text" className="block text-lg" value={modules[module].name} onChange={(event) => {
+									plugins.setModuleName( currentPluginData.dirname, modules[module].slug, event.target.value );
+								}} />
+								<p className="block">{modules[module].description}</p>
 							</div>
 						</div>
-						<div className="close-button flex flex-grow-0">
+						<div className="flex w-full mr-4">
+							<div className="flex">
+								{ (() => {
+									if ( modules[module].devStatus ) {
+										const rendered = [];
+										
+										for( const devStatus in modules[module].devStatus ){
+											rendered.push(
+												<div>
+													{ JSON.stringify( modules[module].devStatus[devStatus] ) }
+												</div>
+											);
+										}
+										
+										return rendered;
+									}
+								})()}
+							</div>
+						</div>
+						<div className="close-button flex flex-grow-0" onClick={() => {
+							plugins.deleteModule( currentPluginData.dirname, modules[module].slug );
+						}}>
 							<button className="btn btn-circle btn-xs md:btn-sm lg:btn-md xl:btn-lg">
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-4 h-4 stroke-current md:w-6 md:h-6">   
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>                       
@@ -316,9 +337,9 @@ function StatusBadge( props ) {
 }
 
 function AddOnData( props ) {
-	const {currentAddOn} = useContext(AomContext);
+	const {currentPluginData} = useContext(AomContext);
 	
-	if ( ! currentAddOn ) {
+	if ( ! currentPluginData ) {
 		return '';	
 	}
 
@@ -326,7 +347,7 @@ function AddOnData( props ) {
 		<div>
 			<div className="options">
 				<div className="grid gap-5 p-10">
-					<h2 className="font-sans text-5xl font-black">{ currentAddOn.data.Name }</h2>
+					<h2 className="font-sans text-5xl font-black">{ currentPluginData.Name }</h2>
 					<div className="relative ">
 						<label htmlFor="name-with-label" className="text-gray-700">
 							{ __( 'Name', 'addonbuilder' ) }
@@ -337,11 +358,9 @@ function AddOnData( props ) {
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
 							placeholder={ __( 'Plugin Name', 'addonbuilder' ) }
-							value={ currentAddOn.data.Name }
+							value={ currentPluginData.Name }
 							onChange={ (event) => {
-								const newCurrentAddon = JSON.parse( JSON.stringify( currentAddOn.data ) );
-								newCurrentAddon.Name = event.target.value;
-								currentAddOn.set( newCurrentAddon );
+								
 							}}
 						/>
 					</div>
@@ -357,11 +376,9 @@ function AddOnData( props ) {
 							name="comment"
 							rows="5"
 							cols="40"
-							value={ currentAddOn.data.Description }
+							value={ currentPluginData.Description }
 							onChange={ (event) => {
-								const newData = JSON.parse( JSON.stringify( currentAddOn.data ) );
-								newData.Description = event.target.value;
-								currentAddOn.set( newData ) ;
+								
 							} }
 						/>
 					</div>
@@ -376,7 +393,7 @@ function AddOnData( props ) {
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
 							placeholder={ __( 'Plugin Version', 'addonbuilder' ) }
-							value={ currentAddOn.data.Version }
+							value={ currentPluginData.Version }
 							onChange={ (event) => setPluginVersion( event.target.value ) }
 						/>
 					</div>
@@ -391,7 +408,7 @@ function AddOnData( props ) {
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
 							placeholder={ __( 'Plugin Text Domain', 'addonbuilder' ) }
-							value={ currentAddOn.data.TextDomain }
+							value={ currentPluginData.TextDomain }
 							onChange={ (event) => setPluginTextDomain( event.target.value ) }
 						/>
 					</div>

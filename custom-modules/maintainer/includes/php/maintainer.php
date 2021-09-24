@@ -56,18 +56,26 @@ function get_managable_plugins() {
 
 	$wp_filesystem_api = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
+	$manageable_plugins = array();
+
 	foreach ( $installed_plugins as $key => $installed_plugin ) {
-
-		$installed_plugins[ $key ]['filename'] = basename(
-			$key
-		);
-
-		$installed_plugins[ $key ]['dirname'] = basename(
+		$dirname = basename(
 			$key, // Get the key which holds the folder/file name.
 			'.php' // Strip away the .php part.
 		);
 
-		$plugin_path = $wp_filesystem_api->wp_plugins_dir() . $installed_plugins[ $key ]['dirname'];
+		$manageable_plugins[ $dirname ] = $installed_plugins[ $key ];
+
+		$manageable_plugins[ $dirname ]['filename'] = basename(
+			$key
+		);
+
+		$manageable_plugins[ $dirname ]['dirname'] = basename(
+			$key, // Get the key which holds the folder/file name.
+			'.php' // Strip away the .php part.
+		);
+
+		$plugin_path = $wp_filesystem_api->wp_plugins_dir() . $manageable_plugins[ $dirname ]['dirname'];
 
 		$modules_glob = glob( $plugin_path . '/custom-modules/*' );
 		$modules      = array();
@@ -81,10 +89,10 @@ function get_managable_plugins() {
 			$modules[ $module_name ] = $module_data;
 		}
 
-		$installed_plugins[ $key ]['modules'] = $modules;
+		$manageable_plugins[ $dirname ]['modules'] = $modules;
 	}
 
-	return $installed_plugins;
+	return $manageable_plugins;
 }
 
 

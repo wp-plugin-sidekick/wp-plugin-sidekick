@@ -15,59 +15,17 @@ import {
 
 export const AomContext = createContext([{}, function() {}]);
 
-export function usePlugins( initial ) {
-	const [data, set] = useState(initial);
-	const ref = useRef(data);
-
-	// Keeps the state and ref equal. See https://css-tricks.com/dealing-with-stale-props-and-states-in-reacts-functional-components/
-	function setDataAsync(newState) {
-		ref.current = newState;
-		set(newState);
+export function createManageableAddons( initial ) {
+	const manageableAddOns = {};
+	
+	// Create a state handler for each addon.
+	for ( const addOn in initial ) {
+		manageableAddOns[initial[addOn].dirname] = useAddon(initial[addOn]);
 	}
 	
-	function setPluginDevStatus( pluginDirName, statusName, statusValue ) {
-		const newData = prepStateForMutation( ref.current );
-		if ( ! newData[pluginDirName].devStatus ) {
-			newData[pluginDirName].devStatus = {}
-		}
+	console.log( manageableAddOns );
 
-		newData[pluginDirName].devStatus[statusName] = statusValue;
-		setDataAsync(newData);
-	}
-	
-	function deleteModule( pluginDirName, moduleSlug ) {
-		const newData = prepStateForMutation( ref.current );
-		if ( newData.modules[moduleSlug] ) {
-			delete newData[pluginDirName].modules[moduleSlug];
-		}
-		
-		setDataAsync(newData);
-	}
-	
-	function setModuleDevStatus( pluginDirName, moduleSlug, statusName, statusValue ) {
-		const newData = prepStateForMutation( ref.current );
-		if ( ! newData[pluginDirName].modules[moduleSlug].devStatus ) {
-			newData[pluginDirName].modules[moduleSlug].devStatus = {}
-		}
-
-		newData[pluginDirName].modules[moduleSlug].devStatus[statusName] = statusValue;
-		setDataAsync(newData);
-	}
-	
-	function setModuleName( pluginDirName, moduleSlug, newName ) {
-		const newData = prepStateForMutation( ref.current );
-		newData[pluginDirName].modules[moduleSlug].name = newName;
-		setDataAsync(newData);
-	}
-
-	return {
-		data: ref.current,
-		set: setDataAsync,
-		setPluginDevStatus,
-		deleteModule,
-		setModuleDevStatus,
-		setModuleName
-	};
+	return manageableAddOns;
 }
 
 function useAddon( addOn ) {
@@ -161,12 +119,22 @@ function useModule( module ) {
 	}
 }
 
-export function useCurrentPluginPointer() {
-	const [data, set] = useState();
+export function useCurrentAddOn() {
+	const [currentAddOn, setCurrentAddOn] = useState();
+	const [currentModule, setCurrentModule] = useState();
+	
+	// When the plugin/add-on is changed, reset the current module to be null.
+	useEffect(() => {
+		setCurrentModule( null );
+	}, [currentAddOn] );
+
+	
 
 	return {
-		data,
-		set,
+		currentAddOn,
+		setCurrentAddOn,
+		currentModule,
+		setCurrentModule,
 	}
 }
 
@@ -182,13 +150,13 @@ export function runShellCommand( props ) {
 			},
 			body: JSON.stringify({
 				location: props.location,
-				job_identifier: props.currentPluginData.dirname + '_' + props.job_identifier,
+				job_identifier: props.currentAddOn.data.dirname + '_' + props.job_identifier,
 				command: props.command,
 			})
 		})
 		.then( response => response.json())
 		.then( ( data ) => {
-			props.plugins.setPluginDevStatus( props.currentPluginData.dirname, props.job_identifier, JSON.parse( data ) );
+			props.currentAddOn.setDevStatus( props.job_identifier, JSON.parse( data ) );
 			resolve( data );
 		});
 
@@ -203,7 +171,7 @@ export async function killModuleShellCommand( props ) {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
-			job_identifier: props.currentPluginData.dirname + '_' + props.job_identifier,
+			job_identifier: props.currentAddOn.data.dirname + '_' + props.job_identifier,
 		})
 	});
 	const content = await rawResponse.json();
@@ -218,7 +186,7 @@ export function phpcsDo( props ) {
 
 		fetch('https://pluginbuilder.local/wp-json/wpps/v1/phpcs?' + new URLSearchParams({
 				location: props.location,
-				job_identifier: props.currentPluginData.dirname + '_' + props.job_identifier,
+				job_identifier: props.currentAddOn.data.dirname + '_' + props.job_identifier,
 			}), {
 			method: 'GET',
 			headers: {
@@ -233,20 +201,20 @@ export function phpcsDo( props ) {
 			const phpcsJson = JSON.parse(response.output);
 
 			// Set the entire response as a devStatus for the plugin.
-			props.plugins.setPluginDevStatus( props.currentPluginData.dirname, props.job_identifier, JSON.parse(response.output) );
+			props.currentAddOn.setDevStatus( props.job_identifier, JSON.parse(response.output) );
 
 			// But also, separate each message into the corresponding module too.
-			for( module in props.currentPluginData.modules ) {
+			for( module in props.currentAddOn.data.modules ) {
 				const modulePhpcsDevStatus = {};
 				for( const fileName in phpcsJson.files ) {
 					// If this phpcs file is in this module, add it to this module's devStatus object.
-					if ( fileName.includes( props.currentPluginData.modules[module].slug ) ) {
+					if ( fileName.includes( props.currentAddOn.data.modules[module].data.slug ) ) {
 						modulePhpcsDevStatus[fileName] = phpcsJson.files[fileName];
 					}
 				}
 
 				// Add the phpcs data for this module to this module.
-				props.plugins.setModuleDevStatus( props.currentPluginData.dirname, props.currentPluginData.modules[module].slug, 'phpcs', modulePhpcsDevStatus );
+				props.currentAddOn.data.modules[module].setModuleDevStatus( 'phpcs', modulePhpcsDevStatus );
 			}
 
 			resolve( data );
@@ -256,28 +224,25 @@ export function phpcsDo( props ) {
 	
 }
 
-export async function enableDevelopmentMode(plugins, currentPluginData) {
+export async function enableDevelopmentMode(currentAddOn) {
 	// Enable phpcs.
 	phpcsDo({
-		location: currentPluginData.dirname,
+		location: currentAddOn.data.dirname,
 		job_identifier: 'phpcs',
-		currentPluginData: currentPluginData,
-		plugins: plugins
+		currentAddOn: currentAddOn,
 	}).then( () => {
 		runShellCommand({
-			location: currentPluginData.dirname,
+			location: currentAddOn.data.dirname,
 			job_identifier: 'npm_run_dev_js',
 			command: 'npm run dev:js',
-			currentPluginData: currentPluginData,
-			plugins: plugins
+			currentAddOn: currentAddOn,
 		});
 	}).then( () => {
 		runShellCommand({
-			location: currentPluginData.dirname,
+			location: currentAddOn.data.dirname,
 			job_identifier: 'npm_run_dev_css',
 			command: 'npm run dev:css',
-			currentPluginData: currentPluginData,
-			plugins: plugins
+			currentAddOn: currentAddOn,
 		});
 	});
 }
@@ -285,21 +250,21 @@ export async function enableDevelopmentMode(plugins, currentPluginData) {
 export async function disableDevelopmentMode(currentAddOn) {
 	// Kill phpcs.
 	killModuleShellCommand({
-		location: currentPluginData.dirname,
+		location: currentAddOn.data.dirname,
 		job_identifier: 'phpcs',
 		currentAddOn: currentAddOn,
 	});
 	
 	// Kill npm_run_dev:js.
 	killModuleShellCommand({
-		location: currentPluginData.dirname,
+		location: currentAddOn.data.dirname,
 		job_identifier: 'npm_run_dev_js',
 		currentAddOn: currentAddOn,
 	});
 	
 	// Kill npm_run_dev:css.
 	killModuleShellCommand({
-		location: currentPluginData.dirname,
+		location: currentAddOn.data.dirname,
 		job_identifier: 'npm_run_dev_css',
 		currentAddOn: currentAddOn,
 	});
