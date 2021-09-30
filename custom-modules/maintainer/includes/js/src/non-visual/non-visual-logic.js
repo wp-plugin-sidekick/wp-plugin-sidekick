@@ -264,6 +264,7 @@ export async function enableDevelopmentMode(plugins, currentPluginData) {
 		currentPluginData: currentPluginData,
 		plugins: plugins
 	}).then( () => {
+		/*
 		runShellCommand({
 			location: currentPluginData.dirname,
 			job_identifier: 'npm_run_dev_js',
@@ -271,7 +272,9 @@ export async function enableDevelopmentMode(plugins, currentPluginData) {
 			currentPluginData: currentPluginData,
 			plugins: plugins
 		});
+		*/
 	}).then( () => {
+		/*
 		runShellCommand({
 			location: currentPluginData.dirname,
 			job_identifier: 'npm_run_dev_css',
@@ -279,10 +282,11 @@ export async function enableDevelopmentMode(plugins, currentPluginData) {
 			currentPluginData: currentPluginData,
 			plugins: plugins
 		});
+		*/
 	});
 }
 
-export async function disableDevelopmentMode(currentAddOn) {
+export async function disableDevelopmentMode(currentPluginData) {
 	// Kill phpcs.
 	killModuleShellCommand({
 		location: currentPluginData.dirname,

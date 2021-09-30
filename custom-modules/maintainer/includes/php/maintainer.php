@@ -23,15 +23,15 @@ function render_app() {
 	<html>
 		<head>
 			<title>Add On Maintainer</title>
-			<link rel="stylesheet" href="<?php echo module_data()['url'] . '/includes/css/build/style.css'; ?>" media="all">
-			<link rel="stylesheet" href="<?php echo module_data()['url'] . '/includes/css/additional/additional-styles.css'; ?>" media="all">
+			<link rel="stylesheet" href="<?php echo esc_url( module_data()['url'] . 'includes/css/build/style.css' ); ?>" media="all">
+			<link rel="stylesheet" href="<?php echo esc_url( module_data()['url'] . 'includes/css/additional/additional-styles.css' ); ?>" media="all">
 		</head>
 		<body>
 		<div id="addonmaintainer"></div>
 		<script type="text/javascript">
 			var aomManageableAddOns = <?php echo wp_json_encode( get_managable_plugins() ); ?>;
 		</script>
-		<script type="text/javascript" src="<?php echo module_data()['url'] . '/includes/js/build/index.js'; ?>"></script>
+		<script type="text/javascript" src="<?php echo esc_url( module_data()['url'] . '/includes/js/build/index.js' ); ?>"></script>
 		</body>
 	</html>
 	<?php

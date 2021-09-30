@@ -2,7 +2,7 @@
  * Addon Builder App.
  */
 
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext, useRef, useEffect} from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	AomContext,
@@ -14,6 +14,8 @@ import {
 	enableDevelopmentMode,
 	disableDevelopmentMode
 } from './../non-visual/non-visual-logic.js';
+
+import { XTerm } from 'xterm-for-react'
 
 export function AddonMaintainerApp() {
 
@@ -36,7 +38,7 @@ export function AddonMaintainerApp() {
 			<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box p-5 z-10 relative">
 				<div className="flex-grow px-2 mx-2">
 					<span className="text-lg font-bold">
-					WP Plugin Studio - A Place To Invent.
+					WP Plugin Studio - A place to invent things with WordPress.
 					</span>
 				</div> 
 				<div className="flex flex-grow-0">
@@ -101,10 +103,22 @@ function AddOnHeader() {
 	)
 }
 
+function Terminal() {
+	const xtermRef = useRef( null );
+	
+	useEffect(() => {
+		// You can call any method in XTerm.js by using 'xterm xtermRef.current.terminal.[What you want to call]
+		xtermRef.current.terminal.writeln("Hello, World!")
+	}, [])
+
+	return <XTerm ref={xtermRef}/>
+}
+
 function DevArea() {
 	const {plugins, currentPluginData} = useContext(AomContext);
 	const [currentTab, setCurrentTab] = useState(1);
 	
+
 	if ( ! currentPluginData ) {
 		return '';	
 	}
@@ -119,7 +133,7 @@ function DevArea() {
 					</span>
 				</div>
 				<span className="text-lg mr-4">
-					Enable development mode
+					Enable development mode 
 				</span>
 				<input type="checkbox" className="toggle" onChange={ (event) => {
 					if ( event.target.checked ) {
@@ -130,6 +144,9 @@ function DevArea() {
 				}
 				} />
 			</div>
+		</div>
+		<div>
+		<Terminal />
 		</div>
 		<div className="">
 			<div className="tabs tabs-boxed">

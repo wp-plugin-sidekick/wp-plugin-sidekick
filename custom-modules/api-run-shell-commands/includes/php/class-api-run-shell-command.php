@@ -78,6 +78,19 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 				'schema' => 'response_item_schema',
 			)
 		);
+		register_rest_route(
+			$namespace,
+			'/phpunit',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'phpunit' ),
+					'permission_callback' => array( $this, 'run_shell_command_permission_check' ),
+					'args'                => $this->request_args( 'phpunit', false ),
+				),
+				'schema' => 'response_item_schema',
+			)
+		);
 	}
 
 	/**
@@ -155,7 +168,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 	}
 
 	/**
-	 * Run phpcs for a module.
+	 * Run phpcs for a plugin.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_Error|WP_REST_Request
@@ -174,8 +187,37 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 
 		$result = do_shell_command( $command, $job_identifier );
 
-		// PHPcs is returning JSON, so lets decode it before we re-encode it with the output.
-		//$result['output'] = json_decode( $result['output'] );
+		if ( is_wp_error( $result ) ) {
+			return new \WP_REST_Response( $result, 400 );
+		} else {
+			return new \WP_REST_Response( $result, 200 );
+		}
+	}
+
+	/**
+	 * Run phpunit for a plugin.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_Error|WP_REST_Request
+	 */
+	public function phpunit( $request ) {
+
+		$params = wp_parse_args( $request->get_params(), $this->default_args() );
+
+		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+
+		// Change to the wp-plugin-studio directory first so we can use it's phpcs functions without needing them in each plugin/module.
+		$set_path       = 'export PATH="$PATH:"/usr/local/bin/; ';
+
+		// First, go to the directory containing the dockerfile and build it.
+		$go_to_docker   = 'cd ' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/custom-modules/phpunit/includes;';
+		$build_docker   = 'docker-compose up --build -d;';
+		$go_to_plugins  = 'cd ' . $wp_filesystem->wp_plugins_dir() . ';';
+		$run_docker     = 'docker-compose -f wp-plugin-studio/custom-modules/phpunit/includes/docker-compose.yml run wordpress vendor/bin/phpunit --bootstrap wp-plugin-studio/custom-modules/phpunit/includes/testers/bootstrap.php ' . $params['location'] . '/tests/*';
+		$command        = $set_path . $go_to_docker . $build_docker . $go_to_plugins . $run_docker;
+		$job_identifier = $params['job_identifier'];
+
+		$result = do_shell_command( $command, $job_identifier );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );
