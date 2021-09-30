@@ -212,8 +212,8 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		// First, go to the directory containing the dockerfile and build it.
 		$go_to_docker   = 'cd ' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/custom-modules/phpunit/includes;';
 		$build_docker   = 'docker-compose up --build -d;';
-		$go_to_plugins  = 'cd ' . $wp_filesystem->wp_plugins_dir() . ';';
-		$run_docker     = 'docker-compose -f wp-plugin-studio/custom-modules/phpunit/includes/docker-compose.yml run wordpress vendor/bin/phpunit --bootstrap wp-plugin-studio/custom-modules/phpunit/includes/testers/bootstrap.php ' . $params['location'] . '/tests/*';
+		$go_to_plugins  = 'cd ' . $wp_filesystem->wp_content_dir() . ';';
+		$run_docker     = 'docker-compose -f plugins/wp-plugin-studio/custom-modules/phpunit/includes/docker-compose.yml run wordpress vendor/bin/phpunit --bootstrap plugins/wp-plugin-studio/custom-modules/phpunit/includes/testers/bootstrap.php plugins/' . $params['location'] . '/tests/*';
 		$command        = $set_path . $go_to_docker . $build_docker . $go_to_plugins . $run_docker;
 		$job_identifier = $params['job_identifier'];
 
