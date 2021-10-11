@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WP Plugin Studio
+ * Plugin Name: Plugin Boiler
  * Plugin URI: https://wppluginstudio.com
  * Description: An interface for building WordPress plugins and themes.
  * Version: 1.0.0.0
@@ -9,7 +9,7 @@
  * Domain Path: languages
  * License: GPLv3
  *
- * @package WPPS
+ * @package Plugin_Boiler
  */
 
 namespace WPPS;

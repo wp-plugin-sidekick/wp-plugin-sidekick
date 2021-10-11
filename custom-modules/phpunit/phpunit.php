@@ -33,4 +33,4 @@ function module_data() {
 // docker-compose -f wp-plugin-studio/custom-modules/phpunit/includes/docker-compose.yml  run wordpress vendor/bin/phpunit --bootstrap wp-plugin-studio/custom-modules/phpunit/includes/testers/bootstrap.php plugin1/tests/*
 
 // To take the dockr offline:
-// docker-compose -f wp-plugin-studio/custom-modules/phpunit/includes/docker-compose.yml down
+// docker-compose down

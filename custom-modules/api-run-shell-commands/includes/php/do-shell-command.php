@@ -22,6 +22,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return WP_Error|array
  */
 function do_shell_command( $command, $job_identifier ) {
+	session_write_close();
+
 	// Run the command.
 	$descriptorspec = array(
 		0 => array( 'pipe', 'r' ), // stdin.

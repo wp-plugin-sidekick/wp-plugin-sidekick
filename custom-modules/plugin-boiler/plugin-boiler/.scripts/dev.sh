@@ -1,4 +1,4 @@
-# Loop through each plugin-module in the plugin.
+# Loop through each custom-module in the plugin.
 
 for DIR in custom-modules/*/; do
 	# Go to the directory of this custom-module.
@@ -8,7 +8,7 @@ for DIR in custom-modules/*/; do
 	# Run the "npm run dev" command in its package.json file.
 	if [[ -f "package.json" ]]
 	then
-		npm run dev:css &
+		npm run dev &
 	fi
 
 	# Go back to main directory, which includes the plugin modules.   
