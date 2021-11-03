@@ -73,7 +73,7 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 		$wp_filesystem     = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 		$plugins_dir       = $wp_filesystem->wp_plugins_dir();
 		$plugin_boiler_dir = $plugins_dir . '/wp-plugin-studio/custom-modules/plugin-boiler/plugin-boiler/';
-		$new_plugin_dir    = $plugins_dir . '/' . $params['plugin_dirname'];
+		$new_plugin_dir    = $plugins_dir . $params['plugin_dirname'];
 
 		// Create the new plugin directory.
 		$wp_filesystem->mkdir( $new_plugin_dir );
@@ -84,6 +84,57 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 		// Rename the main plugin file.
 		rename( $new_plugin_dir . '/plugin-boiler.php', $new_plugin_dir . '/' . $params['plugin_dirname'] . '.php' );
 
+		$strings = array(
+			'Plugin Boiler'              => $params['plugin_name'],
+			'wpps'                       => $params['plugin_textdomain'],
+			'WPPS'                       => $params['plugin_namespace'],
+			'Plugin Boiler Description'  => $params['plugin_description'],
+			'1.0.0'                      => $params['plugin_version'],
+			'pluginboilerauthor'         => $params['plugin_author'],
+			'GPLv2 or later'             => $params['plugin_license'],
+			'https://wppluginstudio.com' => $params['plugin_uri'],
+		);
+
+		$this->recursive_dir_list( $new_plugin_dir, $strings );
+
+		die();
+
+	}
+
+	/**
+	 * Recursively loop through a directories files.
+	 *
+	 */
+	public function recursive_dir_list( $dir, $strings ) {
+
+		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+		$dir_list      = glob($dir . '/*');
+
+		// Loop through all files.
+		foreach( $dir_list as $dir_file ) {
+			// Rename strings
+			$this->rename_strings( $dir_file, $strings );
+
+			// If this is a directory, loop through it;
+			$subdir_list = $this->recursive_dir_list($dir_file, $strings);
+		}
+	}
+
+	/**
+	 * Rename all strings in a file.
+	 *
+	 */
+	public function rename_strings( $file, $strings ) {	
+		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+
+		// Open the file.
+		$file_contents = $wp_filesystem->get_contents( $file );
+
+		foreach( $strings as $search => $replace ) {
+			$file_contents = str_replace( $search, $replace, $file_contents );
+		}
+
+		$wp_filesystem->put_contents( $file, $file_contents );
 	}
 
 	/**
@@ -106,37 +157,65 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 
 		$return_args = array(
 			'plugin_name' => array(
-				'required'          => true,
+				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The name of the plugin.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
 			'plugin_dirname' => array(
-				'required'          => true,
+				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The directory name of the plugin.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
 			'plugin_textdomain' => array(
-				'required'          => true,
+				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The textdomain of the plugin.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
 			'plugin_namespace' => array(
-				'required'          => true,
+				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The top level namespace of the plugin.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
 			'plugin_description' => array(
-				'required'          => true,
+				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The description of the plugin.', 'wpps' ),
+				'validate_callback' => array( $this, 'validate_arg_is_string' ),
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'plugin_version' => array(
+				'required'          => false,
+				'type'              => 'string',
+				'description'       => __( 'The version of the plugin.', 'wpps' ),
+				'validate_callback' => array( $this, 'validate_arg_is_string' ),
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'plugin_author' => array(
+				'required'          => false,
+				'type'              => 'string',
+				'description'       => __( 'The author of the plugin.', 'wpps' ),
+				'validate_callback' => array( $this, 'validate_arg_is_string' ),
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'plugin_license' => array(
+				'required'          => false,
+				'type'              => 'string',
+				'description'       => __( 'The license of the plugin.', 'wpps' ),
+				'validate_callback' => array( $this, 'validate_arg_is_string' ),
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'plugin_uri' => array(
+				'required'          => false,
+				'type'              => 'string',
+				'description'       => __( 'The uri of the plugin.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),

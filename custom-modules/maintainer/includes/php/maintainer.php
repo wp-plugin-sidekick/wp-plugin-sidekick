@@ -29,6 +29,12 @@ function render_app() {
 		<body>
 		<div id="addonmaintainer"></div>
 		<script type="text/javascript">
+			var wppsApiEndpoints = {
+				generatePlugin: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/generateplugin',
+				runShellCommand: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/runshellcommand',
+				phpcs: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/phpcs',
+				killShellCommand: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/killmoduleshellcommand',
+			};
 			var aomManageableAddOns = <?php echo wp_json_encode( get_managable_plugins() ); ?>;
 		</script>
 		<script type="text/javascript" src="<?php echo esc_url( module_data()['url'] . '/includes/js/build/index.js' ); ?>"></script>

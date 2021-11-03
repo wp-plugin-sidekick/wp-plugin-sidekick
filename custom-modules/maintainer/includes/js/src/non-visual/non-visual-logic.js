@@ -174,7 +174,7 @@ export function runShellCommand( props ) {
 	
 	return new Promise((resolve, reject) => {
 		
-		fetch('https://pluginbuilder.local/wp-json/wpps/v1/runshellcommand', {
+		fetch(wppsApiEndpoints.runShellCommand, {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',
@@ -196,7 +196,7 @@ export function runShellCommand( props ) {
 }
 
 export async function killModuleShellCommand( props ) {
-	const rawResponse = await fetch('https://pluginbuilder.local/wp-json/wpps/v1/killmoduleshellcommand', {
+	const rawResponse = await fetch(wppsApiEndpoints.killShellCommand, {
 		method: 'POST',
 		headers: {
 			'Accept': 'application/json',
@@ -216,7 +216,7 @@ export function phpcsDo( props ) {
 	
 	return new Promise((resolve, reject) => {
 
-		fetch('https://pluginbuilder.local/wp-json/wpps/v1/phpcs?' + new URLSearchParams({
+		fetch(wppsApiEndpoints.phpcs + '?' + new URLSearchParams({
 				location: props.location,
 				job_identifier: props.currentPluginData.dirname + '_' + props.job_identifier,
 			}), {
@@ -263,23 +263,24 @@ export async function enableDevelopmentMode(plugins, currentPluginData) {
 		job_identifier: 'phpcs',
 		currentPluginData: currentPluginData,
 		plugins: plugins
-	}).then( () => {
-		runShellCommand({
-			location: currentPluginData.dirname,
-			job_identifier: 'npm_run_dev_js',
-			command: 'npm run dev:js',
-			currentPluginData: currentPluginData,
-			plugins: plugins
-		});
-	}).then( () => {
-		runShellCommand({
-			location: currentPluginData.dirname,
-			job_identifier: 'npm_run_dev_css',
-			command: 'npm run dev:css',
-			currentPluginData: currentPluginData,
-			plugins: plugins
-		});
 	});
+
+	runShellCommand({
+		location: currentPluginData.dirname,
+		job_identifier: 'npm_run_dev_js',
+		command: 'npm run dev:js',
+		currentPluginData: currentPluginData,
+		plugins: plugins
+	});
+	
+	runShellCommand({
+		location: currentPluginData.dirname,
+		job_identifier: 'npm_run_dev_css',
+		command: 'npm run dev:css',
+		currentPluginData: currentPluginData,
+		plugins: plugins
+	});
+	
 }
 
 export async function disableDevelopmentMode(currentPluginData) {

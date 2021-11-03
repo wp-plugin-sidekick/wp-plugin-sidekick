@@ -44,7 +44,7 @@ export function AddonMaintainerApp() {
 						Or
 					</div>
 					<div className="flex">
-						<button className="btn btn-secondary" disabled={ currentPluginData ? false : true }>Create A New Plugin</button>
+						<CreatePluginButtonAndModal />
 					</div>
 				</div>
 				
@@ -66,8 +66,8 @@ export function AddonMaintainerApp() {
 									</span>
 								</div>
 								<div className="flex flex-grow-0">
-									<button className="btn btn-secondary mr-4" disabled={ currentPluginData ? false : true }>Create Module</button>
-									<button className="btn btn-secondary" disabled={ currentPluginData ? false : true }>Module Library</button>
+									<button className="btn btn-secondary" disabled={ currentPluginData ? false : true }>Create Module</button>
+									
 								</div>
 							</div> 
 						</div>
@@ -77,6 +77,38 @@ export function AddonMaintainerApp() {
 			</div>
 		</div>
 	</AomContext.Provider>
+}
+
+function CreatePluginButtonAndModal() {
+
+	const [modalOpen, setModalOpen] = useState(false);
+
+	function maybeRenderModal() {
+		if ( ! modalOpen ) {
+			return '';
+		}
+
+		return(
+			<Modal title="Create a new plugin" closeModal={ () => { setModalOpen( false ) } }>
+				<div>
+					<PluginForm />
+				</div>
+			</Modal>
+		)
+	}
+
+	return (
+		<>
+			<button
+				className="btn btn-secondary"
+				onClick={() => {
+					setModalOpen( true )
+				}}
+			>Create A New Plugin</button>
+			{ maybeRenderModal() }
+		</>
+	)
+
 }
 
 function AddOnHeader() {
@@ -237,9 +269,11 @@ function ManageableModules( props ) {
 								</svg>
 							</div>
 							<div className="block">
-								<input type="text" className="block text-lg" value={modules[module].name} onChange={(event) => {
+								<div className="block text-lg" onChange={(event) => {
 									plugins.setModuleName( currentPluginData.dirname, modules[module].slug, event.target.value );
-								}} />
+								}}>
+									{ modules[module].name }
+								</div>
 								<p className="block">{modules[module].description}</p>
 							</div>
 						</div>
@@ -303,21 +337,21 @@ function Modal( props ) {
 			<div
 				className="rounded-box bg-base-100"
 				style={{
-					maxWidth: '90vh',
+					maxWidth: '90vw',
 					maxHeight: '90vh',
 				}}
 			>
-				<div class="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
-					<div class="flex-1 px-2 mx-2">
-						<span class="text-lg font-bold">
-							PHPCS issues in this module
+				<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+					<div className="flex-1 px-2 mx-2">
+						<span className="text-lg font-bold">
+							{ props.title }
 						</span>
 					</div> 
-					<div class="flex-none">
-						<button class="btn btn-square btn-ghost" onClick={() => {
+					<div className="flex-none">
+						<button className="btn btn-square btn-ghost" onClick={() => {
 							props.closeModal();
 						}}>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current text-error">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-6 h-6 stroke-current text-error">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
 							</svg>
 						</button>
@@ -353,14 +387,23 @@ function PhpCsButtonAndModal( module ) {
 		)
 	}
 
+	function getNumberOfErrors() {
+		let numberOfErrors = 0;
+		for( const file in module.devStatus.phpcs ){
+			numberOfErrors = numberOfErrors + parseInt( module.devStatus.phpcs[ file ].errors );
+		}
+
+		return numberOfErrors;
+	}
+
 	function renderFiles() {
 		
 		const renderedFiles = [];
 		for( const file in module.devStatus.phpcs ){
 			renderedFiles.push(
-				<div class="card lg:card-side bordered bg-base-100 w-full">
-					<div class="card-body">
-						<div class="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+				<div className="card lg:card-side bordered bg-base-100 w-full">
+					<div className="card-body">
+						<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
 							<div className='flex-grow'>{ file }</div>
 						</div>
 						<div>
@@ -378,7 +421,7 @@ function PhpCsButtonAndModal( module ) {
 		const renderedFileMessages = [];
 		for ( const message in messages ) {
 			renderedFileMessages.push(
-				<div class="flex">
+				<div className="flex">
 					<div className="flex mr-1">Line: { messages[message].line }</div>
 					<div className="flex-grow">{ messages[message].message }</div>
 				</div>
@@ -398,7 +441,9 @@ function PhpCsButtonAndModal( module ) {
 	return (
 		<>
 			<div className={'indicator'}>
-				<div className="indicator-item badge" style={{backgroundColor: 'hsla(var(--er)/var(--tw-bg-opacity,1))'}}></div>
+				<div className="indicator-item badge" style={{backgroundColor: 'hsla(var(--er)/var(--tw-bg-opacity,1))'}}>
+					{ getNumberOfErrors() }
+				</div>
 				{ renderButton() }
 			</div> 
 			{ maybeRenderModal() }
@@ -422,118 +467,107 @@ function StatusBadge( props ) {
 	)
 }
 
-function AddOnData( props ) {
-	const {currentPluginData} = useContext(AomContext);
-	
-	if ( ! currentPluginData ) {
-		return '';	
+function PluginForm( props ) {
+
+	const [pluginName, setPluginName] = useState( 'My Awesome Plugin' );
+	const [pluginDirName, setPluginDirName] = useState( 'my-awesome-plugin' );
+	const [pluginTextDomain, setPluginTextDomain] = useState( 'my-awesome-plugin' );
+	const [pluginNamespace, setPluginNamespace] = useState( 'MyAwesomePlugin' );
+	const [pluginDescription, setPluginDescription] = useState( 'This is my awesome plugin. It does this, and it does that too!' );
+	const [pluginVersion, setPluginVersion] = useState( '1.0.0' );
+	const [pluginAuthor, setPluginAuthor] = useState( 'wporgusername' );
+	const [pluginUri, setPluginUri] = useState( 'yourdomain.com' );
+	const [minWpVersion, setMinWpVersion] = useState( '5.8' );
+	const [minPhpVersion, setMinPhpVersion] = useState( '7.2' );
+	const [pluginLicense, setPluginLicense] = useState( 'GPLv2 or later' );
+	const [updateUri, setUpdateUri] = useState( '' );
+
+	useEffect( () => {
+		const dirName = pluginName.replace(/\W+/g, '-').toLowerCase();
+		setPluginDirName(dirName);
+	}, [pluginName] );
+
+	function createPlugin() {
+		fetch(wppsApiEndpoints.generatePlugin, {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				plugin_name: pluginName,
+				plugin_dirname: pluginDirName,
+				plugin_textdomain: pluginTextDomain,
+				plugin_namespace: pluginNamespace,
+				plugin_description: pluginDescription,
+				plugin_uri: pluginUri,
+				min_wp_version: minWpVersion,
+				min_php_version: minPhpVersion,
+				plugin_license: pluginLicense,
+				update_uri: updateUri,
+				command: props.command,
+			})
+		})
+		.then( response => response.json())
+		.then( ( data ) => {
+			props.plugins.setPluginDevStatus( props.currentPluginData.dirname, props.job_identifier, JSON.parse( data ) );
+			resolve( data );
+		});
 	}
 
 	return (
 		<div>
 			<div className="options">
 				<div className="grid gap-5 p-10">
-					<h2 className="font-sans text-5xl font-black">{ currentPluginData.Name }</h2>
+					<h2 className="font-sans text-5xl font-black">{ __( 'Let\'s spin up a new plugin...', 'wp-plugin-studio' ) }</h2>
 					<div className="relative ">
-						<label htmlFor="name-with-label" className="text-gray-700">
-							{ __( 'Name', 'addonbuilder' ) }
+						<label htmlFor="name-with-label">
+							{ __( 'Plugin Name', 'wp-plugin-studio' ) }
 						</label>
 						<input
 							type="text"
 							id="name-with-label"
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
-							placeholder={ __( 'Plugin Name', 'addonbuilder' ) }
-							value={ currentPluginData.Name }
-							onChange={ (event) => {
-								
-							}}
-						/>
-					</div>
-				
-					<div className="relative ">
-						<label htmlFor="name-with-label" className="text-gray-700">
-							{ __( 'Plugin Description', 'addonbuilder' ) }
-						</label>
-						<textarea
-							className="flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-							id="comment"
-							placeholder="Enter your plugin description"
-							name="comment"
-							rows="5"
-							cols="40"
-							value={ currentPluginData.Description }
-							onChange={ (event) => {
-								
-							} }
-						/>
-					</div>
-					
-					<div className="relative ">
-						<label htmlFor="name-with-label" className="text-gray-700">
-							{ __( 'Plugin Version', 'addonbuilder' ) }
-						</label>
-						<input
-							type="text"
-							id="name-with-label"
-							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-							name="email"
-							placeholder={ __( 'Plugin Version', 'addonbuilder' ) }
-							value={ currentPluginData.Version }
-							onChange={ (event) => setPluginVersion( event.target.value ) }
-						/>
-					</div>
-					
-					<div className=" relative ">
-						<label htmlFor="name-with-label" className="text-gray-700">
-							{ __( 'Plugin Text Domain', 'addonbuilder' ) }
-						</label>
-						<input
-							type="text"
-							id="name-with-label"
-							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-							name="email"
-							placeholder={ __( 'Plugin Text Domain', 'addonbuilder' ) }
-							value={ currentPluginData.TextDomain }
-							onChange={ (event) => setPluginTextDomain( event.target.value ) }
-						/>
-					</div>
-				</div>
-			</div>
-		</div>
-	)
-}
-
-function PluginForm( props ) {
-
-	const [pluginName, setPluginName] = useState( 'My Awesome Plugin' );
-	const [pluginDescription, setPluginDescription] = useState( 'This is my awesome plugin. It does this, and it does that too!' );
-	const [pluginVersion, setPluginVersion] = useState( '1.0.0' );
-	const [pluginTextDomain, setPluginTextDomain] = useState( 'my-awesome-plugin' );
-
-	return (
-		<div>
-			<div className="options">
-				<div className="grid gap-5 p-10">
-					<h2 className="font-sans text-5xl font-black">{ __( 'Let\'s spin up a new plugin...', 'addonbuilder' ) }</h2>
-					<div className="relative ">
-						<label htmlFor="name-with-label" className="text-gray-700">
-							{ __( 'Plugin Name', 'addonbuilder' ) }
-						</label>
-						<input
-							type="text"
-							id="name-with-label"
-							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-							name="email"
-							placeholder={ __( 'Plugin Name', 'addonbuilder' ) }
+							placeholder={ __( 'Plugin Name', 'wp-plugin-studio' ) }
 							value={ pluginName }
 							onChange={ (event) => setPluginName( event.target.value ) }
 						/>
 					</div>
+
+					<div className="relative ">
+						<label htmlFor="name-with-label">
+							{ __( 'Plugin Text Domain', 'wp-plugin-studio' ) }
+						</label>
+						<input
+							type="text"
+							id="name-with-label"
+							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+							name="email"
+							placeholder={ __( 'Plugin Text Domain', 'wp-plugin-studio' ) }
+							value={ pluginTextDomain }
+							onChange={ (event) => setPluginTextDomain( event.target.value ) }
+						/>
+					</div>
+
+					<div className="relative ">
+						<label htmlFor="name-with-label">
+							{ __( 'Plugin Namespace', 'wp-plugin-studio' ) }
+						</label>
+						<input
+							type="text"
+							id="name-with-label"
+							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+							name="email"
+							placeholder={ __( 'Plugin Namespace', 'wp-plugin-studio' ) }
+							value={ pluginNamespace }
+							onChange={ (event) => setPluginNamespace( event.target.value ) }
+						/>
+					</div>
 				
 					<div className="relative ">
-						<label htmlFor="name-with-label" className="text-gray-700">
-							{ __( 'Plugin Description', 'addonbuilder' ) }
+						<label htmlFor="name-with-label">
+							{ __( 'Plugin Description', 'wp-plugin-studio' ) }
 						</label>
 						<textarea
 							className="flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
@@ -548,36 +582,58 @@ function PluginForm( props ) {
 					</div>
 					
 					<div className="relative ">
-						<label htmlFor="name-with-label" className="text-gray-700">
-							{ __( 'Plugin Version', 'addonbuilder' ) }
+						<label htmlFor="name-with-label">
+							{ __( 'Plugin Version', 'wp-plugin-studio' ) }
 						</label>
 						<input
 							type="text"
 							id="name-with-label"
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
-							placeholder={ __( 'Plugin Version', 'addonbuilder' ) }
+							placeholder={ __( 'Plugin Version', 'wp-plugin-studio' ) }
 							value={ pluginVersion }
 							onChange={ (event) => setPluginVersion( event.target.value ) }
 						/>
 					</div>
-					
-					<div className=" relative ">
-						<label htmlFor="name-with-label" className="text-gray-700">
-							{ __( 'Plugin Text Domain', 'addonbuilder' ) }
+
+					<div className="relative ">
+						<label htmlFor="name-with-label">
+							{ __( 'Plugin Author', 'wp-plugin-studio' ) }
 						</label>
 						<input
 							type="text"
 							id="name-with-label"
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
-							placeholder={ __( 'Plugin Text Domain', 'addonbuilder' ) }
-							value={ pluginTextDomain }
-							onChange={ (event) => setPluginTextDomain( event.target.value ) }
+							placeholder={ __( 'Plugin Author', 'wp-plugin-studio' ) }
+							value={ pluginAuthor }
+							onChange={ (event) => setPluginAuthor( event.target.value ) }
 						/>
 					</div>
-					<button type="button" className="py-2 px-4  bg-green-700 hover:bg-green-400 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg ">
-						{ __( 'Next', 'addonbuilder' ) }
+
+					<div className="relative ">
+						<label htmlFor="name-with-label">
+							{ __( 'Plugin URI', 'wp-plugin-studio' ) }
+						</label>
+						<input
+							type="text"
+							id="name-with-label"
+							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+							name="email"
+							placeholder={ __( 'Plugin URI', 'wp-plugin-studio' ) }
+							value={ pluginUri }
+							onChange={ (event) => setPluginUri( event.target.value ) }
+						/>
+					</div>
+
+					<button
+						type="button"
+						className="py-2 px-4  bg-green-700 hover:bg-green-400 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg"
+						onClick={() => {
+							createPlugin();
+						}}
+					>
+						{ __( 'Create Plugin', 'wp-plugin-studio' ) }
 					</button>
 				</div>
 			</div>

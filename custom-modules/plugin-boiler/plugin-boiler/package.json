@@ -7,6 +7,8 @@
 	},
 	"scripts": {
 		"installation": "sh ./.scripts/install.sh",
-		"dev": "sh ./.scripts/dev.sh"
+		"dev": "sh ./.scripts/dev.sh",
+		"dev:js": "sh ./.scripts/dev-js.sh",
+		"dev:css": "sh ./.scripts/dev-css.sh"
 	}
 }
