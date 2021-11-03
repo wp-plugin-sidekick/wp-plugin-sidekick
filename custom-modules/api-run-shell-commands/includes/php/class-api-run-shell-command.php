@@ -227,6 +227,35 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 	}
 
 	/**
+	 * Zip a plugin for delivery.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_Error|WP_REST_Request
+	 */
+	public function zip_plugin( $request ) {
+		$params = wp_parse_args( $request->get_params(), $this->default_args() );
+
+		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+
+		// Change to the wp-plugin-studio directory first so we can use it's phpcs functions without needing them in each plugin/module.
+		$set_path = 'export PATH="$PATH:"/usr/local/bin/; ';
+
+		// First, go to the directory containing the dockerfile and build it.
+		$go_to_plugins  = 'cd ' . $wp_filesystem->wp_plugins_dir() . '/wp-plugin-studio;';
+		$run_zip        = 'node .scripts/makezip.js ' . $params['location'];
+		$command        = $set_path . $go_to_plugins . $run_zip;
+		$job_identifier = $params['job_identifier'];
+
+		$result = do_shell_command( $command, $job_identifier );
+
+		if ( is_wp_error( $result ) ) {
+			return new \WP_REST_Response( $result, 400 );
+		} else {
+			return new \WP_REST_Response( $result, 200 );
+		}
+	}
+
+	/**
 	 * Allow only administrators to run shell commands.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.

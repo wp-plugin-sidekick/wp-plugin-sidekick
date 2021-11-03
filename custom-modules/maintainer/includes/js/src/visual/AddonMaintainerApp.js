@@ -15,10 +15,7 @@ import {
 	disableDevelopmentMode
 } from './../non-visual/non-visual-logic.js';
 
-import { XTerm } from 'xterm-for-react'
-
 export function AddonMaintainerApp() {
-
 	const plugins = usePlugins( aomManageableAddOns );
 	console.log( plugins.data );
 	
@@ -103,17 +100,6 @@ function AddOnHeader() {
 	)
 }
 
-function Terminal() {
-	const xtermRef = useRef( null );
-	
-	useEffect(() => {
-		// You can call any method in XTerm.js by using 'xterm xtermRef.current.terminal.[What you want to call]
-		xtermRef.current.terminal.writeln("Hello, World!")
-	}, [])
-
-	return <XTerm ref={xtermRef}/>
-}
-
 function DevArea() {
 	const {plugins, currentPluginData} = useContext(AomContext);
 	const [currentTab, setCurrentTab] = useState(1);
@@ -145,9 +131,6 @@ function DevArea() {
 				} />
 			</div>
 		</div>
-		<div>
-		<Terminal />
-		</div>
 		<div className="">
 			<div className="tabs tabs-boxed">
 				{(() => {
@@ -162,43 +145,9 @@ function DevArea() {
 					return statusBadges;
 				})()}
 			</div>
-			<div className="card">
-				{(() => {
-					const statusOutputs = [];
-					let tabNumber = 1;
-					// Loop through each dev status (phpcs, npm_run_dev_js, etc).
-					for( const thisDevStatus in currentPluginData.devStatus ) {
-						const active = currentTab === tabNumber;
-						
-						if ( 'phpcs' === thisDevStatus ) {
-							statusOutputs.push( <RenderPhpCsOutput phpcsData={ currentPluginData.devStatus[ thisDevStatus ] } /> );
-						} else {
-							//statusOutputs.push( <div key={thisDevStatus} hidden={ ! active }>{ currentPluginData.devStatus[ thisDevStatus ] }</div> );
-						}
-						tabNumber++;
-					}
-					return statusOutputs;
-				})()}
-			</div>
 		</div>
 		</>
 	)
-}
-
-function RenderPhpCsOutput(props) {
-	function renderErrors() {
-		const renderedFiles = [];
-		for( const fileName in props.phpcsData.files ) {
-			renderedFiles.push(
-				<div key={fileName} className="">
-					{ fileName }
-				</div>
-			); 
-		}
-		return renderedFiles;
-	}
-	
-	return renderErrors();
 }
 
 function ManageableAddOns( props ) {
@@ -299,13 +248,10 @@ function ManageableModules( props ) {
 								{ (() => {
 									if ( modules[module].devStatus ) {
 										const rendered = [];
-										
-										for( const devStatus in modules[module].devStatus ){
+										if (  modules[module].devStatus ) {
 											rendered.push(
-												<div>
-													{ JSON.stringify( modules[module].devStatus[devStatus] ) }
-												</div>
-											);
+												<PhpCsButtonAndModal module={ modules[module] } />
+											)
 										}
 										
 										return rendered;
@@ -335,6 +281,129 @@ function ManageableModules( props ) {
 	return <div className="modules grid grid-cols-1 gap-4">
 		{ renderModules() }
 	</div>
+}
+
+function Modal( props ) {
+
+	return(
+		<div 
+			style={{
+				position: 'fixed',
+				top: '0',
+				right: '0',
+				bottom: '0',
+				left: '0',
+				display: 'grid',
+				alignContent: 'center',
+				justifyContent: 'center',
+				zIndex: '99999',
+				backgroundColor: '#000000c7',
+			}}
+		>
+			<div
+				className="rounded-box bg-base-100"
+				style={{
+					maxWidth: '90vh',
+					maxHeight: '90vh',
+				}}
+			>
+				<div class="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+					<div class="flex-1 px-2 mx-2">
+						<span class="text-lg font-bold">
+							PHPCS issues in this module
+						</span>
+					</div> 
+					<div class="flex-none">
+						<button class="btn btn-square btn-ghost" onClick={() => {
+							props.closeModal();
+						}}>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current text-error">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+							</svg>
+						</button>
+					</div>
+				</div>
+				<div style={{
+					maxHeight: '90%',
+					overflow: 'scroll',
+				}}>
+					{ props.children }
+				</div>
+			</div>
+		</div>
+	)
+
+}
+
+function PhpCsButtonAndModal( module ) {
+	module = module.module;
+	const [modalOpen, setModalOpen] = useState(false);
+
+	function maybeRenderModal() {
+		if ( ! modalOpen ) {
+			return '';
+		}
+
+		return(
+			<Modal title="Issues with PHPCS (code sniffer)" closeModal={ () => { setModalOpen( false ) } }>
+				<div>
+					{ renderFiles() }
+				</div>
+			</Modal>
+		)
+	}
+
+	function renderFiles() {
+		
+		const renderedFiles = [];
+		for( const file in module.devStatus.phpcs ){
+			renderedFiles.push(
+				<div class="card lg:card-side bordered bg-base-100 w-full">
+					<div class="card-body">
+						<div class="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+							<div className='flex-grow'>{ file }</div>
+						</div>
+						<div>
+							{ renderMessages( module.devStatus.phpcs[ file ].messages ) }
+						</div>
+					</div>
+				</div>
+			);
+		}
+
+		return renderedFiles;
+	}
+
+	function renderMessages( messages ) {
+		const renderedFileMessages = [];
+		for ( const message in messages ) {
+			renderedFileMessages.push(
+				<div class="flex">
+					<div className="flex mr-1">Line: { messages[message].line }</div>
+					<div className="flex-grow">{ messages[message].message }</div>
+				</div>
+			)
+		}
+		return renderedFileMessages;
+	}
+
+	function renderButton() {
+		return <>
+			<button className="btn btn-secondary" onClick={ () => { setModalOpen( ! modalOpen ) } }>
+				phpcs
+			</button>
+		</>
+	}
+
+	return (
+		<>
+			<div className={'indicator'}>
+				<div className="indicator-item badge" style={{backgroundColor: 'hsla(var(--er)/var(--tw-bg-opacity,1))'}}></div>
+				{ renderButton() }
+			</div> 
+			{ maybeRenderModal() }
+		</>
+	)
 }
 
 function StatusBadge( props ) {

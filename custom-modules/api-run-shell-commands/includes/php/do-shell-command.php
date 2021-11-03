@@ -22,6 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return WP_Error|array
  */
 function do_shell_command( $command, $job_identifier ) {
+	// Close the session so that PHP doesn't block other connections until this is complete.
 	session_write_close();
 
 	// Run the command.
@@ -45,9 +46,9 @@ function do_shell_command( $command, $job_identifier ) {
 		$output = trim( stream_get_contents( $pipes[1] ) );
 
 		// Set a database option which we'll use to keep this command alive indefinitely, until stopped.
-		update_file_option( 'wpps_' . $job_identifier, true );
-		update_file_option( 'wpps_error_' . $job_identifier, $error );
-		update_file_option( 'wpps_output_' . $job_identifier, $output );
+		update_file_option( 'wpps_' . $job_identifier, true, true );
+		update_file_option( 'wpps_error_' . $job_identifier, $error, true );
+		update_file_option( 'wpps_output_' . $job_identifier, $output, true );
 	} else {
 		return new \WP_Error( 'error', __( 'Something went wrong.', '' ) );
 	}
@@ -122,7 +123,7 @@ function do_shell_command( $command, $job_identifier ) {
  * @param string $option_name The name of the option.
  * @param string $option_value The value of the option.
  */
-function update_file_option( $option_name, $option_value ) {
+function update_file_option( $option_name, $option_value, $is_initial = false ) {
 	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
 	if ( ! $wp_filesystem->is_dir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' ) ) {
@@ -130,7 +131,23 @@ function update_file_option( $option_name, $option_value ) {
 		$wp_filesystem->mkdir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' );
 	}
 
+	// Make sure it's fresh if it's an initial save.
+	if ( $is_initial ) {
+		delete_file_option( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $option_name );
+	}
+
 	$wp_filesystem->put_contents( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $option_name, $option_value );
+}
+
+/**
+ * Delete an option stored in a file. Using a file like this bypasses WP object caching.
+ *
+ * @param string $option_name The name of the option.
+ */
+function delete_file_option( $option_name ) {
+	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+
+	$wp_filesystem->rmdir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $option_name, $option_value );
 }
 
 /**
