@@ -1,13 +1,13 @@
 <?php
 /**
- * API Endpoint which generates a new plugin in wp-content.
+ * API Endpoint which generates a new module in a plugin.
  *
  * @package AddOnBuilder
  */
 
 declare(strict_types=1);
 
-namespace WPPS\ApiGeneratePlugin;
+namespace WPPS\ApiGenerateModule;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Set up the REST API routes and callbacks.
  */
-class Api_Generate_Plugin extends \WP_REST_Controller {
+class Api_Generate_Module extends \WP_REST_Controller {
 
 	/**
 	 * Register the routes for the objects of the controller.
@@ -25,15 +25,15 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 	public function register_routes() {
 		$version   = '1';
 		$namespace = 'wpps/v' . $version;
-		$base      = 'generateplugin';
+		$base      = 'generatemodule';
 		register_rest_route(
 			$namespace,
 			'/' . $base,
 			array(
 				array(
 					'methods'             => 'POST',
-					'callback'            => array( $this, 'generate_plugin' ),
-					'permission_callback' => array( $this, 'generate_plugin_permission_check' ),
+					'callback'            => array( $this, 'generate_module' ),
+					'permission_callback' => array( $this, 'generate_module_permission_check' ),
 					'args'                => $this->request_args( 'runshellcommand', false ),
 				),
 				'schema' => 'response_item_schema',
@@ -46,46 +46,41 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 	 */
 	public function default_args() {
 		return array(
-			'plugin_name'        => '',
-			'plugin_dirname'     => '',
-			'plugin_textdomain'  => '',
-			'plugin_namespace'   => '',
-			'plugin_description' => '',
-			'plugin_version'     => '1.0.0',
-			'plugin_author'      => '',
-			'plugin_uri'         => '',
-			'min_wp_version'     => '',
-			'min_php_version'    => '',
-			'plugin_license'     => 'GPLv2 or later',
-			'update_uri'         => '',
+			'module_name'        => '',
+			'module_namespace'   => '',
+			'module_description' => '',
+			'module_boiler'      => '',
+			'module_plugin'      => '',
 		);
 	}
 
 	/**
-	 * Generate Plugin Files.
+	 * Generate Module Files.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_Error|WP_REST_Request
 	 */
-	public function generate_plugin( $request ) {
+	public function generate_module( $request ) {
 		$params = wp_parse_args( $request->get_params(), $this->default_args() );
 
-		$wp_filesystem     = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
-		$plugins_dir       = $wp_filesystem->wp_plugins_dir();
-		$plugin_boiler_dir = $plugins_dir . '/wp-plugin-studio/custom-modules/plugin-boiler/plugin-boiler/';
-		$new_plugin_dir    = $plugins_dir . $params['plugin_dirname'];
+		$wp_filesystem  = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+		$plugins_dir     = $wp_filesystem->wp_plugins_dir();
+		$plugin_dir         = $plugins_dir . '/' . $params['module_plugin'] . '/custom-modules/';
+		$boiler_dir         = $plugins_dir . '/wp-plugin-studio/custom-modules/module-boilers/module-boilers/' . $params['module_boiler'];
+		$new_module_dirname = sanitize_title_with_dashes( $params['module_name'] );
+		$new_module_dir     = $plugin_dir . sanitize_title_with_dashes( $params['module_name'] );
 
-		// Create the new plugin directory.
-		$wp_filesystem->mkdir( $new_plugin_dir );
+		// Create the new module directory.
+		$wp_filesystem->mkdir( $new_module_dir );
 
-		// Copy the boiler plugin into it.
-		copy_dir( $plugin_boiler_dir, $new_plugin_dir );
+		// Copy the boiler module into it.
+		copy_dir( $boiler_dir, $new_module_dir );
 		
-		// Rename the main plugin file.
-		rename( $new_plugin_dir . '/plugin-boiler.php', $new_plugin_dir . '/' . $params['plugin_dirname'] . '.php' );		
+		// Rename the main module file.
+		rename( $new_module_dir . '/' . $params['module_boiler'] . '.php', $new_module_dir . '/' . $new_module_dirname . '.php' );		
 
 		// Fix strings
-		$strings_fixed = \WPPS\StringFixer\recursive_dir_string_fixer( $new_plugin_dir, $params, 'plugin' );
+		$strings_fixed = \WPPS\StringFixer\recursive_dir_string_fixer( $new_module_dir, $params, 'module' );
 
 		if ( ! $strings_fixed ) {
 			return new \WP_REST_Response( $strings_fixed, 400 );
@@ -93,7 +88,7 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 			return new \WP_REST_Response(
 				array(
 					'success' => true,
-					'message' => __( 'Plugin successfully created.' ),
+					'message' => __( 'Module successfully created.' ),
 					'plugin_data' => $params,
 				),
 				200
@@ -108,7 +103,7 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_Error|bool
 	 */
-	public function generate_plugin_permission_check( $request ) {
+	public function generate_module_permission_check( $request ) {
 		return true;
 	}
 
@@ -121,69 +116,42 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 	public function request_args( $type ) {
 
 		$return_args = array(
-			'plugin_name' => array(
+			'module_name' => array(
 				'required'          => false,
 				'type'              => 'string',
-				'description'       => __( 'The name of the plugin.', 'wpps' ),
+				'description'       => __( 'The name of the module.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_dirname' => array(
+			'module_namespace' => array(
 				'required'          => false,
 				'type'              => 'string',
-				'description'       => __( 'The directory name of the plugin.', 'wpps' ),
+				'description'       => __( 'The top level namespace of the module.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_textdomain' => array(
+			'module_description' => array(
 				'required'          => false,
 				'type'              => 'string',
-				'description'       => __( 'The textdomain of the plugin.', 'wpps' ),
+				'description'       => __( 'The description of the module.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_namespace' => array(
+			'module_boiler' => array(
 				'required'          => false,
 				'type'              => 'string',
-				'description'       => __( 'The top level namespace of the plugin.', 'wpps' ),
+				'description'       => __( 'The dir name of the module boiler to use.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_description' => array(
+			'module_plugin' => array(
 				'required'          => false,
 				'type'              => 'string',
-				'description'       => __( 'The description of the plugin.', 'wpps' ),
+				'description'       => __( 'The dir name of the plugin where this module will live.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_version' => array(
-				'required'          => false,
-				'type'              => 'string',
-				'description'       => __( 'The version of the plugin.', 'wpps' ),
-				'validate_callback' => array( $this, 'validate_arg_is_string' ),
-				'sanitize_callback' => 'sanitize_text_field',
-			),
-			'plugin_author' => array(
-				'required'          => false,
-				'type'              => 'string',
-				'description'       => __( 'The author of the plugin.', 'wpps' ),
-				'validate_callback' => array( $this, 'validate_arg_is_string' ),
-				'sanitize_callback' => 'sanitize_text_field',
-			),
-			'plugin_license' => array(
-				'required'          => false,
-				'type'              => 'string',
-				'description'       => __( 'The license of the plugin.', 'wpps' ),
-				'validate_callback' => array( $this, 'validate_arg_is_string' ),
-				'sanitize_callback' => 'sanitize_text_field',
-			),
-			'plugin_uri' => array(
-				'required'          => false,
-				'type'              => 'string',
-				'description'       => __( 'The uri of the plugin.', 'wpps' ),
-				'validate_callback' => array( $this, 'validate_arg_is_string' ),
-				'sanitize_callback' => 'sanitize_text_field',
-			),
+			
 		);
 
 		return $return_args;
@@ -224,7 +192,7 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
  * @return void
  */
 function instantiate_rest_api_routes() {
-	$api_route = new Api_Generate_Plugin();
+	$api_route = new Api_Generate_Module();
 	$api_route->register_routes();
 }
 add_action( 'rest_api_init', __NAMESPACE__ . '\instantiate_rest_api_routes', 11 );
@@ -242,7 +210,7 @@ function response_item_schema() {
 		// This tells the spec of JSON Schema we are using which is draft 4.
 		'$schema'    => 'https://json-schema.org/draft-04/schema#',
 		// The title property marks the identity of the resource.
-		'title'      => 'generate_plugin',
+		'title'      => 'generate_module',
 		'type'       => 'object',
 
 		// These define the items which will actually be returned by the endpoint.

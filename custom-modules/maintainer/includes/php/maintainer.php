@@ -31,11 +31,13 @@ function render_app() {
 		<script type="text/javascript">
 			var wppsApiEndpoints = {
 				generatePlugin: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/generateplugin',
+				generateModule: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/generatemodule',
 				runShellCommand: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/runshellcommand',
 				phpcs: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/phpcs',
 				killShellCommand: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/killmoduleshellcommand',
 			};
-			var aomManageableAddOns = <?php echo wp_json_encode( get_managable_plugins() ); ?>;
+			var wppsPlugins = <?php echo wp_json_encode( get_managable_plugins() ); ?>;
+			var wppsModuleBoilers = <?php echo wp_json_encode( get_module_boilers() ); ?>;
 		</script>
 		<script type="text/javascript" src="<?php echo esc_url( module_data()['url'] . '/includes/js/build/index.js' ); ?>"></script>
 		</body>
@@ -86,10 +88,10 @@ function get_managable_plugins() {
 		$modules_glob = glob( $plugin_path . '/custom-modules/*' );
 		$modules      = array();
 
-		foreach ( $modules_glob as $add_on_module ) {
-			$module_name = basename( $add_on_module );
+		foreach ( $modules_glob as $module ) {
+			$module_name = basename( $module );
 			$filename    = $module_name . '.php';
-			$filepath    = $add_on_module . '/' . $filename;
+			$filepath    = $module . '/' . $filename;
 			$module_data = get_module_data( $filepath );
 
 			$modules[ $module_name ] = $module_data;
@@ -99,6 +101,34 @@ function get_managable_plugins() {
 	}
 
 	return $manageable_plugins;
+}
+
+/**
+ * Get the module boilers available.
+ *
+ * @since 1.0
+ * @return void
+ */
+function get_module_boilers() {
+
+	$wp_filesystem_api = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+
+	$module_boilers = array();
+
+	$plugin_path = $wp_filesystem_api->wp_plugins_dir() . 'wp-plugin-studio';
+
+	$modules_glob = glob( $plugin_path . '/custom-modules/module-boilers/module-boilers/*' );
+
+	foreach ( $modules_glob as $module ) {
+		$module_name = basename( $module );
+		$filename    = $module_name . '.php';
+		$filepath    = $module . '/' . $filename;
+		$module_data = get_module_data( $filepath );
+
+		$module_boilers[ $module_name ] = $module_data;
+	}
+
+	return $module_boilers;
 }
 
 

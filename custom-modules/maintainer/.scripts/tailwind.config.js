@@ -12,7 +12,7 @@ module.exports = {
 			},
 			gridTemplateColumns: {
 				// Complex site-specific column configuration
-				'option': '100px 1fr',
+				'module-body': '100px 1fr',
 			}
 		   }
 	},

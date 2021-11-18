@@ -16,7 +16,7 @@ import {
 } from './../non-visual/non-visual-logic.js';
 
 export function AddonMaintainerApp() {
-	const plugins = usePlugins( aomManageableAddOns );
+	const plugins = usePlugins( wppsPlugins );
 	console.log( plugins.data );
 	
 	const currentPluginPointer = useCurrentPluginPointer();
@@ -32,7 +32,7 @@ export function AddonMaintainerApp() {
 		} }
 		>
 		<div className="mx-auto p-5 relative">
-			<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box p-5 z-10 relative">
+			<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box z-10 relative">
 				<div className="flex-grow px-2 mx-2">
 					<span className="text-lg font-bold">
 					WP Plugin Studio - A place to invent things with WordPress.
@@ -49,34 +49,80 @@ export function AddonMaintainerApp() {
 				</div>
 				
 			</div>
-			<AddOnHeader />
-			<div className="flex w-full gap-4 mx-auto">
-				<div className="card lg:card-side bordered bg-base-100 w-full">
-					<div className="card-body">
-						<DevArea />
-					</div>
-				</div>
-				<div className="card lg:card-side bordered bg-base-100 w-full">
-					<div className="card-body">
-						<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
-							<div className="flex px-2 mx-2 w-full">
-								<div className="flex-grow">
-									<span className="text-lg font-bold">
-									Custom Modules
-									</span>
-								</div>
-								<div className="flex flex-grow-0">
-									<button className="btn btn-secondary" disabled={ currentPluginData ? false : true }>Create Module</button>
-									
-								</div>
-							</div> 
+			<Plugin />
+		</div>
+	</AomContext.Provider>
+}
+
+function Plugin() {
+	const {currentPluginData} = useContext(AomContext);
+
+	if ( ! currentPluginData ) {
+		return '';	
+	}
+
+	return (
+		<div className="card lg:card-side bordered bg-base-100 w-full">
+			<div className="card-body">
+				<AddOnHeader />
+				<div className="flex w-full gap-4 mx-auto">
+					
+						<div >
+							<DevArea />
 						</div>
-						<ManageableModules />
-					</div>
+				
+						<div >
+							<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+								<div className="flex px-2 mx-2 w-full">
+									<div className="flex-grow">
+										<span className="text-lg font-bold">
+										Custom Modules
+										</span>
+									</div>
+									<div className="flex flex-grow-0">
+										<CreateModuleButtonAndModal />
+										
+									</div>
+								</div> 
+							</div>
+							<ManageableModules />
+						</div>
+					
 				</div>
 			</div>
 		</div>
-	</AomContext.Provider>
+	)
+}
+function CreateModuleButtonAndModal() {
+
+	const [modalOpen, setModalOpen] = useState(false);
+
+	function maybeRenderModal() {
+		if ( ! modalOpen ) {
+			return '';
+		}
+
+		return(
+			<Modal title="Create a new module" closeModal={ () => { setModalOpen( false ) } }>
+				<div>
+					<ModuleForm uponSuccess={ () => { setModalOpen( false ); }} />
+				</div>
+			</Modal>
+		)
+	}
+
+	return (
+		<>
+			<button
+				className="btn btn-secondary"
+				onClick={() => {
+					setModalOpen( true )
+				}}
+			>Create A New Module</button>
+			{ maybeRenderModal() }
+		</>
+	)
+
 }
 
 function CreatePluginButtonAndModal() {
@@ -91,7 +137,7 @@ function CreatePluginButtonAndModal() {
 		return(
 			<Modal title="Create a new plugin" closeModal={ () => { setModalOpen( false ) } }>
 				<div>
-					<PluginForm />
+					<PluginForm uponSuccess={ () => { setModalOpen( false ); }} />
 				</div>
 			</Modal>
 		)
@@ -183,7 +229,7 @@ function DevArea() {
 }
 
 function ManageableAddOns( props ) {
-	const {plugins, setCurrentPlugin} = useContext(AomContext);
+	const {plugins, setCurrentPlugin, currentPluginData} = useContext(AomContext);
 	
 	function renderplugins() {
 		
@@ -215,6 +261,7 @@ function ManageableAddOns( props ) {
 				onChange={(event) => {
 					setCurrentPlugin(event.target.value)
 				}}
+				value={currentPluginData.dirname}
 			>
 				<option disabled="">Choose a plugin to work on</option> 
 				{ renderplugins() }
@@ -468,7 +515,7 @@ function StatusBadge( props ) {
 }
 
 function PluginForm( props ) {
-
+	const {plugins, setCurrentPlugin} = useContext(AomContext);
 	const [pluginName, setPluginName] = useState( 'My Awesome Plugin' );
 	const [pluginDirName, setPluginDirName] = useState( 'my-awesome-plugin' );
 	const [pluginTextDomain, setPluginTextDomain] = useState( 'my-awesome-plugin' );
@@ -505,13 +552,16 @@ function PluginForm( props ) {
 				min_php_version: minPhpVersion,
 				plugin_license: pluginLicense,
 				update_uri: updateUri,
-				command: props.command,
 			})
 		})
 		.then( response => response.json())
 		.then( ( data ) => {
-			props.plugins.setPluginDevStatus( props.currentPluginData.dirname, props.job_identifier, JSON.parse( data ) );
-			resolve( data );
+			if ( data.success ) {
+				setCurrentPlugin(data.plugin_data.plugin_dirname);
+				props.uponSuccess();
+			} else {
+				alert( JSON.stringify( data ) );
+			}
 		});
 	}
 
@@ -638,6 +688,243 @@ function PluginForm( props ) {
 				</div>
 			</div>
 		</div>
+	)
+}
+
+
+function ModuleForm( props ) {
+	const {plugins, setCurrentPlugin, currentPluginData} = useContext(AomContext);
+	const [step, setStep] = useState( 1 );
+	const [moduleName, setModuleName] = useState( 'My Awesome Module' );
+	const [moduleBoiler, setModuleBoiler] = useState( null );
+	const [moduleNamespace, setModuleNamespace] = useState( 'MyAwesomeModule' );
+	const [moduleDescription, setModuleDescription] = useState( 'This is my awesome module. It does this, and it does that too!' );
+	const boilers = wppsModuleBoilers;
+
+	function createModule() {
+		setStep( 'loading' );
+		fetch(wppsApiEndpoints.generateModule, {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				module_name: moduleName,
+				module_namespace: moduleNamespace,
+				module_description: moduleDescription,
+				module_boiler: moduleBoiler,
+				module_plugin: currentPluginData.dirname,
+			})
+		})
+		.then( response => response.json())
+		.then( ( data ) => {
+			if ( data.success ) {
+				//setCurrentPlugin(data.plugin_data.plugin_dirname);
+				props.uponSuccess();
+				setStep( 'success' );
+			} else {
+				setStep( 'failure' );
+				alert( JSON.stringify( data ) );
+			}
+		});
+	}
+
+	function renderBoilerPicker() {
+
+		const renderedBoilers = [];
+		let keyCounter = 1;
+		for( const boiler in boilers ) {
+			renderedBoilers.push(
+				renderBoilerOption( boiler, boilers[boiler], keyCounter )
+			);
+			keyCounter++;
+		}
+
+		return (
+			<>
+				<div className="grid gap-5 p-10">
+					<h2 className="text-lg">{ __( 'Pick a starting point for this module', 'wp-plugin-studio' ) }</h2>
+					<div className="grid gap-5">
+						{ renderedBoilers }
+					</div>
+				</div>
+			</>
+		)
+	}
+
+	function renderBoilerOption( boilerName, boilerData, keyCounter ) {
+		return (
+			<div key={keyCounter} className="card shadow-lg compact side bg-base-200 cursor-pointer"
+				onClick={() => {
+					setModuleBoiler( boilerName );
+					setStep( 2 );
+				}}
+			>
+				<div className="flex-row items-center space-x-4 card-body">
+					<div>
+						<div className="avatar">
+							<div className="rounded-full w-14 h-14 shadow bg-primary-content">
+								<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxXQXrsWLSWHf1vdT32y-xMzTipJONoU-FCQ&usqp=CAU" />
+							</div>
+						</div>
+					</div>
+					<div>
+						<h2 className="card-title">{boilerData.name}</h2>
+						<p className="text-base-content text-opacity-40">{boilerData.description}</p>
+					</div>
+				</div>
+			</div>
+		)
+	}
+
+	function renderStep1() {
+		if ( step !== 1 ) { 
+			return '';
+		}
+
+		return (
+			renderBoilerPicker()
+		)
+	}
+
+	function renderStep2() {
+		if ( step !== 2 ) {
+			return '';
+		}
+
+		return (
+			<div className="grid gap-5 p-10">
+				<h2 className="text-lg">{ __( 'Nice! You chose to start with this module boiler:', 'wp-plugin-studio' ) }</h2>
+				<div className="card shadow-lg compact side bg-base-200 cursor-pointer"
+					onClick={() => {
+						setStep( 1 );
+					}}
+				>
+					<div className="flex-row items-center space-x-4 card-body">
+						<div>
+							<div className="avatar">
+								<div className="rounded-full w-14 h-14 shadow bg-primary-content">
+									<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxXQXrsWLSWHf1vdT32y-xMzTipJONoU-FCQ&usqp=CAU" />
+								</div>
+							</div>
+						</div>
+						<div>
+							<h2 className="card-title">{boilers[moduleBoiler].name}</h2>
+							<p className="text-base-content text-opacity-40">{boilers[moduleBoiler].description}</p>
+						</div>
+					</div>
+				</div>
+				<h2 className="text-lg">{ __( 'Now, let\'s set up your module data', 'wp-plugin-studio' ) }</h2>
+				<div className="relative ">
+					<label htmlFor="name-with-label">
+						{ __( 'Module Name', 'wp-plugin-studio' ) }
+					</label>
+					<input
+						type="text"
+						id="name-with-label"
+						className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+						name="email"
+						placeholder={ __( 'Module Name', 'wp-plugin-studio' ) }
+						value={ moduleName }
+						onChange={ (event) => setModuleName( event.target.value ) }
+					/>
+				</div>
+
+				<div className="relative ">
+					<label htmlFor="name-with-label">
+						{ __( 'Module Namespace', 'wp-plugin-studio' ) }
+					</label>
+					<input
+						type="text"
+						id="name-with-label"
+						className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+						name="email"
+						placeholder={ __( 'Module Namespace', 'wp-plugin-studio' ) }
+						value={ moduleNamespace }
+						onChange={ (event) => setModuleNamespace( event.target.value ) }
+					/>
+				</div>
+			
+				<div className="relative ">
+					<label htmlFor="name-with-label">
+						{ __( 'Module Description', 'wp-plugin-studio' ) }
+					</label>
+					<textarea
+						className="flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+						id="comment"
+						placeholder="Enter your module description"
+						name="comment"
+						rows="5"
+						cols="40"
+						value={ moduleDescription }
+						onChange={ (event) => setModuleDescription( event.target.value ) }
+					/>
+				</div>
+
+				<button
+					type="button"
+					className="py-2 px-4  bg-green-700 hover:bg-green-400 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg"
+					onClick={() => {
+						createModule();
+					}}
+				>
+					{ __( 'Create Module', 'wp-plugin-studio' ) }
+				</button>
+			</div>
+		)
+	}
+
+	function renderLoadingStep() {
+		if ( step !== 'loading' ) {
+			return ''
+		}
+
+		return (
+			<div className="grid gap-5 p-10">
+				<div className="btn btn-ghost btn-sm btn-circle loading"></div>
+			</div>
+		)
+	}
+
+	function renderSuccessStep() {
+		if ( step !== 'success' ) {
+			return ''
+		}
+
+		return (
+			<div className="grid gap-5 p-10">
+				<h2>Module successfully created and added to plugin!</h2>
+			</div>
+		)
+	}
+
+	function renderFailureStep() {
+		if ( step !== 'failure' ) {
+			return ''
+		}
+
+		return (
+			<div className="grid gap-5 p-10">
+				<h2>Something went wrong</h2>
+				<button
+					className="btn"
+					onClick={() => {
+						setStep( 2 );
+					}}
+				>Back</button>
+			</div>
+		)
+	}
+
+	return (
+		<>
+			{ renderStep1() }
+			{ renderStep2() }
+			{ renderLoadingStep() }
+			{ renderSuccessStep() }
+			{ renderFailureStep() }
+		</>
 	)
 }
 
