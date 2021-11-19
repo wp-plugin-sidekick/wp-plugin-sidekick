@@ -24,10 +24,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function enqueue_block() {
 
-	$dependencies = require module_data()['dir'] . 'includes/js/build/index.asset.php';
+	if ( file_exists( module_data()['dir'] . 'includes/js/build/index.asset.php' ) ) {
+		$dependencies = require module_data()['dir'] . 'includes/js/build/index.asset.php';
+		$dependencies = $dependencies['dependencies'];
+	} else {
+		$dependencies = array();
+	}
 
 	// Include the frontend component so it can render inside Gutenberg.
-	wp_register_script( 'blockmodulejs', module_data()['url'] . 'includes/js/build/index.js', $dependencies['dependencies'], time(), true );
+	wp_register_script( 'blockmodulejs', module_data()['url'] . 'includes/js/build/index.js', $dependencies, time(), true );
 
 	$theme_json = \WP_Theme_JSON_Resolver::get_merged_data();
 

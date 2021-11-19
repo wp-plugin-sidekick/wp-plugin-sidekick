@@ -2,7 +2,6 @@
  * BlockModule
  *
  * @package     BlockModule
- * @license     https://opensource.org/licenses/GPL-3.0 GNU Public License
  */
 
 import { registerBlockType } from '@wordpress/blocks';

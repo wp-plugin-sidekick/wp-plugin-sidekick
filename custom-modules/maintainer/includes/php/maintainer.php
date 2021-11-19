@@ -22,7 +22,7 @@ function render_app() {
 	?>
 	<html>
 		<head>
-			<title>Add On Maintainer</title>
+			<title>WP Plugin Studio</title>
 			<link rel="stylesheet" href="<?php echo esc_url( module_data()['url'] . 'includes/css/build/style.css' ); ?>" media="all">
 			<link rel="stylesheet" href="<?php echo esc_url( module_data()['url'] . 'includes/css/additional/additional-styles.css' ); ?>" media="all">
 		</head>
@@ -37,7 +37,7 @@ function render_app() {
 				killShellCommand: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/killmoduleshellcommand',
 			};
 			var wppsPlugins = <?php echo wp_json_encode( get_managable_plugins() ); ?>;
-			var wppsModuleBoilers = <?php echo wp_json_encode( get_module_boilers() ); ?>;
+			var wppsModuleBoilers = <?php echo wp_json_encode( \WPPS\ModuleDataFunctions\get_module_boilers() ); ?>;
 		</script>
 		<script type="text/javascript" src="<?php echo esc_url( module_data()['url'] . '/includes/js/build/index.js' ); ?>"></script>
 		</body>
@@ -63,6 +63,7 @@ function get_managable_plugins() {
 	$installed_plugins  = \get_plugins();
 
 	$wp_filesystem_api = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+	$plugins_path       = $wp_filesystem_api->wp_plugins_dir();
 
 	$manageable_plugins = array();
 
@@ -83,79 +84,19 @@ function get_managable_plugins() {
 			'.php' // Strip away the .php part.
 		);
 
-		$plugin_path = $wp_filesystem_api->wp_plugins_dir() . $manageable_plugins[ $dirname ]['dirname'];
+		$manageable_plugins[ $dirname ]['namespace'] = get_plugin_namespace( $plugins_path . $key );
 
-		$modules_glob = glob( $plugin_path . '/custom-modules/*' );
-		$modules      = array();
-
-		foreach ( $modules_glob as $module ) {
-			$module_name = basename( $module );
-			$filename    = $module_name . '.php';
-			$filepath    = $module . '/' . $filename;
-			$module_data = get_module_data( $filepath );
-
-			$modules[ $module_name ] = $module_data;
-		}
-
-		$manageable_plugins[ $dirname ]['modules'] = $modules;
+		$manageable_plugins[ $dirname ]['modules'] = \WPPS\ModuleDataFunctions\get_plugin_modules( $dirname );
 	}
 
 	return $manageable_plugins;
 }
 
-/**
- * Get the module boilers available.
- *
- * @since 1.0
- * @return void
- */
-function get_module_boilers() {
-
+function get_plugin_namespace( $plugin_file ) {
 	$wp_filesystem_api = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+	// Open the file.
+	$file_contents = $wp_filesystem_api->get_contents( $plugin_file );
+	preg_match_all('/(?<=namespace).*(?=;)/', $file_contents, $matches);
 
-	$module_boilers = array();
-
-	$plugin_path = $wp_filesystem_api->wp_plugins_dir() . 'wp-plugin-studio';
-
-	$modules_glob = glob( $plugin_path . '/custom-modules/module-boilers/module-boilers/*' );
-
-	foreach ( $modules_glob as $module ) {
-		$module_name = basename( $module );
-		$filename    = $module_name . '.php';
-		$filepath    = $module . '/' . $filename;
-		$module_data = get_module_data( $filepath );
-
-		$module_boilers[ $module_name ] = $module_data;
-	}
-
-	return $module_boilers;
+	return $matches[0];
 }
-
-
-function get_module_data( $file ) {
-
-	$all_headers = array(
-		'name'        => 'Module Name',
-		'version'     => 'Version',
-		'description' => 'Description',
-		'author'      => 'Author',
-		'authoruri'   => 'Author URI',
-		'textdomain'  => 'Text Domain',
-		'requireswp'  => 'Requires at least',
-		'requiresphp' => 'Requires PHP',
-		'namespace'   => 'Namespace',
-	);
-
-	$module_data = \get_file_data( $file, $all_headers );
-
-	// Append the directory path.
-	$module_data['dir'] = plugin_dir_path( $file );
-	$module_data['url'] = plugin_dir_url( $file );
-
-	$module_data['slug'] = basename( $file, '.php' );
-
-	return $module_data;
-
-}
-
-

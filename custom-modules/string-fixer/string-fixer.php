@@ -58,11 +58,13 @@ function fix_strings( string $file, array $strings, string $mode ) {
 	if ( $mode === 'plugin' ) {
 		$file_contents = fix_plugin_file_header( $file_contents, $strings );
 		$file_contents = fix_namespace( $file_contents, $strings['plugin_namespace'] );
+		$file_contents = fix_package_tag( $file_contents, $strings['plugin_dirname'] );
 	}
 
 	if ( $mode === 'module' ) {
 		$file_contents = fix_module_file_header( $file_contents, $strings );
 		$file_contents = fix_namespace( $file_contents, $strings['module_namespace'] );
+		$file_contents = fix_package_tag( $file_contents, $strings['module_plugin'] );
 	}
 
 	$wp_filesystem->put_contents( $file, $file_contents );
@@ -149,6 +151,25 @@ function fix_module_file_header( string $file_contents, array $strings ) {
 
 	// Find the file header.
 	$file_contents = preg_replace( $pattern, $fixed_file_header, $file_contents );
+
+	return $file_contents;
+}
+
+
+/**
+ * Rewrite a file headers "@package" tag to ensure it is correct.
+ *
+ * @param string $file_contents The incoming contents of the file we are fixing the header of.
+ * @param array $strings The relevant strings used to create the module file header.
+ */
+function fix_package_tag( string $file_contents, string $package ) {
+
+	$fixed = '* @package ' . $package;
+
+ 	$pattern = "~\* @package .*~";
+
+	// Find the file header.
+	$file_contents = preg_replace( $pattern, $fixed, $file_contents );
 
 	return $file_contents;
 }

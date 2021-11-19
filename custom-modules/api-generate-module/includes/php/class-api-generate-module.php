@@ -81,6 +81,8 @@ class Api_Generate_Module extends \WP_REST_Controller {
 
 		// Fix strings
 		$strings_fixed = \WPPS\StringFixer\recursive_dir_string_fixer( $new_module_dir, $params, 'module' );
+		
+		$updated_modules_in_plugin = \WPPS\ModuleDataFunctions\get_plugin_modules( $params['module_plugin'] );
 
 		if ( ! $strings_fixed ) {
 			return new \WP_REST_Response( $strings_fixed, 400 );
@@ -89,7 +91,7 @@ class Api_Generate_Module extends \WP_REST_Controller {
 				array(
 					'success' => true,
 					'message' => __( 'Module successfully created.' ),
-					'plugin_data' => $params,
+					'modules' => $updated_modules_in_plugin,
 				),
 				200
 			);

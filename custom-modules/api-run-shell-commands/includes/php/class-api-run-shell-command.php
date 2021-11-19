@@ -175,6 +175,9 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 	 */
 	public function phpcs( $request ) {
 
+		//Check if PHP is installed and properly configured. 
+		$php_version_check = 'which php;'; // TODO: Check for PHP versions before to help people set up PHP on the command line properly.
+
 		$params = wp_parse_args( $request->get_params(), $this->default_args() );
 
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();

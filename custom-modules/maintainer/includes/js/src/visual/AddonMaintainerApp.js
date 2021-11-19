@@ -65,7 +65,7 @@ function Plugin() {
 		<div className="card lg:card-side bordered bg-base-100 w-full">
 			<div className="card-body">
 				<AddOnHeader />
-				<div className="flex w-full gap-4 mx-auto">
+				<div className="grid grid-cols-2 w-full gap-4 mx-auto">
 					
 						<div >
 							<DevArea />
@@ -276,8 +276,7 @@ function ManageableModules( props ) {
 	if ( ! currentPluginData ) {
 		return '';	
 	}
-	
-	console.log( currentPluginData )
+
 	const modules = currentPluginData.modules;
 	
 	if ( ! modules ) {
@@ -694,10 +693,11 @@ function PluginForm( props ) {
 
 function ModuleForm( props ) {
 	const {plugins, setCurrentPlugin, currentPluginData} = useContext(AomContext);
+
 	const [step, setStep] = useState( 1 );
 	const [moduleName, setModuleName] = useState( 'My Awesome Module' );
 	const [moduleBoiler, setModuleBoiler] = useState( null );
-	const [moduleNamespace, setModuleNamespace] = useState( 'MyAwesomeModule' );
+	const [moduleNamespace, setModuleNamespace] = useState( currentPluginData.namespace + '\\MyAwesomeModule' );
 	const [moduleDescription, setModuleDescription] = useState( 'This is my awesome module. It does this, and it does that too!' );
 	const boilers = wppsModuleBoilers;
 
@@ -721,7 +721,8 @@ function ModuleForm( props ) {
 		.then( ( data ) => {
 			if ( data.success ) {
 				//setCurrentPlugin(data.plugin_data.plugin_dirname);
-				props.uponSuccess();
+				plugins.setPluginModules( currentPluginData.dirname, data.modules );
+				//props.uponSuccess();
 				setStep( 'success' );
 			} else {
 				setStep( 'failure' );

@@ -35,6 +35,14 @@ export function usePlugins( initial ) {
 		setDataAsync(newData);
 	}
 	
+	function setPluginModules( pluginDirName, newModules ) {
+		const newData = prepStateForMutation( ref.current );
+
+		console.log( pluginDirName );
+		newData[pluginDirName].modules = newModules;
+		setDataAsync(newData);
+	}
+
 	function deleteModule( pluginDirName, moduleSlug ) {
 		const newData = prepStateForMutation( ref.current );
 		if ( newData.modules[moduleSlug] ) {
@@ -66,7 +74,8 @@ export function usePlugins( initial ) {
 		setPluginDevStatus,
 		deleteModule,
 		setModuleDevStatus,
-		setModuleName
+		setModuleName,
+		setPluginModules,
 	};
 }
 
