@@ -24,24 +24,24 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function enqueue_block() {
 
-	if ( file_exists( module_data()['dir'] . 'includes/js/build/index.asset.php' ) ) {
-		$dependencies = require module_data()['dir'] . 'includes/js/build/index.asset.php';
+	$module_dir_path = module_dir_path( __FILE__ );
+	$module_dir_url  = module_dir_path( __FILE__ );
+
+	if ( file_exists( $module_dir_path . 'includes/js/build/index.asset.php' ) ) {
+		$dependencies = require $module_dir_path . 'includes/js/build/index.asset.php';
 		$dependencies = $dependencies['dependencies'];
 	} else {
 		$dependencies = array();
 	}
 
 	// Include the frontend component so it can render inside Gutenberg.
-	wp_register_script( 'blockmodulejs', module_data()['url'] . 'includes/js/build/index.js', $dependencies, time(), true );
+	$js_url = $module_dir_url . 'includes/js/build/index.js';
+	$js_ver = filemtime( $js_url );
+	wp_register_script( 'blockmodulejs', $js_url, $dependencies, $js_ver, true );
 
-	$theme_json = \WP_Theme_JSON_Resolver::get_merged_data();
-
-	wp_register_style(
-		'blockmodulestyle',
-		module_data()['url'] . 'includes/js/build/index.css',
-		array(),
-		time()
-	);
+	$css_url = $module_dir_url . 'includes/js/build/index.css';
+	$css_ver = filemtime( $css_url );
+	wp_register_style( 'blockmodulestyle', $css_url, array(), $css_ver );
 
 	// Register the block.
 	register_block_type(
