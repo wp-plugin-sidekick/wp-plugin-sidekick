@@ -21,8 +21,8 @@ if ( ! function_exists( 'module_dir_path' ) ) {
 	 * @return string
 	 */
 	function module_dir_path( string $file_path ) {
-		preg_match_all( '~(?=.*custom-modules/).*(?=/)~', $file_path, $output_array );
-		return trailingslashit( $output_array[0][0] );
+		preg_match_all( '~.+?(?=custom-modules/)~', $file_path, $output_array );
+		return trailingslashit( $output_array[0][0] . 'custom-modules' );
 	}
 }
 
