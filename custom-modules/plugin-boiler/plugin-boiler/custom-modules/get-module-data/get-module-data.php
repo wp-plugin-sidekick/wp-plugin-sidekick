@@ -34,7 +34,7 @@ if ( ! function_exists( 'module_dir_url' ) ) {
 	 * @return string
 	 */
 	function module_dir_url( string $file_path ) {
-		preg_match_all( '~(?=custom-modules/).*(?=/)~', $file_path, $output_array );
-		return trailingslashit( plugins_url( $output_array[0][0] ) );
+		preg_match_all( '~(?<=plugins\/).+?(?=custom-modules)custom-modules\/.+?(?=\/)\/~', $file_path, $output_array );
+		return plugins_url( $output_array[0][0] );
 	}
 }
