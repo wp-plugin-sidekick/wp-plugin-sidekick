@@ -25,22 +25,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 function enqueue_block() {
 
 	$module_dir_path = module_dir_path( __FILE__ );
-	$module_dir_url  = module_dir_path( __FILE__ );
+	$module_dir_url  = module_dir_url( __FILE__ );
 
 	if ( file_exists( $module_dir_path . 'includes/js/build/index.asset.php' ) ) {
 		$dependencies = require $module_dir_path . 'includes/js/build/index.asset.php';
 		$dependencies = $dependencies['dependencies'];
 	} else {
-		$dependencies = array();
+		return;
 	}
 
 	// Include the frontend component so it can render inside Gutenberg.
 	$js_url = $module_dir_url . 'includes/js/build/index.js';
-	$js_ver = filemtime( $js_url );
+	$js_ver = filemtime( $module_dir_path . 'includes/js/build/index.js' );
 	wp_register_script( 'blockmodulejs', $js_url, $dependencies, $js_ver, true );
 
 	$css_url = $module_dir_url . 'includes/js/build/index.css';
-	$css_ver = filemtime( $css_url );
+	$css_ver = filemtime( $module_dir_path . 'includes/js/build/index.css' );
 	wp_register_style( 'blockmodulestyle', $css_url, array(), $css_ver );
 
 	// Register the block.
