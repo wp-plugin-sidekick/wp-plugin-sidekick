@@ -70,6 +70,11 @@ class Api_Generate_Module extends \WP_REST_Controller {
 		$new_module_dirname = sanitize_title_with_dashes( $params['module_name'] );
 		$new_module_dir     = $plugin_dir . sanitize_title_with_dashes( $params['module_name'] );
 
+		// Ensure the custom-modules directory exists.
+		if ( ! file_exists( $plugin_dir ) ) {
+			$wp_filesystem->mkdir( $plugin_dir );
+		}
+	
 		// Create the new module directory.
 		$wp_filesystem->mkdir( $new_module_dir );
 
