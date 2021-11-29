@@ -33,6 +33,7 @@ function render_app() {
 				generatePlugin: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/generateplugin',
 				generateModule: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/generatemodule',
 				runShellCommand: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/runshellcommand',
+				whichChecker: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/whichchecker',
 				phpcs: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/phpcs',
 				killShellCommand: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/killmoduleshellcommand',
 			};

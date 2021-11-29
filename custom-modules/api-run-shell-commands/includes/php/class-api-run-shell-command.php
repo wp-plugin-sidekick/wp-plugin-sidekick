@@ -115,9 +115,9 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
 		// Change to this modules directory first, then run the command(s).
-		$set_path       = 'export PATH="$PATH:"/usr/local/bin/; ';
+		$set_path       = 'export PATH="$PATH:"/usr/local/bin/;';
 		$go_to_location = 'cd ' . $wp_filesystem->wp_plugins_dir() . $params['location'] . '; ';
-		$command        = $set_path . $go_to_location . $params['command'];
+		$command        = $set_path . $go_to_location . $params['command'] .'; ';
 		$job_identifier = $params['job_identifier'];
 
 		$result = do_shell_command( $command, $job_identifier );

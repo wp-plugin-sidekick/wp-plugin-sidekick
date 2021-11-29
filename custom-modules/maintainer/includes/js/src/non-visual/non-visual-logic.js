@@ -15,6 +15,27 @@ import {
 
 export const AomContext = createContext([{}, function() {}]);
 
+export function useStream( initial ) {
+	const [data, set] = useState(initial);
+	const ref = useRef(data);
+
+	useEffect( () => {
+		console.log( data, ref.current );
+	}, [data] );
+
+	// Keeps the state and ref equal. See https://css-tricks.com/dealing-with-stale-props-and-states-in-reacts-functional-components/
+	function setDataAsync(newState) {
+		ref.current = newState;
+		set(newState);
+		console.log( newState );
+	}
+
+	return {
+		data: ref.current,
+		set: setDataAsync,
+	};
+}
+
 export function usePlugins( initial ) {
 	const [data, set] = useState(initial);
 	const ref = useRef(data);
@@ -179,7 +200,7 @@ export function useCurrentPluginPointer() {
 	}
 }
 
-export function runShellCommand( props ) {
+export function runNpmRunDev( props ) {
 	
 	return new Promise((resolve, reject) => {
 		
@@ -267,25 +288,19 @@ export function phpcsDo( props ) {
 
 export async function enableDevelopmentMode(plugins, currentPluginData) {
 	// Enable phpcs.
+	/*
 	phpcsDo({
 		location: currentPluginData.dirname,
 		job_identifier: 'phpcs',
 		currentPluginData: currentPluginData,
 		plugins: plugins
 	});
+	*/
 
-	runShellCommand({
+	runNpmRunDev({
 		location: currentPluginData.dirname,
-		job_identifier: 'npm_run_dev_js',
-		command: 'npm run dev:js',
-		currentPluginData: currentPluginData,
-		plugins: plugins
-	});
-	
-	runShellCommand({
-		location: currentPluginData.dirname,
-		job_identifier: 'npm_run_dev_css',
-		command: 'npm run dev:css',
+		job_identifier: 'npm_run_dev',
+		command: 'npm run dev',
 		currentPluginData: currentPluginData,
 		plugins: plugins
 	});

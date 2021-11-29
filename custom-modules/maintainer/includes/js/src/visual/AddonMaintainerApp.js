@@ -8,12 +8,18 @@ import {
 	AomContext,
 	useCurrentPluginPointer,
 	usePlugins,
+	useStream,
 	runShellCommand,
 	killModuleShellCommand,
 	phpcsDo,
 	enableDevelopmentMode,
 	disableDevelopmentMode
 } from './../non-visual/non-visual-logic.js';
+
+import {
+	useFetchOnRepeat,
+} from './../non-visual/useFetchOnRepeat.js';
+
 
 export function AddonMaintainerApp() {
 	const plugins = usePlugins( wppsPlugins );
@@ -41,7 +47,7 @@ export function AddonMaintainerApp() {
 				<div className="flex flex-grow-0">
 					<ManageableAddOns />
 					<div className="flex p-5">
-						Or
+						or
 					</div>
 					<div className="flex">
 						<CreatePluginButtonAndModal />
@@ -49,6 +55,7 @@ export function AddonMaintainerApp() {
 				</div>
 				
 			</div>
+			<PreFlightChecks />
 			<Plugin />
 		</div>
 	</AomContext.Provider>
@@ -67,9 +74,9 @@ function Plugin() {
 				<AddOnHeader />
 				<div className="grid grid-cols-2 w-full gap-4 mx-auto">
 					
-						<div >
-							<DevArea />
-						</div>
+						
+						<DevArea />
+					
 				
 						<div >
 							<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
@@ -188,43 +195,92 @@ function DevArea() {
 	}
 
 	return (
-		<>
-		<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
-			<div className="flex px-2 mx-2 w-full">
-				<div className="flex-grow">
-					<span className="text-lg font-bold">
-					Development
-					</span>
+		<div className="grid grid-cols-1 gap-4 grid-flow-row auto-rows-min">
+			<div>
+				<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+					<div className="flex px-2 mx-2 w-full">
+						<div className="flex-grow">
+							<span className="text-lg font-bold">
+							Development
+							</span>
+						</div>
+						<span className="text-lg mr-4">
+							Enable development mode 
+						</span>
+						<input type="checkbox" className="toggle" onChange={ (event) => {
+							if ( event.target.checked ) {
+								enableDevelopmentMode( plugins, currentPluginData );
+							} else {
+								disableDevelopmentMode( plugins, currentPluginData );
+							}
+						}
+						} />
+					</div>
 				</div>
-				<span className="text-lg mr-4">
-					Enable development mode 
-				</span>
-				<input type="checkbox" className="toggle" onChange={ (event) => {
-					if ( event.target.checked ) {
-						enableDevelopmentMode( plugins, currentPluginData );
-					} else {
-						disableDevelopmentMode( plugins, currentPluginData );
-					}
-				}
-				} />
+				<div className="">
+					<div className="tabs tabs-boxed z-10">
+						{(() => {
+							const status = currentPluginData.devStatus ? currentPluginData.devStatus['npm_run_dev'] : false;
+							return (
+								<>
+								<div onClick={() => { setCurrentTab( 1 )}}>
+										<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 1 === currentTab } />
+								</div>
+								<div onClick={() => { setCurrentTab( 2 )}}>
+								<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 2 === currentTab } />
+								</div>
+								</>
+							)
+						})() }
+					</div>
+					<div className="z-0">
+						{(() => {
+							const status = currentPluginData.devStatus ? currentPluginData.devStatus['npm_run_dev'] : false;
+							if ( currentTab !== 1 || ! status ) {
+								return '';
+							}
+							console.log( status );
+
+							return (
+								<>
+									<div className="bg-black p-4 -mt-2 text-white z-0">
+										{ status.details.command }
+									</div>
+									<div className="bg-black p-4 text-green">
+										{ status.output }
+									</div>
+									<div className="bg-black p-4 text-red">
+										{ status.error }
+									</div>
+								</>
+							)
+						})() }
+					</div>
+				</div>
+			</div>
+			<div>
+				<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+					<div className="flex px-2 mx-2 w-full">
+						<div className="flex-grow">
+							<span className="text-lg font-bold">
+							Testing and Linting
+							</span>
+						</div>
+						<span className="text-lg mr-4">
+							Test
+						</span>
+						<input type="checkbox" className="toggle" onChange={ (event) => {
+							if ( event.target.checked ) {
+								enableDevelopmentMode( plugins, currentPluginData );
+							} else {
+								disableDevelopmentMode( plugins, currentPluginData );
+							}
+						}
+						} />
+					</div>
+				</div>
 			</div>
 		</div>
-		<div className="">
-			<div className="tabs tabs-boxed">
-				{(() => {
-					const statusBadges = [];
-					let tabNumber = 1;
-					for( const thisDevStatus in currentPluginData.devStatus ) {
-						const active = currentTab === tabNumber;
-						
-						statusBadges.push( <StatusBadge key={thisDevStatus} label={thisDevStatus} status={ currentPluginData.devStatus[ thisDevStatus ] } active={active} /> );
-						tabNumber++;
-					}
-					return statusBadges;
-				})()}
-			</div>
-		</div>
-		</>
 	)
 }
 
@@ -261,7 +317,7 @@ function ManageableAddOns( props ) {
 				onChange={(event) => {
 					setCurrentPlugin(event.target.value)
 				}}
-				value={currentPluginData.dirname}
+				value={ currentPluginData ? currentPluginData.dirname : 'Choose a plugin'}
 			>
 				<option disabled="">Choose a plugin to work on</option> 
 				{ renderplugins() }
@@ -1053,5 +1109,245 @@ function SpinningGears( props ) {
 
 	    </style>
 	    </div>
+	)
+}
+
+function PreFlighter( props ) {
+	const [checkResponse, setCheckResponse] = useState( null );
+	const [installResponse, setInstallResponse] = useState( null );
+
+	const fileStreamer = useFetchOnRepeat( 'https://ollie.local/wp-content/.wpps-studio-data/wpps_output_' + props.data.installJobIdentifier );
+
+	useEffect( () => {
+		if ( ! props.doingStatusChecks ) {
+			fileStreamer.stop();
+		} else {
+			checkTheStatus();
+		}
+	}, [props.doingStatusChecks] );
+
+	function checkTheStatus() {
+		
+		fetch(wppsApiEndpoints.whichChecker + '?' + new URLSearchParams({
+			job_identifier: props.data.checkJobIdentifier,
+			command: props.data.checkCommand,
+		}), {
+			method: 'GET',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+		})
+		.then( response => response.json())
+		.then( ( data ) => {
+			const response = JSON.parse( data );
+			setCheckResponse(response);
+		});
+
+	}
+
+	function install() {
+		fetch(wppsApiEndpoints.whichChecker + '?' + new URLSearchParams({
+				job_identifier: props.data.installJobIdentifier,
+				command: props.data.installCommand,
+			}), {
+			method: 'GET',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+		})
+		.then( response => response.json())
+		.then( ( data ) => {
+			fileStreamer.stop();
+			const response = JSON.parse( data );
+			setInstallResponse(response);
+			checkTheStatus();
+		});
+
+		fileStreamer.start();
+	}
+
+
+	function renderCheckStatus() {
+		if ( ! checkResponse ) {
+			return 'Status not yet checked...'
+		}
+		if ( ! checkResponse.output || checkResponse.error ) {
+			return (
+				<>
+				<div className="alert alert-error gap-2">
+					<div className="flex-1">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 mx-2 stroke-current">    
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>                      
+						</svg> 
+						<label>{ props.data.name + ' not found! Would you like to install it?' }</label>
+					</div>
+					<button
+						onClick={() => {
+							install();	
+						}}
+						class="btn btn-primary"
+					>
+						{ 'Install ' + props.data.name }
+					</button> 
+				</div>
+				</>
+			)
+		}
+		if ( checkResponse.output ) {
+			return (
+				<>
+				<div class="alert alert-success">
+					<div class="flex-1">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 mx-2 stroke-current">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>                
+						</svg> 
+						<label>{ props.data.name + ' exists! 👍' }</label>
+					</div>
+				</div>
+				</>
+			)
+		}
+	}
+
+	function renderInstallResponse() {
+		return (
+			<div className="bg-black p-4 text-white z-0">
+				{ fileStreamer.response }
+			</div>
+		)
+	}
+	function renderCheckResponse() {
+		if ( ! checkResponse ) {
+			return '';
+		}
+
+		return (
+			<div>
+				<div className="bg-black p-4 text-white z-0">
+					{ checkResponse.details.command }
+				</div>
+				<div className="bg-black p-4 -mt-2 text-white z-0">
+					{ checkResponse.error }
+				</div>
+				<div className="bg-black p-4 -mt-2 text-white z-0">
+					{ checkResponse.output }
+				</div>
+			</div>
+		)
+	}
+
+	return (
+
+		<div className="card shadow-lg compact side bg-base-200">
+			<div className="flex-row items-center space-x-4 card-body">
+				<div>
+					<div className="avatar">
+						<div className="rounded-full w-14 h-14 shadow bg-primary-content">
+							<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxXQXrsWLSWHf1vdT32y-xMzTipJONoU-FCQ&usqp=CAU" />
+						</div>
+					</div>
+				</div>
+				<div className="grid gap-1">
+					<h2 className="card-title">{props.data.name}</h2>
+					<p className="text-base-content text-opacity-40">{props.data.description}</p>
+					<p>{ renderCheckStatus() }</p>
+					{ renderCheckResponse() }
+					{ renderInstallResponse() }
+				</div>
+			</div>
+		</div>
+	)
+}
+function PreFlightChecks() {
+	const {currentPluginData} = useContext(AomContext);
+	const [doingStatusChecks, setDoingStatusChecks] = useState( false );
+
+	if ( currentPluginData ) {
+		return '';	
+	}
+
+	return (
+		<>
+			<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+				<div className="flex px-2 mx-2 w-full">
+					<div className="flex-grow">
+						<span className="text-lg font-bold">
+						Pre Flight Checks
+						</span>
+					</div>
+					<span className="text-lg mr-4">
+						Test
+					</span>
+					<input type="checkbox" className="toggle" onChange={ (event) => {
+						if ( event.target.checked ) {
+							setDoingStatusChecks( true );
+						} else {
+							setDoingStatusChecks( false );
+						}
+					}
+					} />
+				</div>
+			</div>
+			<div className="grid gap-4">
+				<PreFlighter
+					data={{
+						name: 'Homebrew',
+						description: 'Homebrew is a way to install and manage packages on Linux/MacOS systems.',
+						checkJobIdentifier: 'check_homebrew',
+						checkCommand: 'brew -v;',
+						installJobIdentifier: 'install_homebrew',
+						installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+					}}
+					doingStatusChecks={ doingStatusChecks }
+				/>
+				<PreFlighter
+					data={{
+						name: 'NodeJS',
+						description: 'NodeJS runs javascript and enables package managers like NPM.',
+						checkJobIdentifier: 'check_nodejs',
+						checkCommand: 'nvm -v;',
+						installJobIdentifier: 'install_nodejs',
+						installCommand: 'brew install nvm',
+					}}
+					doingStatusChecks={ doingStatusChecks }
+				/>
+				<PreFlighter
+					data={{
+						name: 'NPM',
+						description: 'Node Package Manager',
+						checkJobIdentifier: 'check_npm',
+						checkCommand: 'npm -v;',
+						installJobIdentifier: 'install_npm',
+						installCommand: 'brew install npm',
+					}}
+					doingStatusChecks={ doingStatusChecks }
+				/>
+				<PreFlighter
+					data={{
+						name: 'PHP',
+						description: 'PHP on the command line enables required functionality.',
+						checkJobIdentifier: 'check_php',
+						checkCommand: 'php -v;',
+						installJobIdentifier: 'install_php',
+						installCommand: 'brew install php',
+					}}
+					doingStatusChecks={ doingStatusChecks }
+				/>
+				<PreFlighter
+					data={{
+						name: 'Composer',
+						description: 'A Dependency Manager for PHP',
+						checkJobIdentifier: 'check_composer',
+						checkCommand: 'composer -v;',
+						installJobIdentifier: 'install_composer',
+						installCommand: 'brew install composer',
+					}}
+					doingStatusChecks={ doingStatusChecks }
+				/>
+				
+			</div>
+		</>
 	)
 }
