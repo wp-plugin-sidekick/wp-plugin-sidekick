@@ -117,10 +117,10 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		// Change to this modules directory first, then run the command(s).
 		$set_path       = 'export PATH="$PATH:"/usr/local/bin/;';
 		$go_to_location = 'cd ' . $wp_filesystem->wp_plugins_dir() . $params['location'] . '; ';
-		$command        = $set_path . $go_to_location . $params['command'] .'; ';
+		$command        = $set_path . $go_to_location . $params['command'] . '; ';
 		$job_identifier = $params['job_identifier'];
 
-		$result = do_shell_command( $command, $job_identifier );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );
@@ -188,7 +188,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		$command        = $set_path . $go_to . './vendor/bin/phpcs --report=json -q --standard=' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/phpcs.xml ' . $wp_filesystem->wp_plugins_dir() . $params['location'];
 		$job_identifier = $params['job_identifier'];
 
-		$result = do_shell_command( $command, $job_identifier );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );
@@ -220,7 +220,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		$command        = $set_path . $go_to_docker . $build_docker . $go_to_plugins . $run_docker;
 		$job_identifier = $params['job_identifier'];
 
-		$result = do_shell_command( $command, $job_identifier );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );
@@ -249,7 +249,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		$command        = $set_path . $go_to_plugins . $run_zip;
 		$job_identifier = $params['job_identifier'];
 
-		$result = do_shell_command( $command, $job_identifier );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );

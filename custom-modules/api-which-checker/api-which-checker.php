@@ -12,12 +12,4 @@ declare(strict_types=1);
 
 namespace WPPS\ApiWhichChecker;
 
-function module_data() {
-	return [
-		'dir' => plugin_dir_path( __FILE__ ),
-		'url' => plugin_dir_url( __FILE__ ),
-	];
-}
-
 require 'includes/php/class-api-which-checker.php';
-require 'includes/php/do-shell-command.php';

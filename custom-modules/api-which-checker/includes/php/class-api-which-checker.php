@@ -63,7 +63,7 @@ class Api_Which_Checker extends \WP_REST_Controller {
 		$command        = $params['command'];
 		$job_identifier = $params['job_identifier'];
 
-		$result = do_shell_command( $command, $job_identifier );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );

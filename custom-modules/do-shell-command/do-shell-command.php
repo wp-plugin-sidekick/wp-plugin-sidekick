@@ -1,13 +1,15 @@
 <?php
 /**
- * Function which runs a shell command, stores the output and error in a log file, and has a killswitch file as well to kill the script.
+ * Module Name: Do Shell Command
+ * Description: This module contains functions for running shell commands
+ * Namespace: WPPS\DoShellCommand
  *
- * @package AddOnBuilder
+ * @package wp-plugin-studio
  */
 
 declare(strict_types=1);
 
-namespace WPPS\ApiWhichChecker;
+namespace WPPS\DoShellCommand;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,6 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @param string $command the shell command to run.
  * @param string $job_identifier a unique string to represent this job.
+ * @param string $current_working_directory The directory where the commands will be run.
  * @return WP_Error|array
  */
 function do_shell_command( $command, $job_identifier, $current_working_directory = __DIR__ ) {
@@ -32,12 +35,12 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 		2 => array( 'pipe', 'w' ), // stderr.
 	);
 
-	// Match the first 2 slashes in the __DIR__, so something like /Users/yourname/
-	preg_match( "~.+?(?=/).+?(?=/)/~", __DIR__, $matches );
+	// Match the first 2 slashes in the __DIR__, so something like /Users/yourname/.
+	preg_match( '~.+?(?=/).+?(?=/)/~', __DIR__, $matches );
 	$home_path = $matches[0];
 
 	$environment_vars = array(
-		'PATH' => '/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin', //Path to node bin dir
+		'PATH' => '/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin', // Path to node bin dir.
 		'HOME' => $home_path,
 	);
 
@@ -130,8 +133,9 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 /**
  * Update an option stored in a file. Using a file like this bypasses WP object caching.
  *
- * @param string $option_name The name of the option.
- * @param string $option_value The value of the option.
+ * @param string  $option_name The name of the option.
+ * @param string  $option_value The value of the option.
+ * @param boolean $is_initial If true, it will delete the file before recreating it.
  */
 function update_file_option( $option_name, $option_value, $is_initial = false ) {
 	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();

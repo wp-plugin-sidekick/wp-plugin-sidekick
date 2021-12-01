@@ -14,7 +14,7 @@
     "lint:md:js": "wp-scripts lint-md-js",
     "lint:pkg-json": "wp-scripts lint-pkg-json",
     "packages-update": "wp-scripts packages-update",
-    "start": "wp-scripts start includes/js/src/index.js --output-path=includes/js/build/",
+    "dev": "wp-scripts start includes/js/src/index.js --output-path=includes/js/build/",
     "test:e2e": "wp-scripts test-e2e",
     "test:unit": "wp-scripts test-unit-js"
   },

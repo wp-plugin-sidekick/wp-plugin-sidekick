@@ -189,6 +189,8 @@ function DevArea() {
 	const {plugins, currentPluginData} = useContext(AomContext);
 	const [currentTab, setCurrentTab] = useState(1);
 	
+	// NPM Run Dev file streamer.
+	const npmRunDevFileStreamer = useFetchOnRepeat( '/wp-content/.wpps-studio-data/wpps_output_' + currentPluginData.dirname + '_npm_run_dev' );
 
 	if ( ! currentPluginData ) {
 		return '';	
@@ -210,8 +212,10 @@ function DevArea() {
 						<input type="checkbox" className="toggle" onChange={ (event) => {
 							if ( event.target.checked ) {
 								enableDevelopmentMode( plugins, currentPluginData );
+								npmRunDevFileStreamer.start();
 							} else {
 								disableDevelopmentMode( plugins, currentPluginData );
+								npmRunDevFileStreamer.stop();
 							}
 						}
 						} />
@@ -235,23 +239,18 @@ function DevArea() {
 					</div>
 					<div className="z-0">
 						{(() => {
-							const status = currentPluginData.devStatus ? currentPluginData.devStatus['npm_run_dev'] : false;
-							if ( currentTab !== 1 || ! status ) {
+							npmRunDevFileStreamer.response
+							if ( currentTab !== 1 || ! npmRunDevFileStreamer.response ) {
 								return '';
 							}
-							console.log( status );
+							console.log( npmRunDevFileStreamer.response );
 
 							return (
 								<>
 									<div className="bg-black p-4 -mt-2 text-white z-0">
-										{ status.details.command }
+										{ npmRunDevFileStreamer.response }
 									</div>
-									<div className="bg-black p-4 text-green">
-										{ status.output }
-									</div>
-									<div className="bg-black p-4 text-red">
-										{ status.error }
-									</div>
+									
 								</>
 							)
 						})() }
@@ -1117,7 +1116,7 @@ function PreFlighter( props ) {
 	const [checkResponse, setCheckResponse] = useState( null );
 	const [installResponse, setInstallResponse] = useState( null );
 
-	const fileStreamer = useFetchOnRepeat( 'https://ollie.local/wp-content/.wpps-studio-data/wpps_output_' + props.data.installJobIdentifier );
+	const fileStreamer = useFetchOnRepeat( '/wp-content/.wpps-studio-data/wpps_output_' + props.data.installJobIdentifier );
 
 	useEffect( () => {
 		if ( ! props.doingStatusChecks ) {

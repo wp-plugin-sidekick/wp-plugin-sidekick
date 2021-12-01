@@ -4,6 +4,7 @@
 
 import React, {useState, useRef} from 'react';
 import { __ } from '@wordpress/i18n';
+import { useFetchOnRepeat } from './useFetchOnRepeat.js';
 
 import {
 	useState,
@@ -322,10 +323,10 @@ export async function disableDevelopmentMode(currentPluginData) {
 		currentAddOn: currentAddOn,
 	});
 	
-	// Kill npm_run_dev:js.
+	// Kill npm_run_dev.
 	killModuleShellCommand({
 		location: currentPluginData.dirname,
-		job_identifier: 'npm_run_dev_js',
+		job_identifier: 'npm_run_dev',
 		currentAddOn: currentAddOn,
 	});
 	
