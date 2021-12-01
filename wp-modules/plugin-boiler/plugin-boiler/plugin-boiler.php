@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Automatically include custom modules, which sit in the "wp-modules" directory.
+ * Automatically include wp modules, which sit in the "wp-modules" directory.
  *
  * @return void
  */
