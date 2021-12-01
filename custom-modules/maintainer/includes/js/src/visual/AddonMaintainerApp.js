@@ -612,6 +612,7 @@ function PluginForm( props ) {
 		.then( response => response.json())
 		.then( ( data ) => {
 			if ( data.success ) {
+				plugins.addNewPlugin( data.plugin_data );
 				setCurrentPlugin(data.plugin_data.plugin_dirname);
 				props.uponSuccess();
 			} else {

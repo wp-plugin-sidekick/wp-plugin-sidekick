@@ -56,6 +56,12 @@ export function usePlugins( initial ) {
 		setDataAsync(newData);
 	}
 	
+	function addNewPlugin( newPluginData ) {
+		const newData = prepStateForMutation( ref.current );
+		newData[newPluginData.dirName] = newPluginData;
+		setDataAsync(newData);
+	}
+
 	function setPluginModules( pluginDirName, newModules ) {
 		const newData = prepStateForMutation( ref.current );
 
@@ -92,6 +98,7 @@ export function usePlugins( initial ) {
 	return {
 		data: ref.current,
 		set: setDataAsync,
+		addNewPlugin,
 		setPluginDevStatus,
 		deleteModule,
 		setModuleDevStatus,
