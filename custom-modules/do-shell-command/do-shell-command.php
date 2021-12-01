@@ -51,8 +51,8 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 
 	if ( is_resource( $proc ) ) {
 		// Set streams to non blocking mode.
-		stream_set_blocking( $pipes[2], true );
-		stream_set_blocking( $pipes[1], true );
+		stream_set_blocking( $pipes[2], false );
+		stream_set_blocking( $pipes[1], false );
 
 		$error  = trim( stream_get_contents( $pipes[2] ) );
 		$output = trim( stream_get_contents( $pipes[1] ) );
@@ -140,17 +140,17 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 function update_file_option( $option_name, $option_value, $is_initial = false ) {
 	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
-	if ( ! $wp_filesystem->is_dir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' ) ) {
+	if ( ! $wp_filesystem->is_dir( $wp_filesystem->wp_content_dir() . 'wpps-studio-data/' ) ) {
 		/* directory didn't exist, so let's create it */
-		$wp_filesystem->mkdir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' );
+		$wp_filesystem->mkdir( $wp_filesystem->wp_content_dir() . 'wpps-studio-data/' );
 	}
 
 	// Make sure it's fresh if it's an initial save.
 	if ( $is_initial ) {
-		delete_file_option( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $option_name );
+		delete_file_option( $wp_filesystem->wp_content_dir() . 'wpps-studio-data/' . $option_name );
 	}
 
-	$wp_filesystem->put_contents( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $option_name, $option_value );
+	$wp_filesystem->put_contents( $wp_filesystem->wp_content_dir() . 'wpps-studio-data/' . $option_name, $option_value );
 }
 
 /**
@@ -161,7 +161,7 @@ function update_file_option( $option_name, $option_value, $is_initial = false ) 
 function delete_file_option( $option_name ) {
 	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
-	$wp_filesystem->rmdir( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $option_name, $option_value );
+	$wp_filesystem->rmdir( $wp_filesystem->wp_content_dir() . 'wpps-studio-data/' . $option_name );
 }
 
 /**
@@ -171,5 +171,5 @@ function delete_file_option( $option_name ) {
  */
 function get_file_option( $option_name ) {
 	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
-	return $wp_filesystem->get_contents( $wp_filesystem->wp_content_dir() . '.wpps-studio-data/' . $option_name );
+	return $wp_filesystem->get_contents( $wp_filesystem->wp_content_dir() . 'wpps-studio-data/' . $option_name );
 }

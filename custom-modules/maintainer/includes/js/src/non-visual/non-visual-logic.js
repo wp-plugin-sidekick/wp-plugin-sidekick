@@ -208,6 +208,30 @@ export function useCurrentPluginPointer() {
 	}
 }
 
+export function pingGoogle( props ) {
+	
+	return new Promise((resolve, reject) => {
+		
+		fetch(wppsApiEndpoints.runShellCommand, {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				location: props.location,
+				job_identifier: props.currentPluginData.dirname + '_' + props.job_identifier,
+				command: props.command,
+			})
+		})
+		.then( response => response.json())
+		.then( ( data ) => {
+			resolve( data );
+		});
+
+	});
+}
+
 export function runNpmRunDev( props ) {
 	
 	return new Promise((resolve, reject) => {
@@ -303,12 +327,20 @@ export async function enableDevelopmentMode(plugins, currentPluginData) {
 		currentPluginData: currentPluginData,
 		plugins: plugins
 	});
-	*/
 
 	runNpmRunDev({
 		location: currentPluginData.dirname,
 		job_identifier: 'npm_run_dev',
 		command: 'npm run dev',
+		currentPluginData: currentPluginData,
+		plugins: plugins
+	});
+	*/
+
+	pingGoogle({
+		location: currentPluginData.dirname,
+		job_identifier: 'pinggoogle',
+		command: 'ping google.com',
 		currentPluginData: currentPluginData,
 		plugins: plugins
 	});

@@ -190,7 +190,7 @@ function DevArea() {
 	const [currentTab, setCurrentTab] = useState(1);
 	
 	// NPM Run Dev file streamer.
-	const npmRunDevFileStreamer = useFetchOnRepeat( '/wp-content/.wpps-studio-data/wpps_output_' + currentPluginData.dirname + '_npm_run_dev' );
+	const npmRunDevFileStreamer = useFetchOnRepeat( '/wp-content/wpps-studio-data/wpps_output_' + currentPluginData.dirname + '_pinggoogle' );
 
 	if ( ! currentPluginData ) {
 		return '';	
@@ -1116,7 +1116,7 @@ function PreFlighter( props ) {
 	const [checkResponse, setCheckResponse] = useState( null );
 	const [installResponse, setInstallResponse] = useState( null );
 
-	const fileStreamer = useFetchOnRepeat( '/wp-content/.wpps-studio-data/wpps_output_' + props.data.installJobIdentifier );
+	const fileStreamer = useFetchOnRepeat( '/wp-content/wpps-studio-data/wpps_output_' + props.data.installJobIdentifier );
 
 	useEffect( () => {
 		if ( ! props.doingStatusChecks ) {
