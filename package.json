@@ -6,9 +6,7 @@
 		"url": "https://github.com/johnstonphilip/wp-plugin-studio/"
 	},
 	"scripts": {
-		"installation": "sh ./.scripts/install-scripts.sh",
-		"dev": "sh ./.scripts/dev-scripts.sh",
-		"build": "sh ./.scripts/dev-scripts.sh",
-		"lint": "sh ./.scripts/lint-scripts.sh"
+		"installation": "sh ./.scripts/install.sh",
+		"dev": "sh ./.scripts/dev.sh"
 	}
 }
