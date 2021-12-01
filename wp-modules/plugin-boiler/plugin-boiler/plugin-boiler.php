@@ -20,19 +20,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Automatically include custom modules, which sit in the "custom-modules" directory.
+ * Automatically include custom modules, which sit in the "wp-modules" directory.
  *
  * @return void
  */
 function include_custom_modules() {
 
-	$custom_modules = glob( plugin_dir_path( __FILE__ ) . 'custom-modules/*' );
+	$wp_modules = glob( plugin_dir_path( __FILE__ ) . 'wp-modules/*' );
 
-	foreach ( $custom_modules as $custom_module ) {
+	foreach ( $wp_modules as $wp_module ) {
 
-		$module_name = basename( $custom_module );
+		$module_name = basename( $wp_module );
 		$filename    = $module_name . '.php';
-		$filepath    = $custom_module . '/' . $filename;
+		$filepath    = $wp_module . '/' . $filename;
 
 		if ( is_readable( $filepath ) ) {
 			// If the module data exists, load it.

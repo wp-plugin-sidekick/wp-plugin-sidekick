@@ -4,7 +4,7 @@ services:
   wordpress:
     volumes:
       - ../../../../../plugins:/wordpress/plugins
-      - ./wp-plugin-studio/custom-modules/phpunit/includes/testers:/wordpress/wp-plugin-studio/custom-modules/phpunit/includes/testers
+      - ./wp-plugin-studio/wp-modules/phpunit/includes/testers:/wordpress/wp-plugin-studio/wp-modules/phpunit/includes/testers
     build:
       context: .
       args:

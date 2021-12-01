@@ -1,7 +1,7 @@
 # Loop through each plugin-module in the plugin.
 
-for DIR in custom-modules/*/; do
-	# Go to the directory of this custom-module.
+for DIR in wp-modules/*/; do
+	# Go to the directory of this wp-module.
 	cd "$DIR";
 	echo "Module: $DIR";
 

@@ -20,13 +20,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Automatically include custom modules, which sit in the "custom-modules" directory.
+ * Automatically include custom modules, which sit in the "wp-modules" directory.
  *
  * @return void
  */
 function include_custom_modules() {
 
-	$custom_modules = glob( plugin_dir_path( __FILE__ ) . 'custom-modules/*' );
+	$custom_modules = glob( plugin_dir_path( __FILE__ ) . 'wp-modules/*' );
 
 	foreach ( $custom_modules as $custom_module ) {
 

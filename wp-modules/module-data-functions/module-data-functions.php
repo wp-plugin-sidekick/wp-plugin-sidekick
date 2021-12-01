@@ -64,7 +64,7 @@ function get_plugin_modules( $plugin_dirname ) {
 
 	$plugin_path = $wp_filesystem_api->wp_plugins_dir() . $plugin_dirname;
 
-	$modules_glob = glob( $plugin_path . '/custom-modules/*' );
+	$modules_glob = glob( $plugin_path . '/wp-modules/*' );
 
 	foreach ( $modules_glob as $module ) {
 		$module_name = basename( $module );
@@ -93,7 +93,7 @@ function get_module_boilers() {
 
 	$plugin_path = $wp_filesystem_api->wp_plugins_dir() . 'wp-plugin-studio';
 
-	$modules_glob = glob( $plugin_path . '/custom-modules/module-boilers/module-boilers/*' );
+	$modules_glob = glob( $plugin_path . '/wp-modules/module-boilers/module-boilers/*' );
 
 	foreach ( $modules_glob as $module ) {
 		$module_name = basename( $module );
