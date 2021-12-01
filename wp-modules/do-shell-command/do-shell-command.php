@@ -115,7 +115,7 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 			// Kill the process.
 			shell_exec( 'kill -9 ' . $pid ); // phpcs:ignore
 
-			$output .= wp_json_encode(
+			$return = wp_json_encode(
 				array(
 					'pid'     => $pid,
 					'details' => $proc_details,
@@ -125,7 +125,7 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 			);
 
 			// The item was successfully created.
-			return $output;
+			return $return;
 		}
 	}
 }
