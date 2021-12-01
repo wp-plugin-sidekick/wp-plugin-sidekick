@@ -1,4 +1,4 @@
-# Loop through each plugin-module in the plugin.
+# Loop through each wp-module in the plugin.
 
 for DIR in wp-modules/*/; do
 	# Go to the directory of this wp-module.
