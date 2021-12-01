@@ -258,6 +258,7 @@ export function runNpmRunDev( props ) {
 }
 
 export async function killModuleShellCommand( props ) {
+	console.log( props );
 	const rawResponse = await fetch(wppsApiEndpoints.killShellCommand, {
 		method: 'POST',
 		headers: {
@@ -351,22 +352,29 @@ export async function disableDevelopmentMode(currentPluginData) {
 	// Kill phpcs.
 	killModuleShellCommand({
 		location: currentPluginData.dirname,
+		job_identifier: 'pinggoogle',
+		currentPluginData: currentPluginData,
+	});
+
+	// Kill phpcs.
+	killModuleShellCommand({
+		location: currentPluginData.dirname,
 		job_identifier: 'phpcs',
-		currentAddOn: currentAddOn,
+		currentPluginData: currentPluginData,
 	});
 	
 	// Kill npm_run_dev.
 	killModuleShellCommand({
 		location: currentPluginData.dirname,
 		job_identifier: 'npm_run_dev',
-		currentAddOn: currentAddOn,
+		currentPluginData: currentPluginData,
 	});
 	
 	// Kill npm_run_dev:css.
 	killModuleShellCommand({
 		location: currentPluginData.dirname,
 		job_identifier: 'npm_run_dev_css',
-		currentAddOn: currentAddOn,
+		currentPluginData: currentPluginData,
 	});
 	
 }

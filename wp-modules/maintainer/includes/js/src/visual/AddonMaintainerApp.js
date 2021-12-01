@@ -214,7 +214,7 @@ function DevArea() {
 								enableDevelopmentMode( plugins, currentPluginData );
 								npmRunDevFileStreamer.start();
 							} else {
-								disableDevelopmentMode( plugins, currentPluginData );
+								disableDevelopmentMode( currentPluginData );
 								npmRunDevFileStreamer.stop();
 							}
 						}
@@ -228,10 +228,10 @@ function DevArea() {
 							return (
 								<>
 								<div onClick={() => { setCurrentTab( 1 )}}>
-										<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 1 === currentTab } />
+									<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 1 === currentTab } />
 								</div>
 								<div onClick={() => { setCurrentTab( 2 )}}>
-								<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 2 === currentTab } />
+									<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 2 === currentTab } />
 								</div>
 								</>
 							)
@@ -247,9 +247,9 @@ function DevArea() {
 
 							return (
 								<>
-									<div className="bg-black p-4 -mt-2 text-white z-0">
+									<TerminalWindow>
 										{ npmRunDevFileStreamer.response }
-									</div>
+									</TerminalWindow>
 									
 								</>
 							)
@@ -272,7 +272,7 @@ function DevArea() {
 							if ( event.target.checked ) {
 								enableDevelopmentMode( plugins, currentPluginData );
 							} else {
-								disableDevelopmentMode( plugins, currentPluginData );
+								disableDevelopmentMode( currentPluginData );
 							}
 						}
 						} />
@@ -1213,9 +1213,9 @@ function PreFlighter( props ) {
 
 	function renderInstallResponse() {
 		return (
-			<div className="bg-black p-4 text-white z-0">
+			<TerminalWindow>
 				{ fileStreamer.response }
-			</div>
+			</TerminalWindow>
 		)
 	}
 	function renderCheckResponse() {
@@ -1225,15 +1225,15 @@ function PreFlighter( props ) {
 
 		return (
 			<div>
-				<div className="bg-black p-4 text-white z-0">
+				<TerminalWindow>
 					{ checkResponse.details.command }
-				</div>
-				<div className="bg-black p-4 -mt-2 text-white z-0">
+				</TerminalWindow>
+				<TerminalWindow>
 					{ checkResponse.error }
-				</div>
-				<div className="bg-black p-4 -mt-2 text-white z-0">
+				</TerminalWindow>
+				<TerminalWindow>
 					{ checkResponse.output }
-				</div>
+				</TerminalWindow>
 			</div>
 		)
 	}
@@ -1349,5 +1349,16 @@ function PreFlightChecks() {
 				
 			</div>
 		</>
+	)
+}
+
+function TerminalWindow( props ) {
+	
+	return (
+		<div
+			className="bg-black p-4 text-white z-0 whitespace-pre grid content-end overflow-y-scroll max-h-52"
+		>
+				{ props.children }
+		</div>
 	)
 }

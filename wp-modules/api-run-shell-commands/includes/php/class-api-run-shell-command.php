@@ -141,7 +141,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
-		update_file_option( $params['job_identifier'], false );
+		\WPPS\DoShellCommand\update_file_option( 'wpps_' . $params['job_identifier'], false );
 
 		// The item was successfully created.
 		return new \WP_REST_Response( true, 200 );
