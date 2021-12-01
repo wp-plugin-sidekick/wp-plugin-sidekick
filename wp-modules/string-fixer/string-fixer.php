@@ -152,7 +152,6 @@ function fix_module_file_header( string $file_contents, array $strings ) {
 	return $file_contents;
 }
 
-
 /**
  * Rewrite a file headers "@package" tag to ensure it is correct.
  *

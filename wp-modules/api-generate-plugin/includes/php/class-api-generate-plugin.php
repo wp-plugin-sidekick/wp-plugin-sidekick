@@ -80,11 +80,11 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 
 		// Copy the boiler plugin into it.
 		copy_dir( $plugin_boiler_dir, $new_plugin_dir );
-		
+
 		// Rename the main plugin file.
 		rename( $new_plugin_dir . '/plugin-boiler.php', $new_plugin_dir . '/' . $params['plugin_dirname'] . '.php' );		
 
-		// Fix strings
+		// Fix strings.
 		$strings_fixed = \WPPS\StringFixer\recursive_dir_string_fixer( $new_plugin_dir, $params, 'plugin' );
 
 		if ( ! $strings_fixed ) {
