@@ -23,11 +23,9 @@ import {
 
 export function AddonMaintainerApp() {
 	const plugins = usePlugins( wppsPlugins );
-	console.log( plugins.data );
 	
 	const currentPluginPointer = useCurrentPluginPointer();
 	const currentPluginData = currentPluginPointer.data ? plugins.data[currentPluginPointer.data] : false;
-	console.log( currentPluginData );
 	
 	return <AomContext.Provider
 		// Pass data into the context, which is availale in all of our components.
@@ -221,68 +219,101 @@ function DevArea() {
 						} />
 					</div>
 				</div>
-				<div className="">
-					<div className="tabs tabs-boxed z-10">
-						{(() => {
-							const status = currentPluginData.devStatus ? currentPluginData.devStatus['npm_run_dev'] : false;
-							return (
-								<>
-								<div onClick={() => { setCurrentTab( 1 )}}>
-									<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 1 === currentTab } />
-								</div>
-								<div onClick={() => { setCurrentTab( 2 )}}>
-									<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 2 === currentTab } />
-								</div>
-								</>
-							)
-						})() }
-					</div>
-					<div className="z-0">
-						{(() => {
-							npmRunDevFileStreamer.response
-							if ( currentTab !== 1 || ! npmRunDevFileStreamer.response ) {
-								return '';
-							}
-							console.log( npmRunDevFileStreamer.response );
+				<div className="card lg:card-side bordered bg-base-100 w-full">
+					<div className="card-body">
+						<div className="">
+							<div className="tabs tabs-boxed z-10">
+								{(() => {
+									const status = currentPluginData.devStatus ? currentPluginData.devStatus['npm_run_dev'] : false;
+									return (
+										<>
+										<div onClick={() => { setCurrentTab( 1 )}}>
+											<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 1 === currentTab } />
+										</div>
+										<div onClick={() => { setCurrentTab( 2 )}}>
+											<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 2 === currentTab } />
+										</div>
+										</>
+									)
+								})() }
+							</div>
+							<div className="z-0">
+								{(() => {
+									npmRunDevFileStreamer.response
+									if ( currentTab !== 1 || ! npmRunDevFileStreamer.response ) {
+										return '';
+									}
 
-							return (
-								<>
-									<TerminalWindow>
-										{ npmRunDevFileStreamer.response }
-									</TerminalWindow>
-									
-								</>
-							)
-						})() }
+									return (
+										<>
+											<TerminalWindow>
+												{ npmRunDevFileStreamer.response }
+											</TerminalWindow>
+											
+										</>
+									)
+								})() }
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
+			<LintingArea />
+		</div>
+	)
+}
+
+function LintingArea( props ) {
+	const {plugins, currentPluginData} = useContext(AomContext);
+	const [lintingInProgress, setLintingInProgress] = useState( false );
+	return (
+		<>
 			<div>
 				<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
 					<div className="flex px-2 mx-2 w-full">
 						<div className="flex-grow">
 							<span className="text-lg font-bold">
-							Testing and Linting
+							Linting
 							</span>
 						</div>
 						<span className="text-lg mr-4">
-							Test
+							Lint Files
 						</span>
-						<input type="checkbox" className="toggle" onChange={ (event) => {
+						<input type="checkbox" className="toggle" checked={lintingInProgress} onChange={ (event) => {
 							if ( event.target.checked ) {
-								enableDevelopmentMode( plugins, currentPluginData );
+								setLintingInProgress( true );
+								phpcsDo({
+									location: currentPluginData.dirname,
+									job_identifier: 'phpcs',
+									currentPluginData: currentPluginData,
+									plugins: plugins
+								}).then( () => {
+									setLintingInProgress( false );
+								});
 							} else {
 								disableDevelopmentMode( currentPluginData );
+								npmRunDevFileStreamer.stop();
 							}
 						}
 						} />
+						
+					</div>
+				</div>
+				<div className="card lg:card-side bordered bg-base-100 w-full">
+					<div className="card-body">
+						{(() => {
+							if ( lintingInProgress ) {
+								return 'Linting PHP'
+							} else {
+								return 'Linting Complete'
+							}
+						})()}
 					</div>
 				</div>
 			</div>
-		</div>
+		</>
 	)
 }
-
 function ManageableAddOns( props ) {
 	const {plugins, setCurrentPlugin, currentPluginData} = useContext(AomContext);
 	
@@ -1331,7 +1362,7 @@ function PreFlightChecks() {
 						checkJobIdentifier: 'check_php',
 						checkCommand: 'php -v;',
 						installJobIdentifier: 'install_php',
-						installCommand: 'brew install php',
+						installCommand: 'brew install php@7.4',
 					}}
 					doingStatusChecks={ doingStatusChecks }
 				/>
