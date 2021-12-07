@@ -83,7 +83,7 @@ function Plugin() {
 								<div className="flex px-2 mx-2 w-full">
 									<div className="flex-grow">
 										<span className="text-lg font-bold">
-										Custom Modules
+										WP Modules
 										</span>
 									</div>
 									<div className="flex flex-grow-0">
