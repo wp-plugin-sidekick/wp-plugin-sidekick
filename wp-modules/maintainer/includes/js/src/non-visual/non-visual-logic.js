@@ -319,6 +319,34 @@ export function phpcsDo( props ) {
 	
 }
 
+export function phpUnit( props ) {
+	
+	return new Promise((resolve, reject) => {
+
+		fetch(wppsApiEndpoints.phpUnit + '?' + new URLSearchParams({
+				location: props.location,
+				job_identifier: props.currentPluginData.dirname + '_' + props.job_identifier,
+			}), {
+			method: 'GET',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+		})
+		.then( response => response.json() )
+		.then( ( data ) => {
+			const response = JSON.parse( data );
+
+			// Set the entire response as a devStatus for the plugin.
+			props.plugins.setPluginDevStatus( props.currentPluginData.dirname, props.job_identifier, response.output );
+
+			resolve( data );
+		});
+
+	});
+	
+}
+
 export async function enableDevelopmentMode(plugins, currentPluginData) {
 	// Enable phpcs.
 	/*

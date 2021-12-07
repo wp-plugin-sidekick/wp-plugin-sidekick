@@ -12,6 +12,7 @@ import {
 	runShellCommand,
 	killModuleShellCommand,
 	phpcsDo,
+	phpUnit,
 	enableDevelopmentMode,
 	disableDevelopmentMode
 } from './../non-visual/non-visual-logic.js';
@@ -38,8 +39,9 @@ export function AddonMaintainerApp() {
 		<div className="mx-auto p-5 relative">
 			<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box z-10 relative">
 				<div className="flex-grow px-2 mx-2">
+					<img className="mr-4" width="40px" src="https://cdn-icons-png.flaticon.com/512/1377/1377081.png" />
 					<span className="text-lg font-bold">
-					WP Plugin Studio - A place to invent things with WordPress.
+					WP Plugin Sidekick - a trusty assistant for modern plugin invention.
 					</span>
 				</div> 
 				<div className="flex flex-grow-0">
@@ -196,6 +198,7 @@ function DevArea() {
 
 	return (
 		<div className="grid grid-cols-1 gap-4 grid-flow-row auto-rows-min">
+			<LintingArea />
 			<div>
 				<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
 					<div className="flex px-2 mx-2 w-full">
@@ -258,14 +261,27 @@ function DevArea() {
 					</div>
 				</div>
 			</div>
-			<LintingArea />
 		</div>
 	)
 }
 
 function LintingArea( props ) {
 	const {plugins, currentPluginData} = useContext(AomContext);
-	const [lintingInProgress, setLintingInProgress] = useState( false );
+	const [inProgress, setInProgress] = useState( false );
+	const [lintingPHPInProgress, setLintingPHPInProgress] = useState( false );
+	const [phpunitInProgress, setPhpunitInProgress] = useState( false );
+
+	useEffect( () => {
+		if (
+			lintingPHPInProgress ||
+			phpunitInProgress
+		) {
+			setInProgress( true );
+		} else {
+			setInProgress( false );
+		}
+	}, [lintingPHPInProgress, phpunitInProgress] );
+
 	return (
 		<>
 			<div>
@@ -273,26 +289,36 @@ function LintingArea( props ) {
 					<div className="flex px-2 mx-2 w-full">
 						<div className="flex-grow">
 							<span className="text-lg font-bold">
-							Linting
+							Tests, checks, and linting
 							</span>
 						</div>
 						<span className="text-lg mr-4">
-							Lint Files
+							Lint/Test
 						</span>
-						<input type="checkbox" className="toggle" checked={lintingInProgress} onChange={ (event) => {
+						<input type="checkbox" className="toggle" checked={inProgress} onChange={ (event) => {
 							if ( event.target.checked ) {
-								setLintingInProgress( true );
+								setLintingPHPInProgress( true );
 								phpcsDo({
 									location: currentPluginData.dirname,
 									job_identifier: 'phpcs',
 									currentPluginData: currentPluginData,
 									plugins: plugins
 								}).then( () => {
-									setLintingInProgress( false );
+									setLintingPHPInProgress( false );
+								});
+
+								setPhpunitInProgress( true );
+								phpUnit({
+									location: currentPluginData.dirname,
+									job_identifier: 'phpunit',
+									currentPluginData: currentPluginData,
+									plugins: plugins
+								}).then( () => {
+									setPhpunitInProgress( false );
 								});
 							} else {
 								disableDevelopmentMode( currentPluginData );
-								npmRunDevFileStreamer.stop();
+								//npmRunDevFileStreamer.stop();
 							}
 						}
 						} />
@@ -301,19 +327,103 @@ function LintingArea( props ) {
 				</div>
 				<div className="card lg:card-side bordered bg-base-100 w-full">
 					<div className="card-body">
-						{(() => {
-							if ( lintingInProgress ) {
-								return 'Linting PHP'
-							} else {
-								return 'Linting Complete'
-							}
-						})()}
+						<div className="card shadow-lg compact side bg-base-200 cursor-pointer"
+							onClick={() => {
+								
+							}}
+						>
+							<div className="grid grid-cols-3 items-center card-body">
+								<LintingComponent
+									title={ __( 'PHP Linting' ) }
+									description={ __( 'Checks to make sure PHP files confirm to WordPress Coding Standards' ) }
+									inProgress={lintingPHPInProgress}
+									errors={ [ currentPluginData?.devStatus?.phpcs?.totals?.errors ] }
+									success={ currentPluginData?.devStatus?.phpcs?.totals?.errors === 0 }
+									output={ JSON.stringify( currentPluginData?.devStatus?.phpcs ) }
+								/>
+								<LintingComponent
+									title={ __( 'Integration Tests (PHPUnit)' ) }
+									description={ __( 'Runs integration tests with WordPress' ) }
+									inProgress={phpunitInProgress}
+									errors={ [
+										currentPluginData?.devStatus?.phpunit?.match("(?<=Errors: ).*[0-9]"),
+										currentPluginData?.devStatus?.phpunit?.match("(?<=Failures: ).*[0-9]") 
+									] }
+									// Look for "OK (X tests" in the response to indicate success.
+									success={ /OK .*[0-9] tests/.test( currentPluginData?.devStatus?.phpunit ) }
+									output={ currentPluginData?.devStatus?.phpunit }
+								/>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</>
 	)
 }
+
+function LintingComponent( props ) {
+	const [modalOpen, setModalOpen] = useState(false);
+	return(
+		<div>
+			<div className="flex items-center">
+				<h2 className="card-title">{props.title}</h2>
+				<span>
+					{(() => {
+						if ( props.inProgress ) {
+							return (
+								<div className="btn btn-ghost loading"></div>
+							)
+						}
+
+						for (const error of props.errors){
+							if ( error ) {
+								return (
+									<>
+										{(() => {
+											if ( modalOpen ) {
+												return (
+													<Modal title={props.title} closeModal={ () => { setModalOpen( false ) } }>
+														<div className="grid gap-5 p-10">
+															<h2 className="text-lg">{ __( 'Response', 'wp-plugin-studio' ) }</h2>
+															<TerminalWindow>
+																{ props.output }
+															</TerminalWindow>
+														</div>
+													</Modal>
+												)
+											}
+										})()}
+								
+										<div className="btn" onClick={ () => { setModalOpen( true ) } }>
+											<svg
+												style={{
+													stroke: 'hsla(var(--er)',
+												}}
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												className="inline-block w-6 h-6"
+												viewBox="0 0 24 24"
+											>
+												<path d="M6 18L18 6M6 6l12 12"></path>
+											</svg>
+										</div>
+									</>
+								)
+							}
+						}
+
+						if  ( props.success ) {
+							return <div className="btn btn-ghost">✅</div>
+						}
+					})()}
+				</span>
+			</div>
+			<p className="text-base-content text-opacity-40">{props.description}</p>
+		</div>
+	)
+}
+
 function ManageableAddOns( props ) {
 	const {plugins, setCurrentPlugin, currentPluginData} = useContext(AomContext);
 	
@@ -490,7 +600,7 @@ function Modal( props ) {
 					</div>
 				</div>
 				<div style={{
-					maxHeight: '90%',
+					maxHeight: 'calc( 100% - 100px )',
 					overflow: 'scroll',
 				}}>
 					{ props.children }
@@ -1377,17 +1487,160 @@ function PreFlightChecks() {
 					}}
 					doingStatusChecks={ doingStatusChecks }
 				/>
+
+				<ManualPreFlighter
+					data={{
+						name: 'Docker',
+						description: 'Docker is...',
+						checkJobIdentifier: 'check_docker',
+						checkCommand: 'docker -v;',
+						downloadLink: 'https://docs.docker.com/get-docker/'
+					}}
+					doingStatusChecks={ doingStatusChecks }
+				/>
 				
 			</div>
 		</>
 	)
 }
 
+function ManualPreFlighter( props ) {
+
+	const [checkResponse, setCheckResponse] = useState( null );
+	const [installResponse, setInstallResponse] = useState( null );
+
+	const fileStreamer = useFetchOnRepeat( '/wp-content/wpps-studio-data/wpps_output_' + props.data.installJobIdentifier );
+
+	useEffect( () => {
+		if ( ! props.doingStatusChecks ) {
+			fileStreamer.stop();
+		} else {
+			checkTheStatus();
+		}
+	}, [props.doingStatusChecks] );
+
+	function checkTheStatus() {
+		
+		fetch(wppsApiEndpoints.whichChecker + '?' + new URLSearchParams({
+			job_identifier: props.data.checkJobIdentifier,
+			command: props.data.checkCommand,
+		}), {
+			method: 'GET',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+		})
+		.then( response => response.json())
+		.then( ( data ) => {
+			const response = JSON.parse( data );
+			setCheckResponse(response);
+		});
+
+	}
+
+
+	function renderCheckStatus() {
+		if ( ! checkResponse ) {
+			return 'Status not yet checked...'
+		}
+		if ( ! checkResponse.output || checkResponse.error ) {
+			return (
+				<>
+				<div className="alert alert-error gap-2">
+					<div className="flex-1">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 mx-2 stroke-current">    
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>                      
+						</svg> 
+						<label>{ props.data.name + ' not found! It needs to be manually installed. Here\'s where you can download it.' }</label>
+					</div>
+					<a className="btn" href={ props.data.downloadLink } target="_blank">{ 'Visit Download Page' }</a>
+					<div class="alert alert-warning">
+						<div class="flex-1">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 mx-2 stroke-current"> 
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>                         
+							</svg> 
+							<label>If you already have it downloaded, make sure it is open! (Applications folder, look for Docker Desktop)</label>
+						</div>
+					</div>
+				</div>
+				</>
+			)
+		}
+		if ( checkResponse.output ) {
+			return (
+				<>
+				<div class="alert alert-success">
+					<div class="flex-1">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 mx-2 stroke-current">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>                
+						</svg> 
+						<label>{ props.data.name + ' exists! 👍' }</label>
+					</div>
+				</div>
+				</>
+			)
+		}
+	}
+
+	function renderCheckResponse() {
+		if ( ! checkResponse ) {
+			return '';
+		}
+
+		return (
+			<div>
+				<TerminalWindow>
+					{ checkResponse.details.command }
+				</TerminalWindow>
+				<TerminalWindow>
+					{ checkResponse.error }
+				</TerminalWindow>
+				<TerminalWindow>
+					{ checkResponse.output }
+				</TerminalWindow>
+			</div>
+		)
+	}
+
+	return (
+		<div className="card shadow-lg compact side bg-base-200">
+			<div className="flex-row items-center space-x-4 card-body">
+				<div>
+					<div className="avatar">
+						<div className="rounded-full w-14 h-14 shadow bg-primary-content">
+							<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxXQXrsWLSWHf1vdT32y-xMzTipJONoU-FCQ&usqp=CAU" />
+						</div>
+					</div>
+				</div>
+				<div className="grid gap-1">
+					<h2 className="card-title">{props.data.name}</h2>
+					<p className="text-base-content text-opacity-40">{props.data.description}</p>
+					<p>{ renderCheckStatus() }</p>
+					{ renderCheckResponse() }
+				</div>
+			</div>
+		</div>
+	)
+
+}
+
 function TerminalWindow( props ) {
-	
+	const element = useRef();
+
+	useEffect( () => {
+		if ( ! element.current ) {
+			return;
+		}
+
+		// Set the scrollbar to be at the bottom.
+		element.current.scrollTop = element.current.scrollHeight;
+	}, [props.children] );
+
 	return (
 		<div
-			className="bg-black p-4 text-white z-0 whitespace-pre grid content-end overflow-y-scroll max-h-52"
+			ref={element}
+			className="bg-black p-4 text-white z-0 whitespace-pre grid overflow-x-hidden overflow-y-scroll max-h-96"
 		>
 				{ props.children }
 		</div>

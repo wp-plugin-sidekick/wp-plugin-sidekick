@@ -35,6 +35,7 @@ function render_app() {
 				runShellCommand: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/runshellcommand',
 				whichChecker: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/whichchecker',
 				phpcs: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/phpcs',
+				phpUnit: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/phpunit',
 				killShellCommand: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/killmoduleshellcommand',
 			};
 			var wppsPlugins = <?php echo wp_json_encode( get_managable_plugins() ); ?>;
