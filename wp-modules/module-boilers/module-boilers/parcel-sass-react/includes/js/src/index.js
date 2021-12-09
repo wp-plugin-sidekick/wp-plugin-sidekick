@@ -1,8 +1,10 @@
-
 import React from 'react';
-import ReactDOM from "react-dom";
+import ReactDOM from 'react-dom';
 
 function ParcelSassReact() {
-	return 'Hello ParcelSassReact'
+	return 'Hello ParcelSassReact';
 }
-ReactDOM.render(<ParcelSassReact />, document.getElementById('ParcelSassReact'));
+ReactDOM.render(
+	<ParcelSassReact />,
+	document.getElementById('ParcelSassReact')
+);

@@ -1,42 +1,42 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
-const chalk = require("chalk");
-const archiver = require("archiver");
-const recursive = require("recursive-readdir");
-const prettyBytes = require("pretty-bytes");
+const chalk = require('chalk');
+const archiver = require('archiver');
+const recursive = require('recursive-readdir');
+const prettyBytes = require('pretty-bytes');
 
 const excludes = [
-	".circleci",
-	".DS_Store",
-	".editorconfig",
-	".eslintignore",
-	".eslintrc.js",
-	".git",
-	".gitattributes",
-	".github",
-	".gitignore",
-	".scripts",
-	".stylelintrc.json",
-	"*.zip",
-	".stylelintignore",
-	".vscode",
-	".eslintrc",
-	".nvmrc",
-	"Makefile",
-	"tests",
-	"phpunit.xml.dist",
-	"composer.json",
-	"composer.lock",
-	"node_modules",
-	"package-lock.json",
-	"package.json",
-	"phpcs.xml.dist",
-	"*scss",
-	"*.md",
-	'webpack.config.js'
+	'.circleci',
+	'.DS_Store',
+	'.editorconfig',
+	'.eslintignore',
+	'.eslintrc.js',
+	'.git',
+	'.gitattributes',
+	'.github',
+	'.gitignore',
+	'.scripts',
+	'.stylelintrc.json',
+	'*.zip',
+	'.stylelintignore',
+	'.vscode',
+	'.eslintrc',
+	'.nvmrc',
+	'Makefile',
+	'tests',
+	'phpunit.xml.dist',
+	'composer.json',
+	'composer.lock',
+	'node_modules',
+	'package-lock.json',
+	'package.json',
+	'phpcs.xml.dist',
+	'*scss',
+	'*.md',
+	'webpack.config.js',
 ];
 
 // Creates a file to stream archive data to.
@@ -47,24 +47,24 @@ const fileName = process.env.VERSION_ARTIFACT_FILE || `${slug}.${version}.zip`;
 
 const output = fs.createWriteStream(fileName);
 
-const archive = archiver("zip", {
-	zlib: { level: 9 } // Best compression.
+const archive = archiver('zip', {
+	zlib: { level: 9 }, // Best compression.
 });
 
 /**
  * Sets up the file output stream and archive.
  */
-const setupZipArchive = function() {
+const setupZipArchive = function () {
 	// Listens for all archive data to be written.
 	// Report the zip name and size.
-	output.on("close", function() {
+	output.on('close', function () {
 		const fileSize = prettyBytes(archive.pointer());
 		console.log(chalk`{cyan Created ${fileName}, ${fileSize}}`);
 	});
 
 	// Displays warnings during archiving.
-	archive.on("warning", function(err) {
-		if (err.code === "ENOENT") {
+	archive.on('warning', function (err) {
+		if (err.code === 'ENOENT') {
 			console.log(err);
 		} else {
 			throw err;
@@ -72,7 +72,7 @@ const setupZipArchive = function() {
 	});
 
 	// Catches errors during archiving.
-	archive.on("error", function(err) {
+	archive.on('error', function (err) {
 		throw err;
 	});
 
@@ -84,15 +84,15 @@ const setupZipArchive = function() {
  * Loops through theme directory, omitting files in the `exclude` array.
  * Adds each file to the zip archive.
  */
-const zipFiles = function() {
-	recursive(process.cwd(), excludes, function(err, files) {
+const zipFiles = function () {
+	recursive(process.cwd(), excludes, function (err, files) {
 		let relativePath;
 
 		console.log(chalk`{cyan Making zip file}`);
-		files.forEach(function(filePath) {
+		files.forEach(function (filePath) {
 			relativePath = path.relative(process.cwd(), filePath);
 			archive.file(filePath, {
-				name: `${process.env.npm_package_name}/${relativePath}`
+				name: `${process.env.npm_package_name}/${relativePath}`,
 			});
 		});
 

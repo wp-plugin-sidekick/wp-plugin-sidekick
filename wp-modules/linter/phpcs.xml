@@ -12,6 +12,35 @@
 	<exclude-pattern>./node_modules/</exclude-pattern>
 	<exclude-pattern>./vendor/</exclude-pattern>
 
+	<!-- Do not require docblocks for unit tests -->
+	<rule ref="Squiz.Commenting.FunctionComment.Missing">
+		<exclude-pattern>phpunit/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.FileComment.Missing">
+		<exclude-pattern>phpunit/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.ClassComment.Missing">
+		<exclude-pattern>phpunit/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.ClassComment.SpacingAfter">
+		<exclude-pattern>phpunit/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.FunctionComment.MissingParamTag">
+		<exclude-pattern>phpunit/*</exclude-pattern>
+	</rule>
+	<rule ref="Generic.Commenting.DocComment.Empty">
+    	<exclude-pattern>phpunit/*</exclude-pattern>
+    </rule>
+	<rule ref="Generic.Commenting.DocComment.MissingShort">
+		<exclude-pattern>phpunit/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.VariableComment.Missing">
+		<exclude-pattern>phpunit/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.FunctionCommentThrowTag.Missing">
+		<exclude-pattern>phpunit/*</exclude-pattern>
+	</rule>
+
 	<!-- How to scan -->
 	<!-- Show sniff and progress -->
 	<arg value="sp"/>

@@ -1,21 +1,15 @@
 module.exports = {
 	mode: 'jit',
-	purge: [
-		'./includes/js/src/index.js',
-	],
+	purge: ['./includes/js/src/index.js'],
 	darkMode: false, // or 'media' or 'class'
 	theme: {},
 	variants: {
-	    extend: {},
+		extend: {},
 	},
-	plugins: [
-		require('daisyui'),
-	],
+	plugins: [require('daisyui')],
 	daisyui: {
 		styled: true,
-		themes: [
-			'dark',
-		],
+		themes: ['dark'],
 		base: true,
 		utils: true,
 		logs: true,

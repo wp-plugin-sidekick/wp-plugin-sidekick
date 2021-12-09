@@ -1,8 +1,10 @@
-
 import React from 'react';
-import ReactDOM from "react-dom";
+import ReactDOM from 'react-dom';
 
 function ParcelTailwindReact() {
-	return 'Hello ParcelTailwindReact'
+	return 'Hello ParcelTailwindReact';
 }
-ReactDOM.render(<ParcelTailwindReact />, document.getElementById('ParcelTailwindReact'));
+ReactDOM.render(
+	<ParcelTailwindReact />,
+	document.getElementById('ParcelTailwindReact')
+);

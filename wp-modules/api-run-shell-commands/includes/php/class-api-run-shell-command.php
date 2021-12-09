@@ -67,13 +67,26 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		);
 		register_rest_route(
 			$namespace,
-			'/phpcs',
+			'/phplint',
 			array(
 				array(
 					'methods'             => 'GET',
-					'callback'            => array( $this, 'phpcs' ),
+					'callback'            => array( $this, 'phplint' ),
 					'permission_callback' => array( $this, 'run_shell_command_permission_check' ),
-					'args'                => $this->request_args( 'phpcs', false ),
+					'args'                => $this->request_args( 'phplint', false ),
+				),
+				'schema' => 'response_item_schema',
+			)
+		);
+		register_rest_route(
+			$namespace,
+			'/phplintfix',
+			array(
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'phplintfix' ),
+					'permission_callback' => array( $this, 'run_shell_command_permission_check' ),
+					'args'                => $this->request_args( 'phplintfix', false ),
 				),
 				'schema' => 'response_item_schema',
 			)
@@ -87,6 +100,58 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 					'callback'            => array( $this, 'phpunit' ),
 					'permission_callback' => array( $this, 'run_shell_command_permission_check' ),
 					'args'                => $this->request_args( 'phpunit', false ),
+				),
+				'schema' => 'response_item_schema',
+			)
+		);
+		register_rest_route(
+			$namespace,
+			'/csslint',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'csslint' ),
+					'permission_callback' => array( $this, 'run_shell_command_permission_check' ),
+					'args'                => $this->request_args( 'csslint', false ),
+				),
+				'schema' => 'response_item_schema',
+			)
+		);
+		register_rest_route(
+			$namespace,
+			'/csslintfix',
+			array(
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'csslintfix' ),
+					'permission_callback' => array( $this, 'run_shell_command_permission_check' ),
+					'args'                => $this->request_args( 'csslintfix', false ),
+				),
+				'schema' => 'response_item_schema',
+			)
+		);
+		register_rest_route(
+			$namespace,
+			'/jslint',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'jslint' ),
+					'permission_callback' => array( $this, 'run_shell_command_permission_check' ),
+					'args'                => $this->request_args( 'jslint', false ),
+				),
+				'schema' => 'response_item_schema',
+			)
+		);
+		register_rest_route(
+			$namespace,
+			'/jslintfix',
+			array(
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'jslintfix' ),
+					'permission_callback' => array( $this, 'run_shell_command_permission_check' ),
+					'args'                => $this->request_args( 'jslintfix', false ),
 				),
 				'schema' => 'response_item_schema',
 			)
@@ -114,10 +179,8 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
-		// Change to this modules directory first, then run the command(s).
-		$set_path       = 'export PATH="$PATH:"/usr/local/bin/;';
 		$go_to_location = 'cd ' . $wp_filesystem->wp_plugins_dir() . $params['location'] . '; ';
-		$command        = $set_path . $go_to_location . $params['command'] . '; ';
+		$command        = $go_to_location . $params['command'] . '; ';
 		$job_identifier = $params['job_identifier'];
 
 		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
@@ -148,47 +211,47 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 	}
 
 	/**
-	 * Get a currently-running job's error and output data.
+	 * Run phplint for a plugin.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_Error|WP_REST_Request
 	 */
-	public function get_module_shell_command_output( $request ) {
+	public function phplint( $request ) {
+
 		$params = wp_parse_args( $request->get_params(), $this->default_args() );
 
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
-		$response = array();
+		// The cwd will be set to wp-plugin-studio/wp-modules/linter directory first so we can use it's phpcs functions without needing them in each plugin/module.
+		$command        = $go_to . './vendor/bin/phpcs --report=json -q --standard=' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/wp-modules/linter/phpcs.xml ' . $wp_filesystem->wp_plugins_dir() . $params['location'];
+		$job_identifier = $params['job_identifier'];
 
-		$response['errors'] = get_file_option( 'wpps_error_' . $job_identifier );
-		$response['output'] = get_file_option( 'wpps_output_' . $job_identifier );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/wp-modules/linter' );
 
-		// The item was successfully created.
-		return new \WP_REST_Response( $response, 200 );
+		if ( is_wp_error( $result ) ) {
+			return new \WP_REST_Response( $result, 400 );
+		} else {
+			return new \WP_REST_Response( $result, 200 );
+		}
 	}
 
 	/**
-	 * Run phpcs for a plugin.
+	 * Run phplintfix for a plugin.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_Error|WP_REST_Request
 	 */
-	public function phpcs( $request ) {
-
-		//Check if PHP is installed and properly configured. 
-		$php_version_check = 'which php;'; // TODO: Check for PHP versions before to help people set up PHP on the command line properly.
+	public function phplintfix( $request ) {
 
 		$params = wp_parse_args( $request->get_params(), $this->default_args() );
 
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
-		// Change to the wp-plugin-studio directory first so we can use it's phpcs functions without needing them in each plugin/module.
-		$set_path       = 'export PATH="$PATH:"/usr/local/bin/; ';
-		$go_to          = 'cd ' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio; ';
-		$command        = $set_path . $go_to . './vendor/bin/phpcs --report=json -q --standard=' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/phpcs.xml ' . $wp_filesystem->wp_plugins_dir() . $params['location'];
+		// The cwd will be set to wp-plugin-studio/wp-modules/linter directory first so we can use it's phpcs functions without needing them in each plugin/module.
+		$command        = './vendor/bin/phpcbf -q --standard=./phpcs.xml  ' . $wp_filesystem->wp_plugins_dir() . $params['location'];
 		$job_identifier = $params['job_identifier'];
 
-		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_content_dir() );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );
@@ -209,15 +272,145 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
-		// Change to the wp-plugin-studio directory first so we can use it's phpcs functions without needing them in each plugin/module.
-		$set_path       = 'export PATH="$PATH:"/usr/local/bin/; ';
-
 		// First, go to the directory containing the dockerfile and build it.
 		$go_to_docker   = 'cd ' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/wp-modules/phpunit/includes;';
 		$build_docker   = 'docker-compose up --build -d;';
 		$go_to_plugins  = 'cd ' . $wp_filesystem->wp_content_dir() . ';';
 		$run_docker     = 'docker-compose -f plugins/wp-plugin-studio/wp-modules/phpunit/includes/docker-compose.yml run wordpress vendor/bin/phpunit --bootstrap plugins/wp-plugin-studio/wp-modules/phpunit/includes/testers/bootstrap.php plugins/' . $params['location'] . '/wp-modules/';
-		$command        = $set_path . $go_to_docker . $build_docker . $go_to_plugins . $run_docker;
+		$command        = $go_to_docker . $build_docker . $go_to_plugins . $run_docker;
+		$job_identifier = $params['job_identifier'];
+
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
+
+		if ( is_wp_error( $result ) ) {
+			return new \WP_REST_Response( $result, 400 );
+		} else {
+			return new \WP_REST_Response( $result, 200 );
+		}
+	}
+
+	/**
+	 * Lint CSS for a plugin.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_Error|WP_REST_Request
+	 */
+	public function csslint( $request ) {
+
+		$params = wp_parse_args( $request->get_params(), $this->default_args() );
+
+		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+
+		// Note that WPPS linter module moves a package.json directly into wp-content, as many things (like stylelint not scanning node_modules) only works if scanning a child directory, not parent.
+		// By making the wp-scripts package.json a "parent" to all plugins, it can then lint all plugins from a central place.
+		$command = 'npm run lint:css "./plugins/' .  $params['location'] . '/**/*.*css"; ';
+
+		$job_identifier = $params['job_identifier'];
+
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_content_dir() );
+
+		if ( is_wp_error( $result ) ) {
+			return new \WP_REST_Response( $result, 400 );
+		} else {
+			return new \WP_REST_Response( $result, 200 );
+		}
+	}
+
+	/**
+	 * Fix CSS for a plugin.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_Error|WP_REST_Request
+	 */
+	public function csslintfix( $request ) {
+
+		$params = wp_parse_args( $request->get_params(), $this->default_args() );
+
+		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+
+		// Note that WPPS linter module moves a package.json directly into wp-content, as many things (like stylelint not scanning node_modules) only works if scanning a child directory, not parent.
+		// By making the wp-scripts package.json a "parent" to all plugins, it can then lint all plugins from a central place.
+		$command = 'npm run lint:css "./plugins/' .  $params['location'] . '/**/*.*css" -- --fix; ';
+
+		$job_identifier = $params['job_identifier'];
+
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_content_dir() );
+
+		if ( is_wp_error( $result ) ) {
+			return new \WP_REST_Response( $result, 400 );
+		} else {
+			return new \WP_REST_Response( $result, 200 );
+		}
+	}
+
+	/**
+	 * Lint Js for a plugin.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_Error|WP_REST_Request
+	 */
+	public function jslint( $request ) {
+
+		$params = wp_parse_args( $request->get_params(), $this->default_args() );
+
+		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+
+		// Note that WPPS linter module moves a package.json directly into wp-content, as many things (like stylelint not scanning node_modules) only works if scanning a child directory, not parent.
+		// By making the wp-scripts package.json a "parent" to all plugins, it can then lint all plugins from a central place.
+		$command = 'npm run lint:js "./plugins/' .  $params['location'] . '"; ';
+
+		$job_identifier = $params['job_identifier'];
+
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_content_dir() );
+
+		if ( is_wp_error( $result ) ) {
+			return new \WP_REST_Response( $result, 400 );
+		} else {
+			return new \WP_REST_Response( $result, 200 );
+		}
+	}
+
+	/**
+	 * Fix Js for a plugin.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_Error|WP_REST_Request
+	 */
+	public function jslintfix( $request ) {
+
+		$params = wp_parse_args( $request->get_params(), $this->default_args() );
+
+		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+
+		// Note that WPPS linter module moves a package.json directly into wp-content, as many things (like stylelint not scanning node_modules) only works if scanning a child directory, not parent.
+		// By making the wp-scripts package.json a "parent" to all plugins, it can then lint all plugins from a central place.
+		$command = 'npm run lint:js "./plugins/' .  $params['location'] . '" -- --fix; ';
+
+		$job_identifier = $params['job_identifier'];
+
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_content_dir() );
+
+		if ( is_wp_error( $result ) ) {
+			return new \WP_REST_Response( $result, 400 );
+		} else {
+			return new \WP_REST_Response( $result, 200 );
+		}
+	}
+
+	/**
+	 * Fix PHP for a plugin.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_Error|WP_REST_Request
+	 */
+	public function fixphp( $request ) {
+
+		$params = wp_parse_args( $request->get_params(), $this->default_args() );
+
+		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+
+		$go_to          = 'cd ' . $wp_filesystem->wp_plugins_dir() . $params['location'] . '; ';
+		$command        = $go_to . 'npm run lint:php:fix;';
 		$job_identifier = $params['job_identifier'];
 
 		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
@@ -240,13 +433,10 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
-		// Change to the wp-plugin-studio directory first so we can use it's phpcs functions without needing them in each plugin/module.
-		$set_path = 'export PATH="$PATH:"/usr/local/bin/; ';
-
 		// First, go to the directory containing the dockerfile and build it.
 		$go_to_plugins  = 'cd ' . $wp_filesystem->wp_plugins_dir() . '/wp-plugin-studio;';
 		$run_zip        = 'node .scripts/makezip.js ' . $params['location'];
-		$command        = $set_path . $go_to_plugins . $run_zip;
+		$command        = $go_to_plugins . $run_zip;
 		$job_identifier = $params['job_identifier'];
 
 		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
@@ -286,7 +476,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 			),
 		);
 
-		if ( 'runshellcommand' === $type || 'phpcs' === $type ) {
+		if ( 'runshellcommand' === $type || 'phplint' === $type ) {
 			$return_args['location'] = array(
 				'required'          => true,
 				'type'              => 'string',

@@ -10,12 +10,6 @@
 	    "dealerdirect/phpcodesniffer-composer-installer": "0.7.0",
 	    "phpcompatibility/phpcompatibility-wp": "2.1.0",
 	    "squizlabs/php_codesniffer": "3.5.3",
-	    "wp-coding-standards/wpcs": "2.2.0",
-	    "phpunit/phpunit": "9.5"
-	},
-	"scripts": {
-	    "test": [
-		   "phpunit"
-	    ]
+	    "wp-coding-standards/wpcs": "2.2.0"
 	}
  }

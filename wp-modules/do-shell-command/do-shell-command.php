@@ -59,8 +59,8 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 
 		// Set a database option which we'll use to keep this command alive indefinitely, until stopped.
 		update_file_option( 'wpps_' . $job_identifier, true, true );
-		update_file_option( 'wpps_error_' . $job_identifier, $error, true );
-		update_file_option( 'wpps_output_' . $job_identifier, $output, true );
+		update_file_option( 'wpps_' . $job_identifier . '_error', $error, true );
+		update_file_option( 'wpps_' . $job_identifier . '_output', $output, true );
 	} else {
 		return new \WP_Error( 'error', __( 'Something went wrong.', '' ) );
 	}
@@ -94,11 +94,11 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 			$error  = stream_get_contents( $pipes[2] );
 			$output = stream_get_contents( $pipes[1] );
 
-			$error_appended  = get_file_option( 'wpps_error_' . $job_identifier ) . $error;
-			$output_appended = get_file_option( 'wpps_output_' . $job_identifier ) . $output;
+			$error_appended  = get_file_option( 'wpps_' . $job_identifier . '_error' ) . $error;
+			$output_appended = get_file_option( 'wpps_' . $job_identifier . '_output' ) . $output;
 
-			update_file_option( 'wpps_error_' . $job_identifier, $error_appended );
-			update_file_option( 'wpps_output_' . $job_identifier, $output_appended );
+			update_file_option( 'wpps_' . $job_identifier . '_error', $error_appended );
+			update_file_option( 'wpps_' . $job_identifier . '_output', $output_appended );
 
 			// Wait 10000 microseconds seconds before checking if we should keep this process alive again.
 			usleep( 10000 );
@@ -108,8 +108,8 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 			$error        = stream_get_contents( $pipes[2] );
 			$output       = stream_get_contents( $pipes[1] );
 
-			$error_appended  = get_file_option( 'wpps_error_' . $job_identifier ) . $error;
-			$output_appended = get_file_option( 'wpps_output_' . $job_identifier ) . $output;
+			$error_appended  = get_file_option( 'wpps_' . $job_identifier . '_error' ) . $error;
+			$output_appended = get_file_option( 'wpps_' . $job_identifier . '_output' ) . $output;
 
 			// Kill the process.
 			shell_exec( 'kill -9 ' . $pid ); // phpcs:ignore

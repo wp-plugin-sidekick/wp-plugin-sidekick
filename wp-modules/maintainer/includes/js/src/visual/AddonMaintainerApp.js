@@ -2,7 +2,7 @@
  * Addon Builder App.
  */
 
-import React, {useState, useContext, useRef, useEffect} from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	AomContext,
@@ -11,61 +11,66 @@ import {
 	useStream,
 	runShellCommand,
 	killModuleShellCommand,
-	phpcsDo,
+	runLinter,
+	runFixer,
+	phplint,
 	phpUnit,
 	enableDevelopmentMode,
-	disableDevelopmentMode
+	disableDevelopmentMode,
 } from './../non-visual/non-visual-logic.js';
 
-import {
-	useFetchOnRepeat,
-} from './../non-visual/useFetchOnRepeat.js';
-
+import { useFetchOnRepeat } from './../non-visual/useFetchOnRepeat.js';
 
 export function AddonMaintainerApp() {
-	const plugins = usePlugins( wppsPlugins );
-	
+	const plugins = usePlugins(wppsPlugins);
+
 	const currentPluginPointer = useCurrentPluginPointer();
-	const currentPluginData = currentPluginPointer.data ? plugins.data[currentPluginPointer.data] : false;
-	
-	return <AomContext.Provider
-		// Pass data into the context, which is availale in all of our components.
-		value={ {
-			plugins: plugins,
-			currentPluginData: currentPluginData,
-			setCurrentPlugin: currentPluginPointer.set,
-		} }
+	const currentPluginData = currentPluginPointer.data
+		? plugins.data[currentPluginPointer.data]
+		: false;
+
+	return (
+		<AomContext.Provider
+			// Pass data into the context, which is availale in all of our components.
+			value={{
+				plugins,
+				currentPluginData,
+				setCurrentPlugin: currentPluginPointer.set,
+			}}
 		>
-		<div className="mx-auto p-5 relative">
-			<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box z-10 relative">
-				<div className="flex-grow px-2 mx-2">
-					<img className="mr-4" width="40px" src="https://cdn-icons-png.flaticon.com/512/1377/1377081.png" />
-					<span className="text-lg font-bold">
-					WP Plugin Sidekick - a trusty assistant for modern plugin invention.
-					</span>
-				</div> 
-				<div className="flex flex-grow-0">
-					<ManageableAddOns />
-					<div className="flex p-5">
-						or
+			<div className="mx-auto p-5 relative">
+				<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box z-10 relative">
+					<div className="flex-grow px-2 mx-2">
+						<img
+							className="mr-4"
+							width="40px"
+							src="https://cdn-icons-png.flaticon.com/512/1377/1377081.png"
+						/>
+						<span className="text-lg font-bold">
+							WP Plugin Sidekick - a trusty assistant for modern
+							plugin invention.
+						</span>
 					</div>
-					<div className="flex">
-						<CreatePluginButtonAndModal />
+					<div className="flex flex-grow-0">
+						<ManageableAddOns />
+						<div className="flex p-5">or</div>
+						<div className="flex">
+							<CreatePluginButtonAndModal />
+						</div>
 					</div>
 				</div>
-				
+				<PreFlightChecks />
+				<Plugin />
 			</div>
-			<PreFlightChecks />
-			<Plugin />
-		</div>
-	</AomContext.Provider>
+		</AomContext.Provider>
+	);
 }
 
 function Plugin() {
-	const {currentPluginData} = useContext(AomContext);
+	const { currentPluginData } = useContext(AomContext);
 
-	if ( ! currentPluginData ) {
-		return '';	
+	if (!currentPluginData) {
+		return '';
 	}
 
 	return (
@@ -73,49 +78,52 @@ function Plugin() {
 			<div className="card-body">
 				<AddOnHeader />
 				<div className="grid grid-cols-2 w-full gap-4 mx-auto">
-					
-						
-						<DevArea />
-					
-				
-						<div >
-							<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
-								<div className="flex px-2 mx-2 w-full">
-									<div className="flex-grow">
-										<span className="text-lg font-bold">
+					<DevArea />
+
+					<div>
+						<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+							<div className="flex px-2 mx-2 w-full">
+								<div className="flex-grow">
+									<span className="text-lg font-bold">
 										WP Modules
-										</span>
-									</div>
-									<div className="flex flex-grow-0">
-										<CreateModuleButtonAndModal />
-										
-									</div>
-								</div> 
+									</span>
+								</div>
+								<div className="flex flex-grow-0">
+									<CreateModuleButtonAndModal />
+								</div>
 							</div>
-							<ManageableModules />
 						</div>
-					
+						<ManageableModules />
+					</div>
 				</div>
 			</div>
 		</div>
-	)
+	);
 }
 function CreateModuleButtonAndModal() {
-
 	const [modalOpen, setModalOpen] = useState(false);
 
 	function maybeRenderModal() {
-		if ( ! modalOpen ) {
+		if (!modalOpen) {
 			return '';
 		}
 
-		return(
-			<Modal title="Create a new module" closeModal={ () => { setModalOpen( false ) } }>
+		return (
+			<Modal
+				title="Create a new module"
+				closeModal={() => {
+					setModalOpen(false);
+				}}
+			>
 				<div>
-					<ModuleForm uponSuccess={ () => { setModalOpen( false ); }} />
+					<ModuleForm
+						uponSuccess={() => {
+							setModalOpen(false);
+						}}
+					/>
 				</div>
 			</Modal>
-		)
+		);
 	}
 
 	return (
@@ -123,31 +131,40 @@ function CreateModuleButtonAndModal() {
 			<button
 				className="btn btn-secondary"
 				onClick={() => {
-					setModalOpen( true )
+					setModalOpen(true);
 				}}
-			>Create A New Module</button>
-			{ maybeRenderModal() }
+			>
+				Create A New Module
+			</button>
+			{maybeRenderModal()}
 		</>
-	)
-
+	);
 }
 
 function CreatePluginButtonAndModal() {
-
 	const [modalOpen, setModalOpen] = useState(false);
 
 	function maybeRenderModal() {
-		if ( ! modalOpen ) {
+		if (!modalOpen) {
 			return '';
 		}
 
-		return(
-			<Modal title="Create a new plugin" closeModal={ () => { setModalOpen( false ) } }>
+		return (
+			<Modal
+				title="Create a new plugin"
+				closeModal={() => {
+					setModalOpen(false);
+				}}
+			>
 				<div>
-					<PluginForm uponSuccess={ () => { setModalOpen( false ); }} />
+					<PluginForm
+						uponSuccess={() => {
+							setModalOpen(false);
+						}}
+					/>
 				</div>
 			</Modal>
-		)
+		);
 	}
 
 	return (
@@ -155,71 +172,89 @@ function CreatePluginButtonAndModal() {
 			<button
 				className="btn btn-secondary"
 				onClick={() => {
-					setModalOpen( true )
+					setModalOpen(true);
 				}}
-			>Create A New Plugin</button>
-			{ maybeRenderModal() }
+			>
+				Create A New Plugin
+			</button>
+			{maybeRenderModal()}
 		</>
-	)
-
+	);
 }
 
 function AddOnHeader() {
-	const {currentPluginData} = useContext(AomContext);
-	
-	if ( ! currentPluginData ) {
-		return '';	
+	const { currentPluginData } = useContext(AomContext);
+
+	if (!currentPluginData) {
+		return '';
 	}
 
 	return (
 		<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box z-0 relative">
 			<div className="flex flex-grow px-2 mx-2">
 				<span className="text-lg font-bold">
-				{currentPluginData.Name}
+					{currentPluginData.Name}
 				</span>
-			</div> 
+			</div>
 			<div className="flex flex-grow-0">
-				<button className="btn btn-secondary" disabled={ currentPluginData ? false : true }>Deploy Plugin</button>
+				<button
+					className="btn btn-secondary"
+					disabled={currentPluginData ? false : true}
+				>
+					Deploy Plugin
+				</button>
 			</div>
 		</div>
-	)
+	);
 }
 
 function DevArea() {
-	const {plugins, currentPluginData} = useContext(AomContext);
+	const { plugins, currentPluginData } = useContext(AomContext);
 	const [currentTab, setCurrentTab] = useState(1);
-	
-	// NPM Run Dev file streamer.
-	const npmRunDevFileStreamer = useFetchOnRepeat( '/wp-content/wpps-studio-data/wpps_output_' + currentPluginData.dirname + '_pinggoogle' );
 
-	if ( ! currentPluginData ) {
-		return '';	
+	// NPM Run Dev file streamer.
+	const npmRunDevFileStreamer = useFetchOnRepeat(
+		'/wp-content/wpps-studio-data/wpps_' +
+			currentPluginData.dirname +
+			'_pinggoogle' +
+			'_output'
+	);
+
+	if (!currentPluginData) {
+		return '';
 	}
 
 	return (
 		<div className="grid grid-cols-1 gap-4 grid-flow-row auto-rows-min">
 			<LintingArea />
+			<FixersArea />
 			<div>
 				<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
 					<div className="flex px-2 mx-2 w-full">
 						<div className="flex-grow">
 							<span className="text-lg font-bold">
-							Development
+								Development
 							</span>
 						</div>
 						<span className="text-lg mr-4">
-							Enable development mode 
+							Enable development mode
 						</span>
-						<input type="checkbox" className="toggle" onChange={ (event) => {
-							if ( event.target.checked ) {
-								enableDevelopmentMode( plugins, currentPluginData );
-								npmRunDevFileStreamer.start();
-							} else {
-								disableDevelopmentMode( currentPluginData );
-								npmRunDevFileStreamer.stop();
-							}
-						}
-						} />
+						<input
+							type="checkbox"
+							className="toggle"
+							onChange={(event) => {
+								if (event.target.checked) {
+									enableDevelopmentMode(
+										plugins,
+										currentPluginData
+									);
+									npmRunDevFileStreamer.start();
+								} else {
+									disableDevelopmentMode(currentPluginData);
+									npmRunDevFileStreamer.stop();
+								}
+							}}
+						/>
 					</div>
 				</div>
 				<div className="card lg:card-side bordered bg-base-100 w-full">
@@ -227,60 +262,286 @@ function DevArea() {
 						<div className="">
 							<div className="tabs tabs-boxed z-10">
 								{(() => {
-									const status = currentPluginData.devStatus ? currentPluginData.devStatus['npm_run_dev'] : false;
+									const status = currentPluginData.devStatus
+										? currentPluginData.devStatus
+												.npm_run_dev
+										: false;
 									return (
 										<>
-										<div onClick={() => { setCurrentTab( 1 )}}>
-											<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 1 === currentTab } />
-										</div>
-										<div onClick={() => { setCurrentTab( 2 )}}>
-											<StatusBadge key={'npm_run_dev'} label={'npm_run_dev'} status={ status } active={ 2 === currentTab } />
-										</div>
+											<div
+												onClick={() => {
+													setCurrentTab(1);
+												}}
+											>
+												<StatusBadge
+													key={'npm_run_dev'}
+													label={'npm_run_dev'}
+													status={status}
+													active={1 === currentTab}
+												/>
+											</div>
+											<div
+												onClick={() => {
+													setCurrentTab(2);
+												}}
+											>
+												<StatusBadge
+													key={'npm_run_dev'}
+													label={'npm_run_dev'}
+													status={status}
+													active={2 === currentTab}
+												/>
+											</div>
 										</>
-									)
-								})() }
+									);
+								})()}
 							</div>
 							<div className="z-0">
 								{(() => {
-									npmRunDevFileStreamer.response
-									if ( currentTab !== 1 || ! npmRunDevFileStreamer.response ) {
+									npmRunDevFileStreamer.response;
+									if (
+										currentTab !== 1 ||
+										!npmRunDevFileStreamer.response
+									) {
 										return '';
 									}
 
 									return (
 										<>
 											<TerminalWindow>
-												{ npmRunDevFileStreamer.response }
+												{npmRunDevFileStreamer.response}
 											</TerminalWindow>
-											
 										</>
-									)
-								})() }
+									);
+								})()}
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	)
+	);
 }
 
-function LintingArea( props ) {
-	const {plugins, currentPluginData} = useContext(AomContext);
-	const [inProgress, setInProgress] = useState( false );
-	const [lintingPHPInProgress, setLintingPHPInProgress] = useState( false );
-	const [phpunitInProgress, setPhpunitInProgress] = useState( false );
+function FixersArea(props) {
+	const { plugins, currentPluginData } = useContext(AomContext);
+	const [inProgress, setInProgress] = useState(false);
+	const [fixingPhpLint, setFixingPhpLint] = useState(false);
+	const [fixingCssLint, setFixingCssLint] = useState(false);
+	const [fixingJsLint, setFixingJsLint] = useState(false);
 
-	useEffect( () => {
-		if (
-			lintingPHPInProgress ||
-			phpunitInProgress
-		) {
-			setInProgress( true );
+	useEffect(() => {
+		if (fixingCssLint || fixingJsLint) {
+			setInProgress(true);
 		} else {
-			setInProgress( false );
+			setInProgress(false);
 		}
-	}, [lintingPHPInProgress, phpunitInProgress] );
+	}, [fixingCssLint, fixingJsLint]);
+
+	return (
+		<>
+			<div>
+				<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
+					<div className="flex px-2 mx-2 w-full">
+						<div className="flex-grow">
+							<span className="text-lg font-bold">Fixers</span>
+						</div>
+						<span className="text-lg mr-4">Run fixers</span>
+						<input
+							type="checkbox"
+							className="toggle"
+							checked={inProgress}
+							onChange={(event) => {
+								if (event.target.checked) {
+									setFixingPhpLint(true);
+									runFixer({
+										location: currentPluginData.dirname,
+										job_identifier: 'phplintfix',
+										currentPluginData,
+										plugins,
+									}).then(() => {
+										setFixingPhpLint(false);
+									});
+
+									setFixingCssLint(true);
+									runFixer({
+										location: currentPluginData.dirname,
+										job_identifier: 'csslintfix',
+										currentPluginData,
+										plugins,
+									}).then(() => {
+										setFixingCssLint(false);
+									});
+
+									setFixingJsLint(true);
+									runFixer({
+										location: currentPluginData.dirname,
+										job_identifier: 'jslintfix',
+										currentPluginData,
+										plugins,
+									}).then(() => {
+										setFixingJsLint(false);
+									});
+								} else {
+									setInProgress(false);
+									//npmRunDevFileStreamer.stop();
+								}
+							}}
+						/>
+					</div>
+				</div>
+				<div className="card lg:card-side bordered bg-base-100 w-full">
+					<div className="card-body">
+						<div
+							className="card shadow-lg compact side bg-base-200 cursor-pointer"
+							onClick={() => {}}
+						>
+							<div className="grid grid-cols-3 items-center card-body">
+								<LintingComponent
+									title={__('Fix PHP Linting')}
+									description={__(
+										'Automatically fixes PHP code to adhere to WordPress coding standards (where possible).'
+									)}
+									inProgress={fixingPhpLint}
+									errors={[
+										currentPluginData?.devStatus?.phplintfix?.output?.match(
+											'(?<=Errors: ).*[0-9]'
+										),
+										currentPluginData?.devStatus?.phplintfix?.output?.match(
+											'(?<=Failures: ).*[0-9]'
+										),
+									]}
+									// Look for "OK (X tests" in the response to indicate success.
+									success={/OK .*[0-9] tests/.test(
+										currentPluginData?.devStatus?.phplintfix?.output
+									)}
+									error={
+										currentPluginData?.devStatus?.phplintfix?.error
+									}
+									output={
+										currentPluginData?.devStatus?.phplintfix?.output
+									}
+								/>
+								<LintingComponent
+									title={__('Fix CSS Linting')}
+									description={__(
+										'Automatically fixes CSS code to adhere to WordPress coding standards (where possible).'
+									)}
+									inProgress={fixingCssLint}
+									errors={[
+										currentPluginData?.devStatus?.csslintfix
+											?.totals?.errors,
+									]}
+									success={
+										currentPluginData?.devStatus?.csslintfix
+											?.totals?.errors === 0
+									}
+									error={
+										currentPluginData?.devStatus?.csslintfix?.error
+									}
+									output={
+										currentPluginData?.devStatus?.csslintfix?.output
+									}
+								/>
+								<LintingComponent
+									title={__('Fix Javascript Linting')}
+									description={__(
+										'Automatically fixes Javascript code to adhere to WordPress coding standards (where possible).'
+									)}
+									inProgress={fixingJsLint}
+									errors={[
+										currentPluginData?.devStatus?.jslintfix?.output?.match(
+											'(?<=Errors: ).*[0-9]'
+										),
+										currentPluginData?.devStatus?.jslintfix?.output?.match(
+											'(?<=Failures: ).*[0-9]'
+										),
+									]}
+									// Look for "OK (X tests" in the response to indicate success.
+									success={/OK .*[0-9] tests/.test(
+										currentPluginData?.devStatus?.jslintfix
+									)}
+									error={
+										currentPluginData?.devStatus?.jslintfix?.error
+									}
+									output={
+										currentPluginData?.devStatus?.jslintfix?.output
+									}
+								/>
+								<LintingComponent
+									title={__('Fix File Headers')}
+									description={__(
+										'Automatically fixes file headers and namespaces to comply with the module in which they are contained.'
+									)}
+									inProgress={fixingJsLint}
+									errors={[
+										currentPluginData?.devStatus?.jslintfix?.output?.match(
+											'(?<=Errors: ).*[0-9]'
+										),
+										currentPluginData?.devStatus?.jslintfix?.output?.match(
+											'(?<=Failures: ).*[0-9]'
+										),
+									]}
+									// Look for "OK (X tests" in the response to indicate success.
+									success={/OK .*[0-9] tests/.test(
+										currentPluginData?.devStatus?.jslintfix
+									)}
+									error={
+										currentPluginData?.devStatus?.jslintfix?.error
+									}
+									output={
+										currentPluginData?.devStatus?.jslintfix?.output
+									}
+								/>
+								<LintingComponent
+									title={__('Fix Text Domains')}
+									description={__(
+										"Automatically adjust all translatable function textdomains to match the plugin's textdomain."
+									)}
+									inProgress={fixingJsLint}
+									errors={[
+										currentPluginData?.devStatus?.jslintfix?.output?.match(
+											'(?<=Errors: ).*[0-9]'
+										),
+										currentPluginData?.devStatus?.jslintfix?.output?.match(
+											'(?<=Failures: ).*[0-9]'
+										),
+									]}
+									// Look for "OK (X tests" in the response to indicate success.
+									success={/OK .*[0-9] tests/.test(
+										currentPluginData?.devStatus?.jslintfix
+									)}
+									error={
+										currentPluginData?.devStatus?.jslintfix?.error
+									}
+									output={
+										currentPluginData?.devStatus?.jslintfix?.output
+									}
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</>
+	);
+}
+
+function LintingArea(props) {
+	const { plugins, currentPluginData } = useContext(AomContext);
+	const [inProgress, setInProgress] = useState(false);
+	const [lintingPHPInProgress, setLintingPHPInProgress] = useState(false);
+	const [lintingCssInProgress, setLintingCssInProgress] = useState(false);
+	const [lintingJsInProgress, setLintingJsInProgress] = useState(false);
+	const [phpunitInProgress, setPhpunitInProgress] = useState(false);
+
+	useEffect(() => {
+		if (lintingPHPInProgress || phpunitInProgress || lintingCssInProgress || lintingJsInProgress) {
+			setInProgress(true);
+		} else {
+			setInProgress(false);
+		}
+	}, [lintingPHPInProgress, phpunitInProgress]);
 
 	return (
 		<>
@@ -289,69 +550,157 @@ function LintingArea( props ) {
 					<div className="flex px-2 mx-2 w-full">
 						<div className="flex-grow">
 							<span className="text-lg font-bold">
-							Tests, checks, and linting
+								Tests, checks, and linting
 							</span>
 						</div>
-						<span className="text-lg mr-4">
-							Lint/Test
-						</span>
-						<input type="checkbox" className="toggle" checked={inProgress} onChange={ (event) => {
-							if ( event.target.checked ) {
-								setLintingPHPInProgress( true );
-								phpcsDo({
-									location: currentPluginData.dirname,
-									job_identifier: 'phpcs',
-									currentPluginData: currentPluginData,
-									plugins: plugins
-								}).then( () => {
-									setLintingPHPInProgress( false );
-								});
+						<span className="text-lg mr-4">Lint/Test</span>
+						<input
+							type="checkbox"
+							className="toggle"
+							checked={inProgress}
+							onChange={(event) => {
+								if (event.target.checked) {
+									setLintingPHPInProgress(true);
+									phplint({
+										location: currentPluginData.dirname,
+										job_identifier: 'phplint',
+										currentPluginData,
+										plugins,
+									}).then(() => {
+										setLintingPHPInProgress(false);
+									});
 
-								setPhpunitInProgress( true );
-								phpUnit({
-									location: currentPluginData.dirname,
-									job_identifier: 'phpunit',
-									currentPluginData: currentPluginData,
-									plugins: plugins
-								}).then( () => {
-									setPhpunitInProgress( false );
-								});
-							} else {
-								disableDevelopmentMode( currentPluginData );
-								//npmRunDevFileStreamer.stop();
-							}
-						}
-						} />
-						
+									setLintingCssInProgress(true);
+									runLinter({
+										location: currentPluginData.dirname,
+										job_identifier: 'csslint',
+										currentPluginData,
+										plugins,
+									}).then(() => {
+										setLintingCssInProgress(false);
+									});
+
+									setLintingJsInProgress(true);
+									runLinter({
+										location: currentPluginData.dirname,
+										job_identifier: 'jslint',
+										currentPluginData,
+										plugins,
+									}).then(() => {
+										setLintingJsInProgress(false);
+									});
+
+									setPhpunitInProgress(true);
+									phpUnit({
+										location: currentPluginData.dirname,
+										job_identifier: 'phpunit',
+										currentPluginData,
+										plugins,
+									}).then(() => {
+										setPhpunitInProgress(false);
+									});
+								} else {
+									disableDevelopmentMode(currentPluginData);
+									//npmRunDevFileStreamer.stop();
+								}
+							}}
+						/>
 					</div>
 				</div>
 				<div className="card lg:card-side bordered bg-base-100 w-full">
 					<div className="card-body">
-						<div className="card shadow-lg compact side bg-base-200 cursor-pointer"
-							onClick={() => {
-								
-							}}
+						<div
+							className="card shadow-lg compact side bg-base-200 cursor-pointer"
+							onClick={() => {}}
 						>
 							<div className="grid grid-cols-3 items-center card-body">
 								<LintingComponent
-									title={ __( 'PHP Linting' ) }
-									description={ __( 'Checks to make sure PHP files confirm to WordPress Coding Standards' ) }
+									title={__('PHP Linting')}
+									description={__(
+										'Checks to make sure PHP files confirm to WordPress Coding Standards'
+									)}
 									inProgress={lintingPHPInProgress}
-									errors={ [ currentPluginData?.devStatus?.phpcs?.totals?.errors ] }
-									success={ currentPluginData?.devStatus?.phpcs?.totals?.errors === 0 }
-									output={ JSON.stringify( currentPluginData?.devStatus?.phpcs ) }
+									errors={[
+										currentPluginData?.devStatus?.phplint
+											?.totals?.errors,
+									]}
+									success={
+										currentPluginData?.devStatus?.phplint
+											?.totals?.errors === 0
+									}
+									error={
+										currentPluginData?.devStatus?.phplint?.error
+									}
+									output={
+										currentPluginData?.devStatus?.phplint?.output
+									}
 								/>
 								<LintingComponent
-									title={ __( 'Integration Tests (PHPUnit)' ) }
-									description={ __( 'Runs integration tests with WordPress' ) }
+									title={__('CSS Linting')}
+									description={__(
+										'Checks to make sure CSS files confirm to WordPress Coding Standards'
+									)}
+									inProgress={lintingCssInProgress}
+									errors={[
+										currentPluginData?.devStatus?.csslint
+											?.totals?.errors,
+									]}
+									success={
+										currentPluginData?.devStatus?.csslint
+											?.totals?.errors === 0
+									}
+									error={
+										currentPluginData?.devStatus?.csslint?.error
+									}
+									output={
+										currentPluginData?.devStatus?.csslint?.output
+									}
+								/>
+								<LintingComponent
+									title={__('Javascript Linting')}
+									description={__(
+										'Checks to make sure javascript files confirm to WordPress Coding Standards'
+									)}
+									inProgress={lintingCssInProgress}
+									errors={[
+										currentPluginData?.devStatus?.jslint
+											?.totals?.errors,
+									]}
+									success={
+										currentPluginData?.devStatus?.jslint
+											?.totals?.errors === 0
+									}
+									error={
+										currentPluginData?.devStatus?.jslint?.error
+									}
+									output={
+										currentPluginData?.devStatus?.jslint?.output
+									}
+								/>
+								<LintingComponent
+									title={__('Integration Tests (PHPUnit)')}
+									description={__(
+										'Runs integration tests with WordPress'
+									)}
 									inProgress={phpunitInProgress}
-									errors={ [
-										currentPluginData?.devStatus?.phpunit?.match("(?<=Errors: ).*[0-9]"),
-										currentPluginData?.devStatus?.phpunit?.match("(?<=Failures: ).*[0-9]") 
-									] }
+									errors={[
+										currentPluginData?.devStatus?.phpunit?.match(
+											'(?<=Errors: ).*[0-9]'
+										),
+										currentPluginData?.devStatus?.phpunit?.match(
+											'(?<=Failures: ).*[0-9]'
+										),
+									]}
 									// Look for "OK (X tests" in the response to indicate success.
-									success={ /OK .*[0-9] tests/.test( currentPluginData?.devStatus?.phpunit ) }
-									output={ currentPluginData?.devStatus?.phpunit }
+									success={/OK .*[0-9] tests/.test(
+										currentPluginData?.devStatus?.phpunit
+									)}
+									error={
+										currentPluginData?.devStatus?.phpunit?.error
+									}
+									output={
+										currentPluginData?.devStatus?.phpunit?.output
+									}
 								/>
 							</div>
 						</div>
@@ -359,142 +708,171 @@ function LintingArea( props ) {
 				</div>
 			</div>
 		</>
-	)
+	);
 }
 
-function LintingComponent( props ) {
+function LintingComponent(props) {
 	const [modalOpen, setModalOpen] = useState(false);
-	return(
+	return (
 		<div>
 			<div className="flex items-center">
 				<h2 className="card-title">{props.title}</h2>
 				<span>
 					{(() => {
-						if ( props.inProgress ) {
+						if (props.inProgress) {
 							return (
 								<div className="btn btn-ghost loading"></div>
-							)
+							);
 						}
 
-						for (const error of props.errors){
-							if ( error ) {
-								return (
-									<>
-										{(() => {
-											if ( modalOpen ) {
-												return (
-													<Modal title={props.title} closeModal={ () => { setModalOpen( false ) } }>
-														<div className="grid gap-5 p-10">
-															<h2 className="text-lg">{ __( 'Response', 'wp-plugin-studio' ) }</h2>
-															<TerminalWindow>
-																{ props.output }
-															</TerminalWindow>
-														</div>
-													</Modal>
-												)
-											}
-										})()}
-								
-										<div className="btn" onClick={ () => { setModalOpen( true ) } }>
-											<svg
-												style={{
-													stroke: 'hsla(var(--er)',
+						return (
+							<>
+								{(() => {
+									if (modalOpen) {
+										return (
+											<Modal
+												title={props.title}
+												closeModal={() => {
+													setModalOpen(false);
 												}}
-												xmlns="http://www.w3.org/2000/svg"
-												fill="none"
-												className="inline-block w-6 h-6"
-												viewBox="0 0 24 24"
 											>
-												<path d="M6 18L18 6M6 6l12 12"></path>
-											</svg>
-										</div>
-									</>
-								)
-							}
-						}
+												<div className="grid gap-5 p-10">
+													<h2 className="text-lg">
+														{__(
+															'Response',
+															'wp-plugin-studio'
+														)}
+													</h2>
+													<div className="grid grid-cols-2 gap-5 p-10">
+														<TerminalWindow>
+															{props.error}
+														</TerminalWindow>
+														<TerminalWindow>
+															{props.output}
+														</TerminalWindow>
+													</div>
+												</div>
+											</Modal>
+										);
+									}
+								})()}
 
-						if  ( props.success ) {
-							return <div className="btn btn-ghost">✅</div>
-						}
+								<div
+									className="btn"
+									onClick={() => {
+										setModalOpen(true);
+									}}
+								>
+									{(() => {
+										if (props.errors[0] !== undefined) {
+											console.log(props.errors);
+											return (
+												<svg
+													style={{
+														stroke: 'hsla(var(--er)',
+													}}
+													xmlns="http://www.w3.org/2000/svg"
+													fill="none"
+													className="inline-block w-6 h-6"
+													viewBox="0 0 24 24"
+												>
+													<path d="M6 18L18 6M6 6l12 12"></path>
+												</svg>
+											);
+										}
+										if (props.success) {
+											return '✅';
+										}
+
+										return '⚠️';
+									})()}
+								</div>
+							</>
+						);
 					})()}
 				</span>
 			</div>
-			<p className="text-base-content text-opacity-40">{props.description}</p>
+			<p className="text-base-content text-opacity-40">
+				{props.description}
+			</p>
 		</div>
-	)
+	);
 }
 
-function ManageableAddOns( props ) {
-	const {plugins, setCurrentPlugin, currentPluginData} = useContext(AomContext);
-	
+function ManageableAddOns(props) {
+	const { plugins, setCurrentPlugin, currentPluginData } =
+		useContext(AomContext);
+
 	function renderplugins() {
-		
 		const pluginsRendered = [];
-		
-		for ( const plugin in plugins.data ) {
+
+		for (const plugin in plugins.data) {
 			pluginsRendered.push(
 				<option
 					key={plugins.data[plugin].dirname}
 					value={plugins.data[plugin].dirname}
 				>
-					{plugins.data[plugin].Name}	
+					{plugins.data[plugin].Name}
 				</option>
 			);
 		}
-		
+
 		return pluginsRendered;
-		
 	}
-	
-	return <>
-		<div className="flex">
-			<label className="label mr-4">
-				<span className="label-text">Current Plugin</span> 
-			</label> 
-			<select
-				className="select select-bordered max-w-xs text-base-content"
-				tabIndex="0"
-				onChange={(event) => {
-					setCurrentPlugin(event.target.value)
-				}}
-				value={ currentPluginData ? currentPluginData.dirname : 'Choose a plugin'}
-			>
-				<option disabled="">Choose a plugin to work on</option> 
-				{ renderplugins() }
-			</select>
-		</div>
-	</>
+
+	return (
+		<>
+			<div className="flex">
+				<label className="label mr-4">
+					<span className="label-text">Current Plugin</span>
+				</label>
+				<select
+					className="select select-bordered max-w-xs text-base-content"
+					tabIndex="0"
+					onChange={(event) => {
+						setCurrentPlugin(event.target.value);
+					}}
+					value={
+						currentPluginData
+							? currentPluginData.dirname
+							: 'Choose a plugin'
+					}
+				>
+					<option disabled="">Choose a plugin to work on</option>
+					{renderplugins()}
+				</select>
+			</div>
+		</>
+	);
 }
 
-function ManageableModules( props ) {
-	const {plugins, currentPluginData} = useContext(AomContext);
-	
-	if ( ! currentPluginData ) {
-		return '';	
+function ManageableModules(props) {
+	const { plugins, currentPluginData } = useContext(AomContext);
+
+	if (!currentPluginData) {
+		return '';
 	}
 
 	const modules = currentPluginData.modules;
-	
-	if ( ! modules ) {
+
+	if (!modules) {
 		return 'No modules found';
 	}
-	
-	function renderModuleActiveCss( module ) {
-		if ( ! currentModule ) {
+
+	function renderModuleActiveCss(module) {
+		if (!currentModule) {
 			return '';
 		}
-		if ( currentModule.slug === module ) {
+		if (currentModule.slug === module) {
 			return ' btn-active';
-		} else {
-			return '';
 		}
+		return '';
 	}
 
 	function renderModules() {
-		
 		const modulesRendered = [];
-		
-		for ( const module in modules ) {
+
+		for (const module in modules) {
 			modulesRendered.push(
 				<div
 					key={modules[module].slug}
@@ -506,63 +884,97 @@ function ManageableModules( props ) {
 					<div className="flex flex-1 w-full">
 						<div className="flex title-area w-full mr-4">
 							<div className="flex">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 mx-2 stroke-current">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									className="w-6 h-6 mx-2 stroke-current"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth="2"
+										d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+									></path>
 								</svg>
 							</div>
 							<div className="block">
-								<div className="block text-lg" onChange={(event) => {
-									plugins.setModuleName( currentPluginData.dirname, modules[module].slug, event.target.value );
-								}}>
-									{ modules[module].name }
+								<div
+									className="block text-lg"
+									onChange={(event) => {
+										plugins.setModuleName(
+											currentPluginData.dirname,
+											modules[module].slug,
+											event.target.value
+										);
+									}}
+								>
+									{modules[module].name}
 								</div>
-								<p className="block">{modules[module].description}</p>
+								<p className="block">
+									{modules[module].description}
+								</p>
 							</div>
 						</div>
 						<div className="flex w-full mr-4">
 							<div className="flex">
-								{ (() => {
-									if ( modules[module].devStatus ) {
+								{(() => {
+									if (modules[module].devStatus) {
 										const rendered = [];
-										if (  modules[module].devStatus ) {
+										if (modules[module].devStatus) {
 											rendered.push(
-												<PhpCsButtonAndModal module={ modules[module] } />
-											)
+												<PhpCsButtonAndModal
+													module={modules[module]}
+												/>
+											);
 										}
-										
+
 										return rendered;
 									}
 								})()}
 							</div>
 						</div>
-						<div className="close-button flex flex-grow-0" onClick={() => {
-							plugins.deleteModule( currentPluginData.dirname, modules[module].slug );
-						}}>
+						<div
+							className="close-button flex flex-grow-0"
+							onClick={() => {
+								plugins.deleteModule(
+									currentPluginData.dirname,
+									modules[module].slug
+								);
+							}}
+						>
 							<button className="btn btn-circle btn-xs md:btn-sm lg:btn-md xl:btn-lg">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-4 h-4 stroke-current md:w-6 md:h-6">   
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>                       
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									className="inline-block w-4 h-4 stroke-current md:w-6 md:h-6"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth="2"
+										d="M6 18L18 6M6 6l12 12"
+									></path>
 								</svg>
 							</button>
 						</div>
 					</div>
 				</div>
-				
 			);
 		}
-		
+
 		return modulesRendered;
-		
 	}
-	
-	return <div className="modules grid grid-cols-1 gap-4">
-		{ renderModules() }
-	</div>
+
+	return (
+		<div className="modules grid grid-cols-1 gap-4">{renderModules()}</div>
+	);
 }
 
-function Modal( props ) {
-
-	return(
-		<div 
+function Modal(props) {
+	return (
+		<div
 			style={{
 				position: 'fixed',
 				top: '0',
@@ -585,71 +997,88 @@ function Modal( props ) {
 			>
 				<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
 					<div className="flex-1 px-2 mx-2">
-						<span className="text-lg font-bold">
-							{ props.title }
-						</span>
-					</div> 
+						<span className="text-lg font-bold">{props.title}</span>
+					</div>
 					<div className="flex-none">
-						<button className="btn btn-square btn-ghost" onClick={() => {
-							props.closeModal();
-						}}>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-6 h-6 stroke-current text-error">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+						<button
+							className="btn btn-square btn-ghost"
+							onClick={() => {
+								props.closeModal();
+							}}
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								className="inline-block w-6 h-6 stroke-current text-error"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth="2"
+									d="M6 18L18 6M6 6l12 12"
+								></path>
 							</svg>
 						</button>
 					</div>
 				</div>
-				<div style={{
-					maxHeight: 'calc( 100% - 100px )',
-					overflow: 'scroll',
-				}}>
-					{ props.children }
+				<div
+					style={{
+						maxHeight: 'calc( 100% - 100px )',
+						overflow: 'scroll',
+					}}
+				>
+					{props.children}
 				</div>
 			</div>
 		</div>
-	)
-
+	);
 }
 
-function PhpCsButtonAndModal( module ) {
+function PhpCsButtonAndModal(module) {
 	module = module.module;
 	const [modalOpen, setModalOpen] = useState(false);
 
 	function maybeRenderModal() {
-		if ( ! modalOpen ) {
+		if (!modalOpen) {
 			return '';
 		}
 
-		return(
-			<Modal title="Issues with PHPCS (code sniffer)" closeModal={ () => { setModalOpen( false ) } }>
-				<div>
-					{ renderFiles() }
-				</div>
+		return (
+			<Modal
+				title="Issues with PHPCS (code sniffer)"
+				closeModal={() => {
+					setModalOpen(false);
+				}}
+			>
+				<div>{renderFiles()}</div>
 			</Modal>
-		)
+		);
 	}
 
 	function getNumberOfErrors() {
 		let numberOfErrors = 0;
-		for( const file in module.devStatus.phpcs ){
-			numberOfErrors = numberOfErrors + parseInt( module.devStatus.phpcs[ file ].errors );
+		for (const file in module.devStatus.phplint) {
+			numberOfErrors =
+				numberOfErrors + parseInt(module.devStatus.phplint[file].errors);
 		}
 
 		return numberOfErrors;
 	}
 
 	function renderFiles() {
-		
 		const renderedFiles = [];
-		for( const file in module.devStatus.phpcs ){
+		for (const file in module.devStatus.phplint) {
 			renderedFiles.push(
 				<div className="card lg:card-side bordered bg-base-100 w-full">
 					<div className="card-body">
 						<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
-							<div className='flex-grow'>{ file }</div>
+							<div className="flex-grow">{file}</div>
 						</div>
 						<div>
-							{ renderMessages( module.devStatus.phpcs[ file ].messages ) }
+							{renderMessages(
+								module.devStatus.phplint[file].messages
+							)}
 						</div>
 					</div>
 				</div>
@@ -659,82 +1088,107 @@ function PhpCsButtonAndModal( module ) {
 		return renderedFiles;
 	}
 
-	function renderMessages( messages ) {
+	function renderMessages(messages) {
 		const renderedFileMessages = [];
-		for ( const message in messages ) {
+		for (const message in messages) {
 			renderedFileMessages.push(
 				<div className="flex">
-					<div className="flex mr-1">Line: { messages[message].line }</div>
-					<div className="flex-grow">{ messages[message].message }</div>
+					<div className="flex mr-1">
+						Line: {messages[message].line}
+					</div>
+					<div className="flex-grow">{messages[message].message}</div>
 				</div>
-			)
+			);
 		}
 		return renderedFileMessages;
 	}
 
 	function renderButton() {
-		return <>
-			<button className="btn btn-secondary" onClick={ () => { setModalOpen( ! modalOpen ) } }>
-				phpcs
-			</button>
-		</>
+		return (
+			<>
+				<button
+					className="btn btn-secondary"
+					onClick={() => {
+						setModalOpen(!modalOpen);
+					}}
+				>
+					phplint
+				</button>
+			</>
+		);
 	}
 
 	return (
 		<>
 			<div className={'indicator'}>
-				<div className="indicator-item badge" style={{backgroundColor: 'hsla(var(--er)/var(--tw-bg-opacity,1))'}}>
-					{ getNumberOfErrors() }
+				<div
+					className="indicator-item badge"
+					style={{
+						backgroundColor:
+							'hsla(var(--er)/var(--tw-bg-opacity,1))',
+					}}
+				>
+					{getNumberOfErrors()}
 				</div>
-				{ renderButton() }
-			</div> 
-			{ maybeRenderModal() }
+				{renderButton()}
+			</div>
+			{maybeRenderModal()}
 		</>
-	)
+	);
 }
 
-function StatusBadge( props ) {
-
+function StatusBadge(props) {
 	function maybeRenderStatusIndicator() {
-		if ( props.status ) {
-			return <div className="indicator-item badge" style={{backgroundColor: 'hsla(var(--er)/var(--tw-bg-opacity,1))'}}></div>
+		if (props.status) {
+			return (
+				<div
+					className="indicator-item badge"
+					style={{
+						backgroundColor:
+							'hsla(var(--er)/var(--tw-bg-opacity,1))',
+					}}
+				></div>
+			);
 		}
 	}
 
 	return (
-		<div className={'tab indicator' + ( props.active ? ' tab-active' : '' )}>
-			{ maybeRenderStatusIndicator() }
-			{ props.label }
-		</div> 
-	)
+		<div className={'tab indicator' + (props.active ? ' tab-active' : '')}>
+			{maybeRenderStatusIndicator()}
+			{props.label}
+		</div>
+	);
 }
 
-function PluginForm( props ) {
-	const {plugins, setCurrentPlugin} = useContext(AomContext);
-	const [pluginName, setPluginName] = useState( 'My Awesome Plugin' );
-	const [pluginDirName, setPluginDirName] = useState( 'my-awesome-plugin' );
-	const [pluginTextDomain, setPluginTextDomain] = useState( 'my-awesome-plugin' );
-	const [pluginNamespace, setPluginNamespace] = useState( 'MyAwesomePlugin' );
-	const [pluginDescription, setPluginDescription] = useState( 'This is my awesome plugin. It does this, and it does that too!' );
-	const [pluginVersion, setPluginVersion] = useState( '1.0.0' );
-	const [pluginAuthor, setPluginAuthor] = useState( 'wporgusername' );
-	const [pluginUri, setPluginUri] = useState( 'yourdomain.com' );
-	const [minWpVersion, setMinWpVersion] = useState( '5.8' );
-	const [minPhpVersion, setMinPhpVersion] = useState( '7.2' );
-	const [pluginLicense, setPluginLicense] = useState( 'GPLv2 or later' );
-	const [updateUri, setUpdateUri] = useState( '' );
+function PluginForm(props) {
+	const { plugins, setCurrentPlugin } = useContext(AomContext);
+	const [pluginName, setPluginName] = useState('My Awesome Plugin');
+	const [pluginDirName, setPluginDirName] = useState('my-awesome-plugin');
+	const [pluginTextDomain, setPluginTextDomain] =
+		useState('my-awesome-plugin');
+	const [pluginNamespace, setPluginNamespace] = useState('MyAwesomePlugin');
+	const [pluginDescription, setPluginDescription] = useState(
+		'This is my awesome plugin. It does this, and it does that too!'
+	);
+	const [pluginVersion, setPluginVersion] = useState('1.0.0');
+	const [pluginAuthor, setPluginAuthor] = useState('wporgusername');
+	const [pluginUri, setPluginUri] = useState('yourdomain.com');
+	const [minWpVersion, setMinWpVersion] = useState('5.8');
+	const [minPhpVersion, setMinPhpVersion] = useState('7.2');
+	const [pluginLicense, setPluginLicense] = useState('GPLv2 or later');
+	const [updateUri, setUpdateUri] = useState('');
 
-	useEffect( () => {
+	useEffect(() => {
 		const dirName = pluginName.replace(/\W+/g, '-').toLowerCase();
 		setPluginDirName(dirName);
-	}, [pluginName] );
+	}, [pluginName]);
 
 	function createPlugin() {
 		fetch(wppsApiEndpoints.generatePlugin, {
 			method: 'POST',
 			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
 				plugin_name: pluginName,
@@ -747,73 +1201,87 @@ function PluginForm( props ) {
 				min_php_version: minPhpVersion,
 				plugin_license: pluginLicense,
 				update_uri: updateUri,
-			})
+			}),
 		})
-		.then( response => response.json())
-		.then( ( data ) => {
-			if ( data.success ) {
-				plugins.addNewPlugin( data.plugin_data );
-				setCurrentPlugin(data.plugin_data.plugin_dirname);
-				props.uponSuccess();
-			} else {
-				alert( JSON.stringify( data ) );
-			}
-		});
+			.then((response) => response.json())
+			.then((data) => {
+				if (data.success) {
+					plugins.addNewPlugin(data.plugin_data);
+					setCurrentPlugin(data.plugin_data.plugin_dirname);
+					props.uponSuccess();
+				} else {
+					alert(JSON.stringify(data));
+				}
+			});
 	}
 
 	return (
 		<div>
 			<div className="options">
 				<div className="grid gap-5 p-10">
-					<h2 className="font-sans text-5xl font-black">{ __( 'Let\'s spin up a new plugin...', 'wp-plugin-studio' ) }</h2>
+					<h2 className="font-sans text-5xl font-black">
+						{__("Let's spin up a new plugin…", 'wp-plugin-studio')}
+					</h2>
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{ __( 'Plugin Name', 'wp-plugin-studio' ) }
+							{__('Plugin Name', 'wp-plugin-studio')}
 						</label>
 						<input
 							type="text"
 							id="name-with-label"
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
-							placeholder={ __( 'Plugin Name', 'wp-plugin-studio' ) }
-							value={ pluginName }
-							onChange={ (event) => setPluginName( event.target.value ) }
+							placeholder={__('Plugin Name', 'wp-plugin-studio')}
+							value={pluginName}
+							onChange={(event) =>
+								setPluginName(event.target.value)
+							}
 						/>
 					</div>
 
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{ __( 'Plugin Text Domain', 'wp-plugin-studio' ) }
+							{__('Plugin Text Domain', 'wp-plugin-studio')}
 						</label>
 						<input
 							type="text"
 							id="name-with-label"
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
-							placeholder={ __( 'Plugin Text Domain', 'wp-plugin-studio' ) }
-							value={ pluginTextDomain }
-							onChange={ (event) => setPluginTextDomain( event.target.value ) }
+							placeholder={__(
+								'Plugin Text Domain',
+								'wp-plugin-studio'
+							)}
+							value={pluginTextDomain}
+							onChange={(event) =>
+								setPluginTextDomain(event.target.value)
+							}
 						/>
 					</div>
 
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{ __( 'Plugin Namespace', 'wp-plugin-studio' ) }
+							{__('Plugin Namespace', 'wp-plugin-studio')}
 						</label>
 						<input
 							type="text"
 							id="name-with-label"
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
-							placeholder={ __( 'Plugin Namespace', 'wp-plugin-studio' ) }
-							value={ pluginNamespace }
-							onChange={ (event) => setPluginNamespace( event.target.value ) }
+							placeholder={__(
+								'Plugin Namespace',
+								'wp-plugin-studio'
+							)}
+							value={pluginNamespace}
+							onChange={(event) =>
+								setPluginNamespace(event.target.value)
+							}
 						/>
 					</div>
-				
+
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{ __( 'Plugin Description', 'wp-plugin-studio' ) }
+							{__('Plugin Description', 'wp-plugin-studio')}
 						</label>
 						<textarea
 							className="flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
@@ -822,53 +1290,67 @@ function PluginForm( props ) {
 							name="comment"
 							rows="5"
 							cols="40"
-							value={ pluginDescription }
-							onChange={ (event) => setPluginDescription( event.target.value ) }
-						/>
-					</div>
-					
-					<div className="relative ">
-						<label htmlFor="name-with-label">
-							{ __( 'Plugin Version', 'wp-plugin-studio' ) }
-						</label>
-						<input
-							type="text"
-							id="name-with-label"
-							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-							name="email"
-							placeholder={ __( 'Plugin Version', 'wp-plugin-studio' ) }
-							value={ pluginVersion }
-							onChange={ (event) => setPluginVersion( event.target.value ) }
+							value={pluginDescription}
+							onChange={(event) =>
+								setPluginDescription(event.target.value)
+							}
 						/>
 					</div>
 
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{ __( 'Plugin Author', 'wp-plugin-studio' ) }
+							{__('Plugin Version', 'wp-plugin-studio')}
 						</label>
 						<input
 							type="text"
 							id="name-with-label"
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
-							placeholder={ __( 'Plugin Author', 'wp-plugin-studio' ) }
-							value={ pluginAuthor }
-							onChange={ (event) => setPluginAuthor( event.target.value ) }
+							placeholder={__(
+								'Plugin Version',
+								'wp-plugin-studio'
+							)}
+							value={pluginVersion}
+							onChange={(event) =>
+								setPluginVersion(event.target.value)
+							}
 						/>
 					</div>
 
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{ __( 'Plugin URI', 'wp-plugin-studio' ) }
+							{__('Plugin Author', 'wp-plugin-studio')}
 						</label>
 						<input
 							type="text"
 							id="name-with-label"
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
-							placeholder={ __( 'Plugin URI', 'wp-plugin-studio' ) }
-							value={ pluginUri }
-							onChange={ (event) => setPluginUri( event.target.value ) }
+							placeholder={__(
+								'Plugin Author',
+								'wp-plugin-studio'
+							)}
+							value={pluginAuthor}
+							onChange={(event) =>
+								setPluginAuthor(event.target.value)
+							}
+						/>
+					</div>
+
+					<div className="relative ">
+						<label htmlFor="name-with-label">
+							{__('Plugin URI', 'wp-plugin-studio')}
+						</label>
+						<input
+							type="text"
+							id="name-with-label"
+							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+							name="email"
+							placeholder={__('Plugin URI', 'wp-plugin-studio')}
+							value={pluginUri}
+							onChange={(event) =>
+								setPluginUri(event.target.value)
+							}
 						/>
 					</div>
 
@@ -879,32 +1361,36 @@ function PluginForm( props ) {
 							createPlugin();
 						}}
 					>
-						{ __( 'Create Plugin', 'wp-plugin-studio' ) }
+						{__('Create Plugin', 'wp-plugin-studio')}
 					</button>
 				</div>
 			</div>
 		</div>
-	)
+	);
 }
 
+function ModuleForm(props) {
+	const { plugins, setCurrentPlugin, currentPluginData } =
+		useContext(AomContext);
 
-function ModuleForm( props ) {
-	const {plugins, setCurrentPlugin, currentPluginData} = useContext(AomContext);
-
-	const [step, setStep] = useState( 1 );
-	const [moduleName, setModuleName] = useState( 'My Awesome Module' );
-	const [moduleBoiler, setModuleBoiler] = useState( null );
-	const [moduleNamespace, setModuleNamespace] = useState( currentPluginData.namespace + '\\MyAwesomeModule' );
-	const [moduleDescription, setModuleDescription] = useState( 'This is my awesome module. It does this, and it does that too!' );
+	const [step, setStep] = useState(1);
+	const [moduleName, setModuleName] = useState('My Awesome Module');
+	const [moduleBoiler, setModuleBoiler] = useState(null);
+	const [moduleNamespace, setModuleNamespace] = useState(
+		currentPluginData.namespace + '\\MyAwesomeModule'
+	);
+	const [moduleDescription, setModuleDescription] = useState(
+		'This is my awesome module. It does this, and it does that too!'
+	);
 	const boilers = wppsModuleBoilers;
 
 	function createModule() {
-		setStep( 'loading' );
+		setStep('loading');
 		fetch(wppsApiEndpoints.generateModule, {
 			method: 'POST',
 			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
 				module_name: moduleName,
@@ -912,29 +1398,31 @@ function ModuleForm( props ) {
 				module_description: moduleDescription,
 				module_boiler: moduleBoiler,
 				module_plugin: currentPluginData.dirname,
-			})
+			}),
 		})
-		.then( response => response.json())
-		.then( ( data ) => {
-			if ( data.success ) {
-				//setCurrentPlugin(data.plugin_data.plugin_dirname);
-				plugins.setPluginModules( currentPluginData.dirname, data.modules );
-				//props.uponSuccess();
-				setStep( 'success' );
-			} else {
-				setStep( 'failure' );
-				alert( JSON.stringify( data ) );
-			}
-		});
+			.then((response) => response.json())
+			.then((data) => {
+				if (data.success) {
+					//setCurrentPlugin(data.plugin_data.plugin_dirname);
+					plugins.setPluginModules(
+						currentPluginData.dirname,
+						data.modules
+					);
+					//props.uponSuccess();
+					setStep('success');
+				} else {
+					setStep('failure');
+					alert(JSON.stringify(data));
+				}
+			});
 	}
 
 	function renderBoilerPicker() {
-
 		const renderedBoilers = [];
 		let keyCounter = 1;
-		for( const boiler in boilers ) {
+		for (const boiler in boilers) {
 			renderedBoilers.push(
-				renderBoilerOption( boiler, boilers[boiler], keyCounter )
+				renderBoilerOption(boiler, boilers[boiler], keyCounter)
 			);
 			keyCounter++;
 		}
@@ -942,21 +1430,26 @@ function ModuleForm( props ) {
 		return (
 			<>
 				<div className="grid gap-5 p-10">
-					<h2 className="text-lg">{ __( 'Pick a starting point for this module', 'wp-plugin-studio' ) }</h2>
-					<div className="grid gap-5">
-						{ renderedBoilers }
-					</div>
+					<h2 className="text-lg">
+						{__(
+							'Pick a starting point for this module',
+							'wp-plugin-studio'
+						)}
+					</h2>
+					<div className="grid gap-5">{renderedBoilers}</div>
 				</div>
 			</>
-		)
+		);
 	}
 
-	function renderBoilerOption( boilerName, boilerData, keyCounter ) {
+	function renderBoilerOption(boilerName, boilerData, keyCounter) {
 		return (
-			<div key={keyCounter} className="card shadow-lg compact side bg-base-200 cursor-pointer"
+			<div
+				key={keyCounter}
+				className="card shadow-lg compact side bg-base-200 cursor-pointer"
 				onClick={() => {
-					setModuleBoiler( boilerName );
-					setStep( 2 );
+					setModuleBoiler(boilerName);
+					setStep(2);
 				}}
 			>
 				<div className="flex-row items-center space-x-4 card-body">
@@ -969,34 +1462,40 @@ function ModuleForm( props ) {
 					</div>
 					<div>
 						<h2 className="card-title">{boilerData.name}</h2>
-						<p className="text-base-content text-opacity-40">{boilerData.description}</p>
+						<p className="text-base-content text-opacity-40">
+							{boilerData.description}
+						</p>
 					</div>
 				</div>
 			</div>
-		)
+		);
 	}
 
 	function renderStep1() {
-		if ( step !== 1 ) { 
+		if (step !== 1) {
 			return '';
 		}
 
-		return (
-			renderBoilerPicker()
-		)
+		return renderBoilerPicker();
 	}
 
 	function renderStep2() {
-		if ( step !== 2 ) {
+		if (step !== 2) {
 			return '';
 		}
 
 		return (
 			<div className="grid gap-5 p-10">
-				<h2 className="text-lg">{ __( 'Nice! You chose to start with this module boiler:', 'wp-plugin-studio' ) }</h2>
-				<div className="card shadow-lg compact side bg-base-200 cursor-pointer"
+				<h2 className="text-lg">
+					{__(
+						'Nice! You chose to start with this module boiler:',
+						'wp-plugin-studio'
+					)}
+				</h2>
+				<div
+					className="card shadow-lg compact side bg-base-200 cursor-pointer"
 					onClick={() => {
-						setStep( 1 );
+						setStep(1);
 					}}
 				>
 					<div className="flex-row items-center space-x-4 card-body">
@@ -1008,45 +1507,56 @@ function ModuleForm( props ) {
 							</div>
 						</div>
 						<div>
-							<h2 className="card-title">{boilers[moduleBoiler].name}</h2>
-							<p className="text-base-content text-opacity-40">{boilers[moduleBoiler].description}</p>
+							<h2 className="card-title">
+								{boilers[moduleBoiler].name}
+							</h2>
+							<p className="text-base-content text-opacity-40">
+								{boilers[moduleBoiler].description}
+							</p>
 						</div>
 					</div>
 				</div>
-				<h2 className="text-lg">{ __( 'Now, let\'s set up your module data', 'wp-plugin-studio' ) }</h2>
+				<h2 className="text-lg">
+					{__(
+						"Now, let's set up your module data",
+						'wp-plugin-studio'
+					)}
+				</h2>
 				<div className="relative ">
 					<label htmlFor="name-with-label">
-						{ __( 'Module Name', 'wp-plugin-studio' ) }
+						{__('Module Name', 'wp-plugin-studio')}
 					</label>
 					<input
 						type="text"
 						id="name-with-label"
 						className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 						name="email"
-						placeholder={ __( 'Module Name', 'wp-plugin-studio' ) }
-						value={ moduleName }
-						onChange={ (event) => setModuleName( event.target.value ) }
+						placeholder={__('Module Name', 'wp-plugin-studio')}
+						value={moduleName}
+						onChange={(event) => setModuleName(event.target.value)}
 					/>
 				</div>
 
 				<div className="relative ">
 					<label htmlFor="name-with-label">
-						{ __( 'Module Namespace', 'wp-plugin-studio' ) }
+						{__('Module Namespace', 'wp-plugin-studio')}
 					</label>
 					<input
 						type="text"
 						id="name-with-label"
 						className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 						name="email"
-						placeholder={ __( 'Module Namespace', 'wp-plugin-studio' ) }
-						value={ moduleNamespace }
-						onChange={ (event) => setModuleNamespace( event.target.value ) }
+						placeholder={__('Module Namespace', 'wp-plugin-studio')}
+						value={moduleNamespace}
+						onChange={(event) =>
+							setModuleNamespace(event.target.value)
+						}
 					/>
 				</div>
-			
+
 				<div className="relative ">
 					<label htmlFor="name-with-label">
-						{ __( 'Module Description', 'wp-plugin-studio' ) }
+						{__('Module Description', 'wp-plugin-studio')}
 					</label>
 					<textarea
 						className="flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
@@ -1055,8 +1565,10 @@ function ModuleForm( props ) {
 						name="comment"
 						rows="5"
 						cols="40"
-						value={ moduleDescription }
-						onChange={ (event) => setModuleDescription( event.target.value ) }
+						value={moduleDescription}
+						onChange={(event) =>
+							setModuleDescription(event.target.value)
+						}
 					/>
 				</div>
 
@@ -1067,39 +1579,39 @@ function ModuleForm( props ) {
 						createModule();
 					}}
 				>
-					{ __( 'Create Module', 'wp-plugin-studio' ) }
+					{__('Create Module', 'wp-plugin-studio')}
 				</button>
 			</div>
-		)
+		);
 	}
 
 	function renderLoadingStep() {
-		if ( step !== 'loading' ) {
-			return ''
+		if (step !== 'loading') {
+			return '';
 		}
 
 		return (
 			<div className="grid gap-5 p-10">
 				<div className="btn btn-ghost btn-sm btn-circle loading"></div>
 			</div>
-		)
+		);
 	}
 
 	function renderSuccessStep() {
-		if ( step !== 'success' ) {
-			return ''
+		if (step !== 'success') {
+			return '';
 		}
 
 		return (
 			<div className="grid gap-5 p-10">
 				<h2>Module successfully created and added to plugin!</h2>
 			</div>
-		)
+		);
 	}
 
 	function renderFailureStep() {
-		if ( step !== 'failure' ) {
-			return ''
+		if (step !== 'failure') {
+			return '';
 		}
 
 		return (
@@ -1108,51 +1620,90 @@ function ModuleForm( props ) {
 				<button
 					className="btn"
 					onClick={() => {
-						setStep( 2 );
+						setStep(2);
 					}}
-				>Back</button>
+				>
+					Back
+				</button>
 			</div>
-		)
+		);
 	}
 
 	return (
 		<>
-			{ renderStep1() }
-			{ renderStep2() }
-			{ renderLoadingStep() }
-			{ renderSuccessStep() }
-			{ renderFailureStep() }
+			{renderStep1()}
+			{renderStep2()}
+			{renderLoadingStep()}
+			{renderSuccessStep()}
+			{renderFailureStep()}
 		</>
-	)
+	);
 }
 
-function SpinningGears( props ) {
+function SpinningGears(props) {
 	// Credit: https://codepen.io/gareys/pen/meRgLG
-	return(
-		<div style={{width: props.width}}>
-		<svg style={{width: '100%'}} className="machine"xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 645 526">
-		 <defs/>
-		 <g>
-		   <path  x="-173,694" y="-173,694" className="large-shadow" d="M645 194v-21l-29-4c-1-10-3-19-6-28l25-14 -8-19 -28 7c-5-8-10-16-16-24L602 68l-15-15 -23 17c-7-6-15-11-24-16l7-28 -19-8 -14 25c-9-3-18-5-28-6L482 10h-21l-4 29c-10 1-19 3-28 6l-14-25 -19 8 7 28c-8 5-16 10-24 16l-23-17L341 68l17 23c-6 7-11 15-16 24l-28-7 -8 19 25 14c-3 9-5 18-6 28l-29 4v21l29 4c1 10 3 19 6 28l-25 14 8 19 28-7c5 8 10 16 16 24l-17 23 15 15 23-17c7 6 15 11 24 16l-7 28 19 8 14-25c9 3 18 5 28 6l4 29h21l4-29c10-1 19-3 28-6l14 25 19-8 -7-28c8-5 16-10 24-16l23 17 15-15 -17-23c6-7 11-15 16-24l28 7 8-19 -25-14c3-9 5-18 6-28L645 194zM471 294c-61 0-110-49-110-110S411 74 471 74s110 49 110 110S532 294 471 294z"/>
-		 </g>
-		 <g>
-		   <path x="-136,996" y="-136,996" className="medium-shadow" d="M402 400v-21l-28-4c-1-10-4-19-7-28l23-17 -11-18L352 323c-6-8-13-14-20-20l11-26 -18-11 -17 23c-9-4-18-6-28-7l-4-28h-21l-4 28c-10 1-19 4-28 7l-17-23 -18 11 11 26c-8 6-14 13-20 20l-26-11 -11 18 23 17c-4 9-6 18-7 28l-28 4v21l28 4c1 10 4 19 7 28l-23 17 11 18 26-11c6 8 13 14 20 20l-11 26 18 11 17-23c9 4 18 6 28 7l4 28h21l4-28c10-1 19-4 28-7l17 23 18-11 -11-26c8-6 14-13 20-20l26 11 11-18 -23-17c4-9 6-18 7-28L402 400zM265 463c-41 0-74-33-74-74 0-41 33-74 74-74 41 0 74 33 74 74C338 430 305 463 265 463z"/>
-		 </g>
-		 <g >
-		   <path x="-100,136" y="-100,136" className="small-shadow" d="M210 246v-21l-29-4c-2-10-6-18-11-26l18-23 -15-15 -23 18c-8-5-17-9-26-11l-4-29H100l-4 29c-10 2-18 6-26 11l-23-18 -15 15 18 23c-5 8-9 17-11 26L10 225v21l29 4c2 10 6 18 11 26l-18 23 15 15 23-18c8 5 17 9 26 11l4 29h21l4-29c10-2 18-6 26-11l23 18 15-15 -18-23c5-8 9-17 11-26L210 246zM110 272c-20 0-37-17-37-37s17-37 37-37c20 0 37 17 37 37S131 272 110 272z"/>
-		 </g>
-		 <g>
-		   <path x="-100,136" y="-100,136" className="small" d="M200 236v-21l-29-4c-2-10-6-18-11-26l18-23 -15-15 -23 18c-8-5-17-9-26-11l-4-29H90l-4 29c-10 2-18 6-26 11l-23-18 -15 15 18 23c-5 8-9 17-11 26L0 215v21l29 4c2 10 6 18 11 26l-18 23 15 15 23-18c8 5 17 9 26 11l4 29h21l4-29c10-2 18-6 26-11l23 18 15-15 -18-23c5-8 9-17 11-26L200 236zM100 262c-20 0-37-17-37-37s17-37 37-37c20 0 37 17 37 37S121 262 100 262z"/>
-		 </g>
-		 <g>
-		   <path x="-173,694" y="-173,694" className="large" d="M635 184v-21l-29-4c-1-10-3-19-6-28l25-14 -8-19 -28 7c-5-8-10-16-16-24L592 58l-15-15 -23 17c-7-6-15-11-24-16l7-28 -19-8 -14 25c-9-3-18-5-28-6L472 0h-21l-4 29c-10 1-19 3-28 6L405 9l-19 8 7 28c-8 5-16 10-24 16l-23-17L331 58l17 23c-6 7-11 15-16 24l-28-7 -8 19 25 14c-3 9-5 18-6 28l-29 4v21l29 4c1 10 3 19 6 28l-25 14 8 19 28-7c5 8 10 16 16 24l-17 23 15 15 23-17c7 6 15 11 24 16l-7 28 19 8 14-25c9 3 18 5 28 6l4 29h21l4-29c10-1 19-3 28-6l14 25 19-8 -7-28c8-5 16-10 24-16l23 17 15-15 -17-23c6-7 11-15 16-24l28 7 8-19 -25-14c3-9 5-18 6-28L635 184zM461 284c-61 0-110-49-110-110S401 64 461 64s110 49 110 110S522 284 461 284z"/>
-		 </g>
-		 <g>
-		   <path x="-136,996" y="-136,996" className="medium" d="M392 390v-21l-28-4c-1-10-4-19-7-28l23-17 -11-18L342 313c-6-8-13-14-20-20l11-26 -18-11 -17 23c-9-4-18-6-28-7l-4-28h-21l-4 28c-10 1-19 4-28 7l-17-23 -18 11 11 26c-8 6-14 13-20 20l-26-11 -11 18 23 17c-4 9-6 18-7 28l-28 4v21l28 4c1 10 4 19 7 28l-23 17 11 18 26-11c6 8 13 14 20 20l-11 26 18 11 17-23c9 4 18 6 28 7l4 28h21l4-28c10-1 19-4 28-7l17 23 18-11 -11-26c8-6 14-13 20-20l26 11 11-18 -23-17c4-9 6-18 7-28L392 390zM255 453c-41 0-74-33-74-74 0-41 33-74 74-74 41 0 74 33 74 74C328 420 295 453 255 453z"/>
-		 </g>
-	    </svg>
-	    <style>
-		{`
+	return (
+		<div style={{ width: props.width }}>
+			<svg
+				style={{ width: '100%' }}
+				className="machine"
+				xmlns="http://www.w3.org/2000/svg"
+				x="0px"
+				y="0px"
+				viewBox="0 0 645 526"
+			>
+				<defs />
+				<g>
+					<path
+						x="-173,694"
+						y="-173,694"
+						className="large-shadow"
+						d="M645 194v-21l-29-4c-1-10-3-19-6-28l25-14 -8-19 -28 7c-5-8-10-16-16-24L602 68l-15-15 -23 17c-7-6-15-11-24-16l7-28 -19-8 -14 25c-9-3-18-5-28-6L482 10h-21l-4 29c-10 1-19 3-28 6l-14-25 -19 8 7 28c-8 5-16 10-24 16l-23-17L341 68l17 23c-6 7-11 15-16 24l-28-7 -8 19 25 14c-3 9-5 18-6 28l-29 4v21l29 4c1 10 3 19 6 28l-25 14 8 19 28-7c5 8 10 16 16 24l-17 23 15 15 23-17c7 6 15 11 24 16l-7 28 19 8 14-25c9 3 18 5 28 6l4 29h21l4-29c10-1 19-3 28-6l14 25 19-8 -7-28c8-5 16-10 24-16l23 17 15-15 -17-23c6-7 11-15 16-24l28 7 8-19 -25-14c3-9 5-18 6-28L645 194zM471 294c-61 0-110-49-110-110S411 74 471 74s110 49 110 110S532 294 471 294z"
+					/>
+				</g>
+				<g>
+					<path
+						x="-136,996"
+						y="-136,996"
+						className="medium-shadow"
+						d="M402 400v-21l-28-4c-1-10-4-19-7-28l23-17 -11-18L352 323c-6-8-13-14-20-20l11-26 -18-11 -17 23c-9-4-18-6-28-7l-4-28h-21l-4 28c-10 1-19 4-28 7l-17-23 -18 11 11 26c-8 6-14 13-20 20l-26-11 -11 18 23 17c-4 9-6 18-7 28l-28 4v21l28 4c1 10 4 19 7 28l-23 17 11 18 26-11c6 8 13 14 20 20l-11 26 18 11 17-23c9 4 18 6 28 7l4 28h21l4-28c10-1 19-4 28-7l17 23 18-11 -11-26c8-6 14-13 20-20l26 11 11-18 -23-17c4-9 6-18 7-28L402 400zM265 463c-41 0-74-33-74-74 0-41 33-74 74-74 41 0 74 33 74 74C338 430 305 463 265 463z"
+					/>
+				</g>
+				<g>
+					<path
+						x="-100,136"
+						y="-100,136"
+						className="small-shadow"
+						d="M210 246v-21l-29-4c-2-10-6-18-11-26l18-23 -15-15 -23 18c-8-5-17-9-26-11l-4-29H100l-4 29c-10 2-18 6-26 11l-23-18 -15 15 18 23c-5 8-9 17-11 26L10 225v21l29 4c2 10 6 18 11 26l-18 23 15 15 23-18c8 5 17 9 26 11l4 29h21l4-29c10-2 18-6 26-11l23 18 15-15 -18-23c5-8 9-17 11-26L210 246zM110 272c-20 0-37-17-37-37s17-37 37-37c20 0 37 17 37 37S131 272 110 272z"
+					/>
+				</g>
+				<g>
+					<path
+						x="-100,136"
+						y="-100,136"
+						className="small"
+						d="M200 236v-21l-29-4c-2-10-6-18-11-26l18-23 -15-15 -23 18c-8-5-17-9-26-11l-4-29H90l-4 29c-10 2-18 6-26 11l-23-18 -15 15 18 23c-5 8-9 17-11 26L0 215v21l29 4c2 10 6 18 11 26l-18 23 15 15 23-18c8 5 17 9 26 11l4 29h21l4-29c10-2 18-6 26-11l23 18 15-15 -18-23c5-8 9-17 11-26L200 236zM100 262c-20 0-37-17-37-37s17-37 37-37c20 0 37 17 37 37S121 262 100 262z"
+					/>
+				</g>
+				<g>
+					<path
+						x="-173,694"
+						y="-173,694"
+						className="large"
+						d="M635 184v-21l-29-4c-1-10-3-19-6-28l25-14 -8-19 -28 7c-5-8-10-16-16-24L592 58l-15-15 -23 17c-7-6-15-11-24-16l7-28 -19-8 -14 25c-9-3-18-5-28-6L472 0h-21l-4 29c-10 1-19 3-28 6L405 9l-19 8 7 28c-8 5-16 10-24 16l-23-17L331 58l17 23c-6 7-11 15-16 24l-28-7 -8 19 25 14c-3 9-5 18-6 28l-29 4v21l29 4c1 10 3 19 6 28l-25 14 8 19 28-7c5 8 10 16 16 24l-17 23 15 15 23-17c7 6 15 11 24 16l-7 28 19 8 14-25c9 3 18 5 28 6l4 29h21l4-29c10-1 19-3 28-6l14 25 19-8 -7-28c8-5 16-10 24-16l23 17 15-15 -17-23c6-7 11-15 16-24l28 7 8-19 -25-14c3-9 5-18 6-28L635 184zM461 284c-61 0-110-49-110-110S401 64 461 64s110 49 110 110S522 284 461 284z"
+					/>
+				</g>
+				<g>
+					<path
+						x="-136,996"
+						y="-136,996"
+						className="medium"
+						d="M392 390v-21l-28-4c-1-10-4-19-7-28l23-17 -11-18L342 313c-6-8-13-14-20-20l11-26 -18-11 -17 23c-9-4-18-6-28-7l-4-28h-21l-4 28c-10 1-19 4-28 7l-17-23 -18 11 11 26c-8 6-14 13-20 20l-26-11 -11 18 23 17c-4 9-6 18-7 28l-28 4v21l28 4c1 10 4 19 7 28l-23 17 11 18 26-11c6 8 13 14 20 20l-11 26 18 11 17-23c9 4 18 6 28 7l4 28h21l4-28c10-1 19-4 28-7l17 23 18-11 -11-26c8-6 14-13 20-20l26 11 11-18 -23-17c4-9 6-18 7-28L392 390zM255 453c-41 0-74-33-74-74 0-41 33-74 74-74 41 0 74 33 74 74C328 420 295 453 255 453z"
+					/>
+				</g>
+			</svg>
+			<style>
+				{`
 		.machine {
   width: 60vmin;
   fill: #3eb049; }
@@ -1247,140 +1798,162 @@ function SpinningGears( props ) {
     from {transform: rotate(359deg);}
     to   {transform: rotate(0deg);}
 }`}
-
-	    </style>
-	    </div>
-	)
+			</style>
+		</div>
+	);
 }
 
-function PreFlighter( props ) {
-	const [checkResponse, setCheckResponse] = useState( null );
-	const [installResponse, setInstallResponse] = useState( null );
+function PreFlighter(props) {
+	const [checkResponse, setCheckResponse] = useState(null);
+	const [installResponse, setInstallResponse] = useState(null);
 
-	const fileStreamer = useFetchOnRepeat( '/wp-content/wpps-studio-data/wpps_output_' + props.data.installJobIdentifier );
+	const fileStreamer = useFetchOnRepeat(
+		'/wp-content/wpps-studio-data/wpps_' +
+			props.data.installJobIdentifier +
+			'_output'
+	);
 
-	useEffect( () => {
-		if ( ! props.doingStatusChecks ) {
+	useEffect(() => {
+		if (!props.doingStatusChecks) {
 			fileStreamer.stop();
 		} else {
 			checkTheStatus();
 		}
-	}, [props.doingStatusChecks] );
+	}, [props.doingStatusChecks]);
 
 	function checkTheStatus() {
-		
-		fetch(wppsApiEndpoints.whichChecker + '?' + new URLSearchParams({
-			job_identifier: props.data.checkJobIdentifier,
-			command: props.data.checkCommand,
-		}), {
-			method: 'GET',
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-			},
-		})
-		.then( response => response.json())
-		.then( ( data ) => {
-			const response = JSON.parse( data );
-			setCheckResponse(response);
-		});
-
+		fetch(
+			wppsApiEndpoints.whichChecker +
+				'?' +
+				new URLSearchParams({
+					job_identifier: props.data.checkJobIdentifier,
+					command: props.data.checkCommand,
+				}),
+			{
+				method: 'GET',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+				},
+			}
+		)
+			.then((response) => response.json())
+			.then((data) => {
+				const response = JSON.parse(data);
+				setCheckResponse(response);
+			});
 	}
 
 	function install() {
-		fetch(wppsApiEndpoints.whichChecker + '?' + new URLSearchParams({
-				job_identifier: props.data.installJobIdentifier,
-				command: props.data.installCommand,
-			}), {
-			method: 'GET',
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-			},
-		})
-		.then( response => response.json())
-		.then( ( data ) => {
-			fileStreamer.stop();
-			const response = JSON.parse( data );
-			setInstallResponse(response);
-			checkTheStatus();
-		});
+		fetch(
+			wppsApiEndpoints.whichChecker +
+				'?' +
+				new URLSearchParams({
+					job_identifier: props.data.installJobIdentifier,
+					command: props.data.installCommand,
+				}),
+			{
+				method: 'GET',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+				},
+			}
+		)
+			.then((response) => response.json())
+			.then((data) => {
+				fileStreamer.stop();
+				const response = JSON.parse(data);
+				setInstallResponse(response);
+				checkTheStatus();
+			});
 
 		fileStreamer.start();
 	}
 
-
 	function renderCheckStatus() {
-		if ( ! checkResponse ) {
-			return 'Status not yet checked...'
+		if (!checkResponse) {
+			return 'Status not yet checked...';
 		}
-		if ( ! checkResponse.output || checkResponse.error ) {
+		if (!checkResponse.output || checkResponse.error) {
 			return (
 				<>
-				<div className="alert alert-error gap-2">
-					<div className="flex-1">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 mx-2 stroke-current">    
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>                      
-						</svg> 
-						<label>{ props.data.name + ' not found! Would you like to install it?' }</label>
+					<div className="alert alert-error gap-2">
+						<div className="flex-1">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								className="w-6 h-6 mx-2 stroke-current"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth="2"
+									d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+								></path>
+							</svg>
+							<label>
+								{props.data.name +
+									' not found! Would you like to install it?'}
+							</label>
+						</div>
+						<button
+							onClick={() => {
+								install();
+							}}
+							className="btn btn-primary"
+						>
+							{'Install ' + props.data.name}
+						</button>
 					</div>
-					<button
-						onClick={() => {
-							install();	
-						}}
-						class="btn btn-primary"
-					>
-						{ 'Install ' + props.data.name }
-					</button> 
-				</div>
 				</>
-			)
+			);
 		}
-		if ( checkResponse.output ) {
+		if (checkResponse.output) {
 			return (
 				<>
-				<div class="alert alert-success">
-					<div class="flex-1">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 mx-2 stroke-current">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>                
-						</svg> 
-						<label>{ props.data.name + ' exists! 👍' }</label>
+					<div className="alert alert-success">
+						<div className="flex-1">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								className="w-6 h-6 mx-2 stroke-current"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth="2"
+									d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+								></path>
+							</svg>
+							<label>{props.data.name + ' exists! 👍'}</label>
+						</div>
 					</div>
-				</div>
 				</>
-			)
+			);
 		}
 	}
 
 	function renderInstallResponse() {
-		return (
-			<TerminalWindow>
-				{ fileStreamer.response }
-			</TerminalWindow>
-		)
+		return <TerminalWindow>{fileStreamer.response}</TerminalWindow>;
 	}
 	function renderCheckResponse() {
-		if ( ! checkResponse ) {
+		if (!checkResponse) {
 			return '';
 		}
 
 		return (
 			<div>
-				<TerminalWindow>
-					{ checkResponse.details.command }
-				</TerminalWindow>
-				<TerminalWindow>
-					{ checkResponse.error }
-				</TerminalWindow>
-				<TerminalWindow>
-					{ checkResponse.output }
-				</TerminalWindow>
+				<TerminalWindow>{checkResponse.details.command}</TerminalWindow>
+				<TerminalWindow>{checkResponse.error}</TerminalWindow>
+				<TerminalWindow>{checkResponse.output}</TerminalWindow>
 			</div>
-		)
+		);
 	}
 
 	return (
-
 		<div className="card shadow-lg compact side bg-base-200">
 			<div className="flex-row items-center space-x-4 card-body">
 				<div>
@@ -1392,21 +1965,23 @@ function PreFlighter( props ) {
 				</div>
 				<div className="grid gap-1">
 					<h2 className="card-title">{props.data.name}</h2>
-					<p className="text-base-content text-opacity-40">{props.data.description}</p>
-					<p>{ renderCheckStatus() }</p>
-					{ renderCheckResponse() }
-					{ renderInstallResponse() }
+					<p className="text-base-content text-opacity-40">
+						{props.data.description}
+					</p>
+					<p>{renderCheckStatus()}</p>
+					{renderCheckResponse()}
+					{renderInstallResponse()}
 				</div>
 			</div>
 		</div>
-	)
+	);
 }
 function PreFlightChecks() {
-	const {currentPluginData} = useContext(AomContext);
-	const [doingStatusChecks, setDoingStatusChecks] = useState( false );
+	const { currentPluginData } = useContext(AomContext);
+	const [doingStatusChecks, setDoingStatusChecks] = useState(false);
 
-	if ( currentPluginData ) {
-		return '';	
+	if (currentPluginData) {
+		return '';
 	}
 
 	return (
@@ -1415,44 +1990,48 @@ function PreFlightChecks() {
 				<div className="flex px-2 mx-2 w-full">
 					<div className="flex-grow">
 						<span className="text-lg font-bold">
-						Pre Flight Checks
+							Pre Flight Checks
 						</span>
 					</div>
-					<span className="text-lg mr-4">
-						Test
-					</span>
-					<input type="checkbox" className="toggle" onChange={ (event) => {
-						if ( event.target.checked ) {
-							setDoingStatusChecks( true );
-						} else {
-							setDoingStatusChecks( false );
-						}
-					}
-					} />
+					<span className="text-lg mr-4">Test</span>
+					<input
+						type="checkbox"
+						className="toggle"
+						onChange={(event) => {
+							if (event.target.checked) {
+								setDoingStatusChecks(true);
+							} else {
+								setDoingStatusChecks(false);
+							}
+						}}
+					/>
 				</div>
 			</div>
 			<div className="grid gap-4">
 				<PreFlighter
 					data={{
 						name: 'Homebrew',
-						description: 'Homebrew is a way to install and manage packages on Linux/MacOS systems.',
+						description:
+							'Homebrew is a way to install and manage packages on Linux/MacOS systems.',
 						checkJobIdentifier: 'check_homebrew',
 						checkCommand: 'brew -v;',
 						installJobIdentifier: 'install_homebrew',
-						installCommand: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+						installCommand:
+							'/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
 					}}
-					doingStatusChecks={ doingStatusChecks }
+					doingStatusChecks={doingStatusChecks}
 				/>
 				<PreFlighter
 					data={{
 						name: 'NodeJS',
-						description: 'NodeJS runs javascript and enables package managers like NPM.',
+						description:
+							'NodeJS runs javascript and enables package managers like NPM.',
 						checkJobIdentifier: 'check_nodejs',
 						checkCommand: 'nvm -v;',
 						installJobIdentifier: 'install_nodejs',
 						installCommand: 'brew install nvm',
 					}}
-					doingStatusChecks={ doingStatusChecks }
+					doingStatusChecks={doingStatusChecks}
 				/>
 				<PreFlighter
 					data={{
@@ -1463,18 +2042,19 @@ function PreFlightChecks() {
 						installJobIdentifier: 'install_npm',
 						installCommand: 'brew install npm',
 					}}
-					doingStatusChecks={ doingStatusChecks }
+					doingStatusChecks={doingStatusChecks}
 				/>
 				<PreFlighter
 					data={{
 						name: 'PHP',
-						description: 'PHP on the command line enables required functionality.',
+						description:
+							'PHP on the command line enables required functionality.',
 						checkJobIdentifier: 'check_php',
 						checkCommand: 'php -v;',
 						installJobIdentifier: 'install_php',
 						installCommand: 'brew install php@7.4',
 					}}
-					doingStatusChecks={ doingStatusChecks }
+					doingStatusChecks={doingStatusChecks}
 				/>
 				<PreFlighter
 					data={{
@@ -1485,7 +2065,7 @@ function PreFlightChecks() {
 						installJobIdentifier: 'install_composer',
 						installCommand: 'brew install composer',
 					}}
-					doingStatusChecks={ doingStatusChecks }
+					doingStatusChecks={doingStatusChecks}
 				/>
 
 				<ManualPreFlighter
@@ -1494,113 +2074,155 @@ function PreFlightChecks() {
 						description: 'Docker is...',
 						checkJobIdentifier: 'check_docker',
 						checkCommand: 'docker -v;',
-						downloadLink: 'https://docs.docker.com/get-docker/'
+						downloadLink: 'https://docs.docker.com/get-docker/',
 					}}
-					doingStatusChecks={ doingStatusChecks }
+					doingStatusChecks={doingStatusChecks}
 				/>
-				
 			</div>
 		</>
-	)
+	);
 }
 
-function ManualPreFlighter( props ) {
+function ManualPreFlighter(props) {
+	const [checkResponse, setCheckResponse] = useState(null);
+	const [installResponse, setInstallResponse] = useState(null);
 
-	const [checkResponse, setCheckResponse] = useState( null );
-	const [installResponse, setInstallResponse] = useState( null );
+	const fileStreamer = useFetchOnRepeat(
+		'/wp-content/wpps-studio-data/wpps_' +
+			props.data.installJobIdentifier +
+			'_output'
+	);
 
-	const fileStreamer = useFetchOnRepeat( '/wp-content/wpps-studio-data/wpps_output_' + props.data.installJobIdentifier );
-
-	useEffect( () => {
-		if ( ! props.doingStatusChecks ) {
+	useEffect(() => {
+		if (!props.doingStatusChecks) {
 			fileStreamer.stop();
 		} else {
 			checkTheStatus();
 		}
-	}, [props.doingStatusChecks] );
+	}, [props.doingStatusChecks]);
 
 	function checkTheStatus() {
-		
-		fetch(wppsApiEndpoints.whichChecker + '?' + new URLSearchParams({
-			job_identifier: props.data.checkJobIdentifier,
-			command: props.data.checkCommand,
-		}), {
-			method: 'GET',
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-			},
-		})
-		.then( response => response.json())
-		.then( ( data ) => {
-			const response = JSON.parse( data );
-			setCheckResponse(response);
-		});
-
+		fetch(
+			wppsApiEndpoints.whichChecker +
+				'?' +
+				new URLSearchParams({
+					job_identifier: props.data.checkJobIdentifier,
+					command: props.data.checkCommand,
+				}),
+			{
+				method: 'GET',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+				},
+			}
+		)
+			.then((response) => response.json())
+			.then((data) => {
+				const response = JSON.parse(data);
+				setCheckResponse(response);
+			});
 	}
 
-
 	function renderCheckStatus() {
-		if ( ! checkResponse ) {
-			return 'Status not yet checked...'
+		if (!checkResponse) {
+			return 'Status not yet checked...';
 		}
-		if ( ! checkResponse.output || checkResponse.error ) {
+		if (!checkResponse.output || checkResponse.error) {
 			return (
 				<>
-				<div className="alert alert-error gap-2">
-					<div className="flex-1">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 mx-2 stroke-current">    
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>                      
-						</svg> 
-						<label>{ props.data.name + ' not found! It needs to be manually installed. Here\'s where you can download it.' }</label>
-					</div>
-					<a className="btn" href={ props.data.downloadLink } target="_blank">{ 'Visit Download Page' }</a>
-					<div class="alert alert-warning">
-						<div class="flex-1">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 mx-2 stroke-current"> 
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>                         
-							</svg> 
-							<label>If you already have it downloaded, make sure it is open! (Applications folder, look for Docker Desktop)</label>
+					<div className="alert alert-error gap-2">
+						<div className="flex-1">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								className="w-6 h-6 mx-2 stroke-current"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth="2"
+									d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+								></path>
+							</svg>
+							<label>
+								{props.data.name +
+									" not found! It needs to be manually installed. Here's where you can download it."}
+							</label>
+						</div>
+						<a
+							className="btn"
+							href={props.data.downloadLink}
+							target="_blank"
+							rel="noreferrer"
+						>
+							{'Visit Download Page'}
+						</a>
+						<div className="alert alert-warning">
+							<div className="flex-1">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									className="w-6 h-6 mx-2 stroke-current"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth="2"
+										d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+									></path>
+								</svg>
+								<label>
+									If you already have it downloaded, make sure
+									it is open! (Applications folder, look for
+									Docker Desktop)
+								</label>
+							</div>
 						</div>
 					</div>
-				</div>
 				</>
-			)
+			);
 		}
-		if ( checkResponse.output ) {
+		if (checkResponse.output) {
 			return (
 				<>
-				<div class="alert alert-success">
-					<div class="flex-1">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 mx-2 stroke-current">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>                
-						</svg> 
-						<label>{ props.data.name + ' exists! 👍' }</label>
+					<div className="alert alert-success">
+						<div className="flex-1">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								className="w-6 h-6 mx-2 stroke-current"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth="2"
+									d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+								></path>
+							</svg>
+							<label>{props.data.name + ' exists! 👍'}</label>
+						</div>
 					</div>
-				</div>
 				</>
-			)
+			);
 		}
 	}
 
 	function renderCheckResponse() {
-		if ( ! checkResponse ) {
+		if (!checkResponse) {
 			return '';
 		}
 
 		return (
 			<div>
-				<TerminalWindow>
-					{ checkResponse.details.command }
-				</TerminalWindow>
-				<TerminalWindow>
-					{ checkResponse.error }
-				</TerminalWindow>
-				<TerminalWindow>
-					{ checkResponse.output }
-				</TerminalWindow>
+				<TerminalWindow>{checkResponse.details.command}</TerminalWindow>
+				<TerminalWindow>{checkResponse.error}</TerminalWindow>
+				<TerminalWindow>{checkResponse.output}</TerminalWindow>
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -1615,34 +2237,35 @@ function ManualPreFlighter( props ) {
 				</div>
 				<div className="grid gap-1">
 					<h2 className="card-title">{props.data.name}</h2>
-					<p className="text-base-content text-opacity-40">{props.data.description}</p>
-					<p>{ renderCheckStatus() }</p>
-					{ renderCheckResponse() }
+					<p className="text-base-content text-opacity-40">
+						{props.data.description}
+					</p>
+					<p>{renderCheckStatus()}</p>
+					{renderCheckResponse()}
 				</div>
 			</div>
 		</div>
-	)
-
+	);
 }
 
-function TerminalWindow( props ) {
+function TerminalWindow(props) {
 	const element = useRef();
 
-	useEffect( () => {
-		if ( ! element.current ) {
+	useEffect(() => {
+		if (!element.current) {
 			return;
 		}
 
 		// Set the scrollbar to be at the bottom.
 		element.current.scrollTop = element.current.scrollHeight;
-	}, [props.children] );
+	}, [props.children]);
 
 	return (
 		<div
 			ref={element}
 			className="bg-black p-4 text-white z-0 whitespace-pre grid overflow-x-hidden overflow-y-scroll max-h-96"
 		>
-				{ props.children }
+			{props.children}
 		</div>
-	)
+	);
 }
