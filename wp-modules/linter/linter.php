@@ -53,3 +53,9 @@ function hoist_linter_to_wp_content() {
 
 }
 add_action( 'admin_init', __NAMESPACE__ . '\hoist_linter_to_wp_content' );
+
+
+function generate_phpcsxml( $details ) {
+	
+}
+add_action( 'admin_init', __NAMESPACE__ . '\generate_phpcsxml' );

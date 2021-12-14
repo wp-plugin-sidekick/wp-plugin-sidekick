@@ -396,30 +396,15 @@ function FixersArea(props) {
 							className="card shadow-lg compact side bg-base-200 cursor-pointer"
 							onClick={() => {}}
 						>
-							<div className="grid grid-cols-3 items-center card-body">
+							<div className="grid grid-cols-2 items-center card-body">
 								<LintingComponent
 									title={__('Fix PHP Linting')}
 									description={__(
 										'Automatically fixes PHP code to adhere to WordPress coding standards (where possible).'
 									)}
 									inProgress={fixingPhpLint}
-									errors={[
-										currentPluginData?.devStatus?.phplintfix?.output?.match(
-											'(?<=Errors: ).*[0-9]'
-										),
-										currentPluginData?.devStatus?.phplintfix?.output?.match(
-											'(?<=Failures: ).*[0-9]'
-										),
-									]}
-									// Look for "OK (X tests" in the response to indicate success.
-									success={/OK .*[0-9] tests/.test(
-										currentPluginData?.devStatus?.phplintfix?.output
-									)}
-									error={
-										currentPluginData?.devStatus?.phplintfix?.error
-									}
-									output={
-										currentPluginData?.devStatus?.phplintfix?.output
+									status={
+										currentPluginData?.devStatus?.phplintfix
 									}
 								/>
 								<LintingComponent
@@ -428,19 +413,8 @@ function FixersArea(props) {
 										'Automatically fixes CSS code to adhere to WordPress coding standards (where possible).'
 									)}
 									inProgress={fixingCssLint}
-									errors={[
+									status={
 										currentPluginData?.devStatus?.csslintfix
-											?.totals?.errors,
-									]}
-									success={
-										currentPluginData?.devStatus?.csslintfix
-											?.totals?.errors === 0
-									}
-									error={
-										currentPluginData?.devStatus?.csslintfix?.error
-									}
-									output={
-										currentPluginData?.devStatus?.csslintfix?.output
 									}
 								/>
 								<LintingComponent
@@ -449,23 +423,8 @@ function FixersArea(props) {
 										'Automatically fixes Javascript code to adhere to WordPress coding standards (where possible).'
 									)}
 									inProgress={fixingJsLint}
-									errors={[
-										currentPluginData?.devStatus?.jslintfix?.output?.match(
-											'(?<=Errors: ).*[0-9]'
-										),
-										currentPluginData?.devStatus?.jslintfix?.output?.match(
-											'(?<=Failures: ).*[0-9]'
-										),
-									]}
-									// Look for "OK (X tests" in the response to indicate success.
-									success={/OK .*[0-9] tests/.test(
+									status={
 										currentPluginData?.devStatus?.jslintfix
-									)}
-									error={
-										currentPluginData?.devStatus?.jslintfix?.error
-									}
-									output={
-										currentPluginData?.devStatus?.jslintfix?.output
 									}
 								/>
 								<LintingComponent
@@ -474,23 +433,8 @@ function FixersArea(props) {
 										'Automatically fixes file headers and namespaces to comply with the module in which they are contained.'
 									)}
 									inProgress={fixingJsLint}
-									errors={[
-										currentPluginData?.devStatus?.jslintfix?.output?.match(
-											'(?<=Errors: ).*[0-9]'
-										),
-										currentPluginData?.devStatus?.jslintfix?.output?.match(
-											'(?<=Failures: ).*[0-9]'
-										),
-									]}
-									// Look for "OK (X tests" in the response to indicate success.
-									success={/OK .*[0-9] tests/.test(
+									status={
 										currentPluginData?.devStatus?.jslintfix
-									)}
-									error={
-										currentPluginData?.devStatus?.jslintfix?.error
-									}
-									output={
-										currentPluginData?.devStatus?.jslintfix?.output
 									}
 								/>
 								<LintingComponent
@@ -499,23 +443,8 @@ function FixersArea(props) {
 										"Automatically adjust all translatable function textdomains to match the plugin's textdomain."
 									)}
 									inProgress={fixingJsLint}
-									errors={[
-										currentPluginData?.devStatus?.jslintfix?.output?.match(
-											'(?<=Errors: ).*[0-9]'
-										),
-										currentPluginData?.devStatus?.jslintfix?.output?.match(
-											'(?<=Failures: ).*[0-9]'
-										),
-									]}
-									// Look for "OK (X tests" in the response to indicate success.
-									success={/OK .*[0-9] tests/.test(
+									status={
 										currentPluginData?.devStatus?.jslintfix
-									)}
-									error={
-										currentPluginData?.devStatus?.jslintfix?.error
-									}
-									output={
-										currentPluginData?.devStatus?.jslintfix?.output
 									}
 								/>
 							</div>
@@ -613,26 +542,15 @@ function LintingArea(props) {
 							className="card shadow-lg compact side bg-base-200 cursor-pointer"
 							onClick={() => {}}
 						>
-							<div className="grid grid-cols-3 items-center card-body">
+							<div className="grid grid-cols-2 items-center card-body">
 								<LintingComponent
 									title={__('PHP Linting')}
 									description={__(
 										'Checks to make sure PHP files confirm to WordPress Coding Standards'
 									)}
 									inProgress={lintingPHPInProgress}
-									errors={[
+									status={
 										currentPluginData?.devStatus?.phplint
-											?.totals?.errors,
-									]}
-									success={
-										currentPluginData?.devStatus?.phplint
-											?.totals?.errors === 0
-									}
-									error={
-										currentPluginData?.devStatus?.phplint?.error
-									}
-									output={
-										currentPluginData?.devStatus?.phplint?.output
 									}
 								/>
 								<LintingComponent
@@ -641,19 +559,8 @@ function LintingArea(props) {
 										'Checks to make sure CSS files confirm to WordPress Coding Standards'
 									)}
 									inProgress={lintingCssInProgress}
-									errors={[
+									status={
 										currentPluginData?.devStatus?.csslint
-											?.totals?.errors,
-									]}
-									success={
-										currentPluginData?.devStatus?.csslint
-											?.totals?.errors === 0
-									}
-									error={
-										currentPluginData?.devStatus?.csslint?.error
-									}
-									output={
-										currentPluginData?.devStatus?.csslint?.output
 									}
 								/>
 								<LintingComponent
@@ -662,19 +569,8 @@ function LintingArea(props) {
 										'Checks to make sure javascript files confirm to WordPress Coding Standards'
 									)}
 									inProgress={lintingCssInProgress}
-									errors={[
+									status={
 										currentPluginData?.devStatus?.jslint
-											?.totals?.errors,
-									]}
-									success={
-										currentPluginData?.devStatus?.jslint
-											?.totals?.errors === 0
-									}
-									error={
-										currentPluginData?.devStatus?.jslint?.error
-									}
-									output={
-										currentPluginData?.devStatus?.jslint?.output
 									}
 								/>
 								<LintingComponent
@@ -683,23 +579,8 @@ function LintingArea(props) {
 										'Runs integration tests with WordPress'
 									)}
 									inProgress={phpunitInProgress}
-									errors={[
-										currentPluginData?.devStatus?.phpunit?.match(
-											'(?<=Errors: ).*[0-9]'
-										),
-										currentPluginData?.devStatus?.phpunit?.match(
-											'(?<=Failures: ).*[0-9]'
-										),
-									]}
-									// Look for "OK (X tests" in the response to indicate success.
-									success={/OK .*[0-9] tests/.test(
+									status={
 										currentPluginData?.devStatus?.phpunit
-									)}
-									error={
-										currentPluginData?.devStatus?.phpunit?.error
-									}
-									output={
-										currentPluginData?.devStatus?.phpunit?.output
 									}
 								/>
 							</div>
@@ -743,12 +624,12 @@ function LintingComponent(props) {
 															'wp-plugin-studio'
 														)}
 													</h2>
-													<div className="grid grid-cols-2 gap-5 p-10">
+													<div className="grid grid-cols-2 gap-5">
 														<TerminalWindow>
-															{props.error}
+															{props.status.error}
 														</TerminalWindow>
 														<TerminalWindow>
-															{props.output}
+															{props.status.output}
 														</TerminalWindow>
 													</div>
 												</div>
@@ -764,27 +645,26 @@ function LintingComponent(props) {
 									}}
 								>
 									{(() => {
-										if (props.errors[0] !== undefined) {
-											console.log(props.errors);
-											return (
-												<svg
-													style={{
-														stroke: 'hsla(var(--er)',
-													}}
-													xmlns="http://www.w3.org/2000/svg"
-													fill="none"
-													className="inline-block w-6 h-6"
-													viewBox="0 0 24 24"
-												>
-													<path d="M6 18L18 6M6 6l12 12"></path>
-												</svg>
-											);
+										console.log( 'Details', props?.status?.details );
+										if ( ! props?.status?.details ) {
+											return;
 										}
-										if (props.success) {
+										if (props?.status?.details?.exitcode === 0) {
 											return '✅';
 										}
-
-										return '⚠️';
+										return (
+											<svg
+												style={{
+													stroke: 'hsla(var(--er)',
+												}}
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												className="inline-block w-6 h-6"
+												viewBox="0 0 24 24"
+											>
+												<path d="M6 18L18 6M6 6l12 12"></path>
+											</svg>
+										);
 									})()}
 								</div>
 							</>

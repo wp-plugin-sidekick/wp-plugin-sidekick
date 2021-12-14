@@ -223,10 +223,10 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
 		// The cwd will be set to wp-plugin-studio/wp-modules/linter directory first so we can use it's phpcs functions without needing them in each plugin/module.
-		$command        = $go_to . './vendor/bin/phpcs --report=json -q --standard=' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/wp-modules/linter/phpcs.xml ' . $wp_filesystem->wp_plugins_dir() . $params['location'];
+		$command        = './vendor/bin/phpcs --report=json -q --standard=' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/wp-modules/linter/phpcs.xml ' . $wp_filesystem->wp_plugins_dir() . $params['location'];
 		$job_identifier = $params['job_identifier'];
 
-		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/wp-modules/linter' );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_content_dir() );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );
@@ -248,7 +248,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
 		// The cwd will be set to wp-plugin-studio/wp-modules/linter directory first so we can use it's phpcs functions without needing them in each plugin/module.
-		$command        = './vendor/bin/phpcbf -q --standard=./phpcs.xml  ' . $wp_filesystem->wp_plugins_dir() . $params['location'];
+		$command        = './vendor/bin/phpcbf -q --standard=./phpcs.xml ' . $wp_filesystem->wp_plugins_dir() . $params['location'];
 		$job_identifier = $params['job_identifier'];
 
 		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_content_dir() );

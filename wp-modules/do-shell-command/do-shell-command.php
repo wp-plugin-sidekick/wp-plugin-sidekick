@@ -104,7 +104,13 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 			usleep( 10000 );
 
 		} else {
-			$proc_details = proc_get_status( $proc );
+			/*
+			if ( $proc_details['exitcode'] >= 0 ) {
+				$proc_details = $proc_details;
+			} else {
+				$proc_details = proc_get_status( $proc );
+			}
+			*/
 			$error        = stream_get_contents( $pipes[2] );
 			$output       = stream_get_contents( $pipes[1] );
 

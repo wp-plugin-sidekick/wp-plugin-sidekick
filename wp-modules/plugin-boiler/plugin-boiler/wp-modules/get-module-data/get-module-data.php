@@ -20,7 +20,7 @@ if ( ! function_exists( 'module_dir_path' ) ) {
 	 * @param string $file_path The path to the file which is requesting the module path.
 	 * @return string
 	 */
-	function module_dir_path( string $file_path ) {
+	function module_dir_path( string $file_path ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
 		preg_match_all( '~.+?(?=wp-modules\/+)wp-modules\/.+?(?=\/)\/~', $file_path, $output_array );
 		return trailingslashit( $output_array[0][0] );
 	}
@@ -33,7 +33,7 @@ if ( ! function_exists( 'module_dir_url' ) ) {
 	 * @param string $file_path The path to the file which is requesting the module path.
 	 * @return string
 	 */
-	function module_dir_url( string $file_path ) {
+	function module_dir_url( string $file_path ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
 		preg_match_all( '~(?<=plugins\/).+?(?=wp-modules)wp-modules\/.+?(?=\/)\/~', $file_path, $output_array );
 		return plugins_url( $output_array[0][0] );
 	}

@@ -346,7 +346,17 @@ export function phplint(props) {
 					response
 				);
 
-				const phplintJson = JSON.parse(response.output);
+				let phplintJson = false;
+
+				try {
+					phplintJson = JSON.parse(response.output);
+				} catch(e) {
+					phplintJson = false
+				}
+
+				if ( ! phplintJson ) {
+					resolve(data);
+				}
 
 				// But also, separate each message into the corresponding module too.
 				for (module in props.currentPluginData.modules) {
@@ -438,7 +448,7 @@ export function phpUnit(props) {
 				props.plugins.setPluginDevStatus(
 					props.currentPluginData.dirname,
 					props.job_identifier,
-					response.output
+					response
 				);
 
 				resolve(data);
