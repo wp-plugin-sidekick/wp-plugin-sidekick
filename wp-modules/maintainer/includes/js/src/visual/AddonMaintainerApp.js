@@ -1973,6 +1973,17 @@ function PreFlightChecks() {
 					}}
 					doingStatusChecks={doingStatusChecks}
 				/>
+				
+				<ManualPreFlighter
+					data={{
+						name: 'Docker Compose',
+						description: 'Docker compose is...',
+						checkJobIdentifier: 'check_docker_compose',
+						checkCommand: 'docker-compose -v;',
+						instructionText: __( 'Make sure that Docker Desktop is open by opening it from Applications/Docker.app' ),
+					}}
+					doingStatusChecks={doingStatusChecks}
+				/>
 			</div>
 		</>
 	);
@@ -2024,37 +2035,10 @@ function ManualPreFlighter(props) {
 			return 'Status not yet checked...';
 		}
 		if (!checkResponse.output || checkResponse.error) {
-			return (
-				<>
-					<div className="alert alert-error gap-2">
-						<div className="flex-1">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								className="w-6 h-6 mx-2 stroke-current"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth="2"
-									d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-								></path>
-							</svg>
-							<label>
-								{props.data.name +
-									" not found! It needs to be manually installed. Here's where you can download it."}
-							</label>
-						</div>
-						<a
-							className="btn"
-							href={props.data.downloadLink}
-							target="_blank"
-							rel="noreferrer"
-						>
-							{'Visit Download Page'}
-						</a>
-						<div className="alert alert-warning">
+			if ( props.instructionText ) {
+				return (
+					<>
+						<div className="alert alert-error gap-2">
 							<div className="flex-1">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -2066,19 +2050,94 @@ function ManualPreFlighter(props) {
 										strokeLinecap="round"
 										strokeLinejoin="round"
 										strokeWidth="2"
-										d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+										d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
 									></path>
 								</svg>
 								<label>
-									If you already have it downloaded, make sure
-									it is open! (Applications folder, look for
-									Docker Desktop)
+									{props.data.name +
+										" not found!"}
 								</label>
 							</div>
+							<div className="alert alert-warning">
+								<div className="flex-1">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										className="w-6 h-6 mx-2 stroke-current"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth="2"
+											d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+										></path>
+									</svg>
+									<label>
+										{props.instructionText}
+									</label>
+								</div>
+							</div>
 						</div>
-					</div>
-				</>
-			);
+					</>
+				)
+			} else {
+				return (
+					<>
+						<div className="alert alert-error gap-2">
+							<div className="flex-1">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									className="w-6 h-6 mx-2 stroke-current"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth="2"
+										d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+									></path>
+								</svg>
+								<label>
+									{props.data.name +
+										" not found! It needs to be manually installed. Here's where you can download it."}
+								</label>
+							</div>
+							<a
+								className="btn"
+								href={props.data.downloadLink}
+								target="_blank"
+								rel="noreferrer"
+							>
+								{'Visit Download Page'}
+							</a>
+							<div className="alert alert-warning">
+								<div className="flex-1">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										className="w-6 h-6 mx-2 stroke-current"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth="2"
+											d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+										></path>
+									</svg>
+									<label>
+										If you already have it downloaded, make sure
+										it is open! (Applications folder, look for
+										Docker Desktop)
+									</label>
+								</div>
+							</div>
+						</div>
+					</>
+				);
+			}
 		}
 		if (checkResponse.output) {
 			return (
