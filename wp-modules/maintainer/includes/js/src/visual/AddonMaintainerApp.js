@@ -618,18 +618,18 @@ function LintingComponent(props) {
 												}}
 											>
 												<div className="grid gap-5 p-10">
-													<h2 className="text-lg">
-														{__(
-															'Response',
-															'wp-plugin-studio'
-														)}
-													</h2>
-													<div className="grid grid-cols-2 gap-5">
-														<TerminalWindow>
-															{props.status.error}
-														</TerminalWindow>
+													<div className="grid grid-cols-1 gap-5">
+														<div className="text-lg">
+															Output
+														</div>
 														<TerminalWindow>
 															{props.status.output}
+														</TerminalWindow>
+														<div className="text-lg">
+															Errors
+														</div>
+														<TerminalWindow>
+															{props.status.error}
 														</TerminalWindow>
 													</div>
 												</div>
