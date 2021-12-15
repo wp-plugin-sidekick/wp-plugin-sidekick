@@ -331,7 +331,7 @@ function FixersArea(props) {
 	const [fixingJsLint, setFixingJsLint] = useState(false);
 
 	useEffect(() => {
-		if (fixingCssLint || fixingJsLint) {
+		if (fixingPhpLint || fixingCssLint || fixingJsLint) {
 			setInProgress(true);
 		} else {
 			setInProgress(false);
@@ -465,7 +465,12 @@ function LintingArea(props) {
 	const [phpunitInProgress, setPhpunitInProgress] = useState(false);
 
 	useEffect(() => {
-		if (lintingPHPInProgress || phpunitInProgress || lintingCssInProgress || lintingJsInProgress) {
+		if (
+			lintingPHPInProgress ||
+			phpunitInProgress ||
+			lintingCssInProgress ||
+			lintingJsInProgress
+		) {
 			setInProgress(true);
 		} else {
 			setInProgress(false);
@@ -623,7 +628,10 @@ function LintingComponent(props) {
 															Output
 														</div>
 														<TerminalWindow>
-															{props.status.output}
+															{
+																props.status
+																	.output
+															}
 														</TerminalWindow>
 														<div className="text-lg">
 															Errors
@@ -645,11 +653,17 @@ function LintingComponent(props) {
 									}}
 								>
 									{(() => {
-										console.log( 'Details', props?.status?.details );
-										if ( ! props?.status?.details ) {
+										console.log(
+											'Details',
+											props?.status?.details
+										);
+										if (!props?.status?.details) {
 											return;
 										}
-										if (props?.status?.details?.exitcode === 0) {
+										if (
+											props?.status?.details?.exitcode ===
+											0
+										) {
 											return '✅';
 										}
 										return (
@@ -940,7 +954,8 @@ function PhpCsButtonAndModal(module) {
 		let numberOfErrors = 0;
 		for (const file in module.devStatus.phplint) {
 			numberOfErrors =
-				numberOfErrors + parseInt(module.devStatus.phplint[file].errors);
+				numberOfErrors +
+				parseInt(module.devStatus.phplint[file].errors);
 		}
 
 		return numberOfErrors;
@@ -2143,7 +2158,7 @@ function TerminalWindow(props) {
 	return (
 		<div
 			ref={element}
-			className="bg-black p-4 text-white z-0 whitespace-pre grid overflow-x-hidden overflow-y-scroll max-h-96"
+			className="bg-black p-4 text-white z-0 whitespace-pre grid overflow-x-scroll overflow-y-scroll max-h-96"
 		>
 			{props.children}
 		</div>

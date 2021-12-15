@@ -30,18 +30,18 @@ function render_app() {
 		<div id="addonmaintainer"></div>
 		<script type="text/javascript">
 			var wppsApiEndpoints = {
-				generatePlugin: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/generateplugin',
-				generateModule: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/generatemodule',
-				runShellCommand: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/runshellcommand',
-				whichChecker: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/whichchecker',
-				phplint: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/phplint',
-				phplintfix: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/phplintfix',
-				phpUnit: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/phpunit',
-				csslint: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/csslint',
-				csslintfix: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/csslintfix',
-				jslint: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/jslint',
-				jslintfix: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/jslintfix',
-				killShellCommand: '<?php echo esc_url(get_bloginfo( 'wpurl' )); ?>/wp-json/wpps/v1/killmoduleshellcommand',
+				generatePlugin: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/generateplugin',
+				generateModule: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/generatemodule',
+				runShellCommand: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/runshellcommand',
+				whichChecker: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/whichchecker',
+				phplint: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/phplint',
+				phplintfix: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/phplintfix',
+				phpUnit: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/phpunit',
+				csslint: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/csslint',
+				csslintfix: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/csslintfix',
+				jslint: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/jslint',
+				jslintfix: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/jslintfix',
+				killShellCommand: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/killmoduleshellcommand',
 			};
 			var wppsPlugins = <?php echo wp_json_encode( get_managable_plugins() ); ?>;
 			var wppsModuleBoilers = <?php echo wp_json_encode( \WPPS\ModuleDataFunctions\get_module_boilers() ); ?>;
@@ -67,10 +67,10 @@ function get_managable_plugins() {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 	}
 
-	$installed_plugins  = \get_plugins();
+	$installed_plugins = \get_plugins();
 
 	$wp_filesystem_api = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
-	$plugins_path       = $wp_filesystem_api->wp_plugins_dir();
+	$plugins_path      = $wp_filesystem_api->wp_plugins_dir();
 
 	$manageable_plugins = array();
 
@@ -103,7 +103,7 @@ function get_plugin_namespace( $plugin_file ) {
 	$wp_filesystem_api = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 	// Open the file.
 	$file_contents = $wp_filesystem_api->get_contents( $plugin_file );
-	preg_match_all('/(?<=namespace).*(?=;)/', $file_contents, $matches);
+	preg_match_all( '/(?<=namespace).*(?=;)/', $file_contents, $matches );
 
 	return $matches[0];
 }

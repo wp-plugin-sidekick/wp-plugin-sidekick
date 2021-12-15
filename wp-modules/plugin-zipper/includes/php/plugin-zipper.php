@@ -39,5 +39,4 @@ function get_wp_filesystem_api() {
 	}
 
 	return $wp_filesystem;
-
 }

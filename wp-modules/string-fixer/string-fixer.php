@@ -23,7 +23,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param string $mode Either 'module' or 'plugin' to indicate the type off strings to fix.
  */
 function recursive_dir_string_fixer( string $dir, array $strings, string $mode ) {
-
 	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 	$dir_list      = glob( $dir . '/*' );
 	$result        = false;
@@ -78,7 +77,6 @@ function fix_strings( string $file, array $strings, string $mode ) {
  * @param array  $strings The relevant strings used to create the plugin file header.
  */
 function fix_plugin_file_header( string $file_contents, array $strings ) {
-
 	$fixed_file_header = '/**
  * Plugin Name: ' . $strings['plugin_name'] . '
  * Plugin URI: ' . $strings['plugin_uri'] . '
@@ -103,7 +101,25 @@ function fix_plugin_file_header( string $file_contents, array $strings ) {
 	}
 
 	return $file_contents;
+}
 
+/**
+ * Get the namespace in a file.
+ *
+ * @param string $file_contents The incoming contents of the file we are fixing the header of.
+ */
+function get_plugin_namespace( string $file_contents ) {
+	$pattern = '~namespace\K \K.*(?=;)~';
+
+	// Find the namespace deifition.
+	$match_found = preg_match( $pattern, $file_contents, $matches );
+
+	// Replace it if found.
+	if ( $match_found ) {
+		return $matches[0];
+	}
+
+	return false;
 }
 
 /**
@@ -113,19 +129,13 @@ function fix_plugin_file_header( string $file_contents, array $strings ) {
  * @param string $namespace The namespace to use.
  */
 function fix_namespace( string $file_contents, string $namespace ) {
-	$pattern = '~namespace .*;~';
-	$fixed   = 'namespace ' . $namespace . ';';
 
-	// Find the namespace deifition.
-	$match_found = preg_match( $pattern, $file_contents, $matches );
-
-	// Replace it if found.
-	if ( $match_found ) {
-		$file_contents = str_replace( $matches[0], $fixed, $file_contents );
+	// Replace namespace if found.
+	if ( get_plugin_namespace( $file_contents ) ) {
+		$file_contents = str_replace( $matches[0], $namespace, $file_contents );
 	}
 
 	return $file_contents;
-
 }
 
 /**
@@ -135,7 +145,6 @@ function fix_namespace( string $file_contents, string $namespace ) {
  * @param array  $strings The relevant strings used to create the module file header.
  */
 function fix_module_file_header( string $file_contents, array $strings ) {
-
 	$fixed_file_header = '/**
  * Module Name: ' . $strings['module_name'] . '
  * Description: ' . $strings['module_description'] . '
@@ -159,7 +168,6 @@ function fix_module_file_header( string $file_contents, array $strings ) {
  * @param string $package TThe string to use for the package tag.
  */
 function fix_package_tag( string $file_contents, string $package ) {
-
 	$fixed = '* @package ' . $package;
 
 	$pattern = '~\* @package .*~';

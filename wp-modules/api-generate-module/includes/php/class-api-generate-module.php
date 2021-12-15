@@ -63,8 +63,8 @@ class Api_Generate_Module extends \WP_REST_Controller {
 	public function generate_module( $request ) {
 		$params = wp_parse_args( $request->get_params(), $this->default_args() );
 
-		$wp_filesystem  = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
-		$plugins_dir     = $wp_filesystem->wp_plugins_dir();
+		$wp_filesystem      = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+		$plugins_dir        = $wp_filesystem->wp_plugins_dir();
 		$plugin_dir         = $plugins_dir . '/' . $params['module_plugin'] . '/wp-modules/';
 		$boiler_dir         = $plugins_dir . '/wp-plugin-studio/wp-modules/module-boilers/module-boilers/' . $params['module_boiler'];
 		$new_module_dirname = sanitize_title_with_dashes( $params['module_name'] );
@@ -74,19 +74,19 @@ class Api_Generate_Module extends \WP_REST_Controller {
 		if ( ! file_exists( $plugin_dir ) ) {
 			$wp_filesystem->mkdir( $plugin_dir );
 		}
-	
+
 		// Create the new module directory.
 		$wp_filesystem->mkdir( $new_module_dir );
 
 		// Copy the boiler module into it.
 		copy_dir( $boiler_dir, $new_module_dir );
-		
+
 		// Rename the main module file.
-		rename( $new_module_dir . '/' . $params['module_boiler'] . '.php', $new_module_dir . '/' . $new_module_dirname . '.php' );		
+		rename( $new_module_dir . '/' . $params['module_boiler'] . '.php', $new_module_dir . '/' . $new_module_dirname . '.php' );
 
 		// Fix strings
 		$strings_fixed = \WPPS\StringFixer\recursive_dir_string_fixer( $new_module_dir, $params, 'module' );
-		
+
 		$updated_modules_in_plugin = \WPPS\ModuleDataFunctions\get_plugin_modules( $params['module_plugin'] );
 
 		if ( ! $strings_fixed ) {
@@ -95,13 +95,12 @@ class Api_Generate_Module extends \WP_REST_Controller {
 			return new \WP_REST_Response(
 				array(
 					'success' => true,
-					'message' => __( 'Module successfully created.' ),
+					'message' => __( 'Module successfully created.', 'wpps' ),
 					'modules' => $updated_modules_in_plugin,
 				),
 				200
 			);
 		}
-
 	}
 
 	/**
@@ -121,16 +120,15 @@ class Api_Generate_Module extends \WP_REST_Controller {
 	 * @return array
 	 */
 	public function request_args( $type ) {
-
 		$return_args = array(
-			'module_name' => array(
+			'module_name'        => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The name of the module.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'module_namespace' => array(
+			'module_namespace'   => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The top level namespace of the module.', 'wpps' ),
@@ -144,21 +142,21 @@ class Api_Generate_Module extends \WP_REST_Controller {
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'module_boiler' => array(
+			'module_boiler'      => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The dir name of the module boiler to use.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'module_plugin' => array(
+			'module_plugin'      => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The dir name of the plugin where this module will live.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			
+
 		);
 
 		return $return_args;

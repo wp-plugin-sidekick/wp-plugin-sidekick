@@ -14,13 +14,13 @@ class SampleTests extends WP_UnitTestCase {
 	 * @test
 	 */
 	function some_function_return_fail() {
-		$this->assertSame(false, true);
+		$this->assertSame( false, true );
 	}
 
 	/**
 	 * @test
 	 */
 	function some_function_return_pass() {
-		$this->assertSame(true, true);
+		$this->assertSame( true, true );
 	}
 }

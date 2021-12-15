@@ -25,4 +25,4 @@ function module_data() {
 	];
 }
 
-//require 'includes/php/get-wp-filesystem.php';
+// require 'includes/php/get-wp-filesystem.php';

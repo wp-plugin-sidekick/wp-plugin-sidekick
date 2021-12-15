@@ -1,8 +1,8 @@
-<?php 
+<?php
 global $wpdb;
-echo "error";
+echo 'error';
 
-if ($wpdb != null){
-    $wpdb->print_error();
+if ( $wpdb != null ) {
+	$wpdb->print_error();
 }
-?>
+

@@ -45,7 +45,7 @@ class Api_Which_Checker extends \WP_REST_Controller {
 	 */
 	public function default_args() {
 		return array(
-			'command' => '',
+			'command'        => '',
 			'job_identifier' => '',
 		);
 	}
@@ -57,7 +57,6 @@ class Api_Which_Checker extends \WP_REST_Controller {
 	 * @return WP_Error|WP_REST_Request
 	 */
 	public function which_checker( $request ) {
-
 		$params = wp_parse_args( $request->get_params(), $this->default_args() );
 
 		$command        = $params['command'];
@@ -70,7 +69,6 @@ class Api_Which_Checker extends \WP_REST_Controller {
 		} else {
 			return new \WP_REST_Response( $result, 200 );
 		}
-
 	}
 
 	/**
@@ -89,9 +87,8 @@ class Api_Which_Checker extends \WP_REST_Controller {
 	 * @return array
 	 */
 	public function request_args() {
-
 		$return_args = array(
-			'command' => array(
+			'command'        => array(
 				'required'          => true,
 				'type'              => 'string',
 				'description'       => __( 'The shell command to run.', 'wpps' ),

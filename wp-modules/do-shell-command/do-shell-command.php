@@ -69,7 +69,6 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 	$stay_alive = true;
 
 	while ( $stay_alive ) {
-
 		$proc_details = proc_get_status( $proc );
 
 		// If the proess has stopped running, kill it.
@@ -102,7 +101,6 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 
 			// Wait 10000 microseconds seconds before checking if we should keep this process alive again.
 			usleep( 10000 );
-
 		} else {
 			/*
 			if ( $proc_details['exitcode'] >= 0 ) {
@@ -111,8 +109,8 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 				$proc_details = proc_get_status( $proc );
 			}
 			*/
-			$error        = stream_get_contents( $pipes[2] );
-			$output       = stream_get_contents( $pipes[1] );
+			$error  = stream_get_contents( $pipes[2] );
+			$output = stream_get_contents( $pipes[1] );
 
 			$error_appended  = get_file_option( 'wpps_' . $job_identifier . '_error' ) . $error;
 			$output_appended = get_file_option( 'wpps_' . $job_identifier . '_output' ) . $output;

@@ -23,21 +23,22 @@ function _manually_load_plugin() {
 	print_r( $plugins );
 	foreach ( $plugins as $plugin ) {
 		$plugin_name = basename( $plugin );
-		$filename = $plugin_name . '.php';
-		$filepath = $plugin . '/' . $filename;
-		
+		$filename    = $plugin_name . '.php';
+		$filepath    = $plugin . '/' . $filename;
+
 		if ( is_readable( $filepath ) ) {
 			require $filepath;
 		}
-		
 	}
-
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
-tests_add_filter('wp_die_handler', function () {
-	exit(1);
-});
+tests_add_filter(
+	'wp_die_handler',
+	function () {
+		exit( 1 );
+	}
+);
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';

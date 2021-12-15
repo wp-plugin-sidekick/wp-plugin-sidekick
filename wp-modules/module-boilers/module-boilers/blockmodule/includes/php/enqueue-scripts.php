@@ -23,7 +23,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return void
  */
 function enqueue_block() {
-
 	$module_dir_path = module_dir_path( __FILE__ );
 	$module_dir_url  = module_dir_url( __FILE__ );
 
@@ -47,11 +46,10 @@ function enqueue_block() {
 	register_block_type(
 		'blockmodule/blockmodule',
 		array(
-			'api_version' => 2,
+			'api_version'   => 2,
 			'editor_script' => 'blockmodulejs',
 			'editor_style'  => 'blockmodulestyle',
 		)
 	);
-
 }
 add_action( 'init', __NAMESPACE__ . '\enqueue_block' );

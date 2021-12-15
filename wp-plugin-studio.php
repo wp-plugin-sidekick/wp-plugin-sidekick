@@ -25,11 +25,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return void
  */
 function include_custom_modules() {
-
 	$custom_modules = glob( plugin_dir_path( __FILE__ ) . 'wp-modules/*' );
 
 	foreach ( $custom_modules as $custom_module ) {
-
 		$module_name = basename( $custom_module );
 		$filename    = $module_name . '.php';
 		$filepath    = $custom_module . '/' . $filename;
@@ -43,6 +41,5 @@ function include_custom_modules() {
 			exit;
 		}
 	}
-
 }
 add_action( 'plugins_loaded', __NAMESPACE__ . '\include_custom_modules' );

@@ -26,7 +26,6 @@ function module_data() {
 
 
 function get_module_data( $file ) {
-
 	$all_headers = array(
 		'name'        => 'Module Name',
 		'version'     => 'Version',
@@ -48,7 +47,6 @@ function get_module_data( $file ) {
 	$module_data['slug'] = basename( $file, '.php' );
 
 	return $module_data;
-
 }
 
 /**
@@ -86,7 +84,6 @@ function get_plugin_modules( $plugin_dirname ) {
  * @return void
  */
 function get_module_boilers() {
-
 	$wp_filesystem_api = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
 	$module_boilers = array();

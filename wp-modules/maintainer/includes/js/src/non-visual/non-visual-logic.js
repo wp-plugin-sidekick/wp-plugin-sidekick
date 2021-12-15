@@ -275,7 +275,6 @@ export async function killModuleShellCommand(props) {
 	return content;
 }
 
-
 export function runLinter(props) {
 	return new Promise((resolve, reject) => {
 		fetch(
@@ -296,22 +295,21 @@ export function runLinter(props) {
 				},
 			}
 		)
-			
-		.then((response) => response.json())
-		.then((data) => {
-			const response = JSON.parse(data);
+			.then((response) => response.json())
+			.then((data) => {
+				const response = JSON.parse(data);
 
-			console.log('Data', response.output);
+				console.log('Data', response.output);
 
-			// Set the entire response as a devStatus for the plugin.
-			props.plugins.setPluginDevStatus(
-				props.currentPluginData.dirname,
-				props.job_identifier,
-				response
-			);
+				// Set the entire response as a devStatus for the plugin.
+				props.plugins.setPluginDevStatus(
+					props.currentPluginData.dirname,
+					props.job_identifier,
+					response
+				);
 
-			resolve(data);
-		});
+				resolve(data);
+			});
 	});
 }
 
@@ -350,11 +348,11 @@ export function phplint(props) {
 
 				try {
 					phplintJson = JSON.parse(response.output);
-				} catch(e) {
-					phplintJson = false
+				} catch (e) {
+					phplintJson = false;
 				}
 
-				if ( ! phplintJson ) {
+				if (!phplintJson) {
 					resolve(data);
 				}
 
@@ -406,8 +404,8 @@ export function runFixer(props) {
 			.then((response) => response.json())
 			.then((data) => {
 				const response = JSON.parse(data);
-				
-				console.log( 'Command', response.details.command );
+
+				console.log('Command', response.details.command);
 				// Set the entire response as a devStatus for the plugin.
 				props.plugins.setPluginDevStatus(
 					props.currentPluginData.dirname,

@@ -15,8 +15,8 @@ class SampleTests extends WP_UnitTestCase {
 	 */
 	function some_function_return_4() {
 		$expected = 'plugin24';
-		$result = some_function2();
+		$result   = some_function2();
 
-		$this->assertSame($expected, $result);
+		$this->assertSame( $expected, $result );
 	}
 }

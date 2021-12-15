@@ -82,7 +82,7 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 		copy_dir( $plugin_boiler_dir, $new_plugin_dir );
 
 		// Rename the main plugin file.
-		rename( $new_plugin_dir . '/plugin-boiler.php', $new_plugin_dir . '/' . $params['plugin_dirname'] . '.php' );		
+		rename( $new_plugin_dir . '/plugin-boiler.php', $new_plugin_dir . '/' . $params['plugin_dirname'] . '.php' );
 
 		// Fix strings.
 		$strings_fixed = \WPPS\StringFixer\recursive_dir_string_fixer( $new_plugin_dir, $params, 'plugin' );
@@ -92,14 +92,13 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 		} else {
 			return new \WP_REST_Response(
 				array(
-					'success' => true,
-					'message' => __( 'Plugin successfully created.' ),
+					'success'     => true,
+					'message'     => __( 'Plugin successfully created.', 'wpps' ),
 					'plugin_data' => $params,
 				),
 				200
 			);
 		}
-
 	}
 
 	/**
@@ -119,30 +118,29 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 	 * @return array
 	 */
 	public function request_args( $type ) {
-
 		$return_args = array(
-			'plugin_name' => array(
+			'plugin_name'        => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The name of the plugin.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_dirname' => array(
+			'plugin_dirname'     => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The directory name of the plugin.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_textdomain' => array(
+			'plugin_textdomain'  => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The textdomain of the plugin.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_namespace' => array(
+			'plugin_namespace'   => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The top level namespace of the plugin.', 'wpps' ),
@@ -156,28 +154,28 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_version' => array(
+			'plugin_version'     => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The version of the plugin.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_author' => array(
+			'plugin_author'      => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The author of the plugin.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_license' => array(
+			'plugin_license'     => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The license of the plugin.', 'wpps' ),
 				'validate_callback' => array( $this, 'validate_arg_is_string' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
-			'plugin_uri' => array(
+			'plugin_uri'         => array(
 				'required'          => false,
 				'type'              => 'string',
 				'description'       => __( 'The uri of the plugin.', 'wpps' ),
