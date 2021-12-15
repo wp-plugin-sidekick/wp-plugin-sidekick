@@ -23,5 +23,9 @@
   "license": "GPL v2 or greater",
   "devDependencies": {
     "@wordpress/scripts": "^19.1.0"
+  },
+  "dependencies": {
+    "@wordpress/element": "^4.0.4",
+    "@wordpress/i18n": "^4.2.4"
   }
 }
