@@ -296,16 +296,10 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		$params = wp_parse_args( $request->get_params(), $this->default_args() );
 
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
-
-		// First, go to the directory containing the dockerfile and build it.
-		$go_to_docker   = 'cd ' . $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/wp-modules/phpunit/includes;';
-		$build_docker   = 'docker-compose up --build -d;';
-		$go_to_plugins  = 'cd ' . $wp_filesystem->wp_content_dir() . ';';
-		$run_docker     = 'docker-compose -f plugins/wp-plugin-studio/wp-modules/phpunit/includes/docker-compose.yml run WordPress vendor/bin/phpunit --bootstrap plugins/wp-plugin-studio/wp-modules/phpunit/includes/testers/bootstrap.php plugins/' . $params['location'] . '/wp-modules/';
-		$command        = $go_to_docker . $build_docker . $go_to_plugins . $run_docker;
+		$command = 'sh phpunit.sh -p ' . $params['location'];
 		$job_identifier = $params['job_identifier'];
 
-		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/wp-modules/linter/' );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );

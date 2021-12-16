@@ -16,21 +16,3 @@ namespace WPPS\PHPUnit;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
-function module_data() {
-	return [
-		'dir' => plugin_dir_path( __FILE__ ),
-		'url' => plugin_dir_url( __FILE__ ),
-	];
-}
-
-// Contrary to a normal module, we do not include the code directly, as it is simply copied, modified, and pasted by the plugin-creator module.
-
-// Spin up docker while in wp-plugin-studio/wp-modules/phpunit/includes:
-// docker-compose up --build -d
-
-// From the wp-content/plugins directory, run:
-// docker-compose -f wp-plugin-studio/wp-modules/phpunit/includes/docker-compose.yml  run WordPress vendor/bin/phpunit --bootstrap wp-plugin-studio/wp-modules/phpunit/includes/testers/bootstrap.php plugin1/tests/*
-
-// To take the dockr offline:
-// docker-compose down

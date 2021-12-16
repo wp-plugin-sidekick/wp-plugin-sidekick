@@ -130,9 +130,15 @@ function get_plugin_namespace( string $file_contents ) {
  */
 function fix_namespace( string $file_contents, string $namespace ) {
 
+	$pattern = '~namespace .*;~';
+	$fixed   = 'namespace ' . $namespace . ';';
+
+	// Find the namespace deifition.
+	$match_found = preg_match( $pattern, $file_contents, $matches );
+
 	// Replace namespace if found.
-	if ( get_plugin_namespace( $file_contents ) ) {
-		$file_contents = str_replace( $matches[0], $namespace, $file_contents );
+	if ( $match_found ) {
+		$file_contents = str_replace( $matches[0], $fixed, $file_contents );
 	}
 
 	return $file_contents;
