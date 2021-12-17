@@ -1701,6 +1701,8 @@ function SpinningGears(props) {
 function PreFlighter(props) {
 	const [checkResponse, setCheckResponse] = useState(null);
 	const [installResponse, setInstallResponse] = useState(null);
+	const [modalOpen, setModalOpen] = useState(false);
+	
 
 	const fileStreamer = useFetchOnRepeat(
 		'/wp-content/wpps-studio-data/wpps_' +
@@ -1740,6 +1742,7 @@ function PreFlighter(props) {
 	}
 
 	function install() {
+		setInstallResponse( 'waiting' );
 		fetch(
 			wppsApiEndpoints.whichChecker +
 				'?' +
@@ -1769,6 +1772,12 @@ function PreFlighter(props) {
 	function renderCheckStatus() {
 		if (!checkResponse) {
 			return 'Status not yet checked...';
+		}
+		if ( 'waiting' === installResponse ) {
+			return <div>
+				<div className="loading"></div>
+				installing...
+				</div>
 		}
 		if (!checkResponse.output || checkResponse.error) {
 			return (
@@ -1848,24 +1857,50 @@ function PreFlighter(props) {
 		);
 	}
 
+	function maybeRenderModal() {
+		if (!checkResponse) {
+			return '';
+		}
+		if ( ! modalOpen ) {
+			return (
+				<button className="btn btn-info" onClick={() => {
+					setModalOpen( true );
+				}}>
+					Details
+				</button>
+			)
+		}
+
+		return(
+			<Modal
+				title="Information and response"
+				closeModal={() => {
+					setModalOpen(false);
+				}}
+			>
+				{renderCheckResponse()}
+				{renderInstallResponse()}
+			</Modal>
+		)
+	}
+
 	return (
 		<div className="card shadow-lg compact side bg-base-200">
 			<div className="flex-row items-center space-x-4 card-body">
 				<div>
-					<div className="avatar">
-						<div className="rounded-full w-14 h-14 shadow bg-primary-content">
-							<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxXQXrsWLSWHf1vdT32y-xMzTipJONoU-FCQ&usqp=CAU" />
+					
+						<div className="w-14 h-14">
+							<img src={props.data.iconUrl} />
 						</div>
-					</div>
+					
 				</div>
 				<div className="grid gap-1">
 					<h2 className="card-title">{props.data.name}</h2>
 					<p className="text-base-content text-opacity-40">
 						{props.data.description}
 					</p>
-					<p>{renderCheckStatus()}</p>
-					{renderCheckResponse()}
-					{renderInstallResponse()}
+					{renderCheckStatus()}
+					{ maybeRenderModal() }
 				</div>
 			</div>
 		</div>
@@ -1902,12 +1937,13 @@ function PreFlightChecks() {
 					/>
 				</div>
 			</div>
-			<div className="grid gap-4">
+			<div className="grid gap-4 grid-cols-4">
 				<PreFlighter
 					data={{
 						name: 'Homebrew',
 						description:
 							'Homebrew is a way to install and manage packages on Linux/MacOS systems.',
+						iconUrl: 'https://brew.sh/assets/img/homebrew-256x256.png', 
 						checkJobIdentifier: 'check_homebrew',
 						checkCommand: 'brew -v;',
 						installJobIdentifier: 'install_homebrew',
@@ -1921,6 +1957,7 @@ function PreFlightChecks() {
 						name: 'NodeJS',
 						description:
 							'NodeJS runs javascript and enables package managers like NPM.',
+						iconUrl: 'https://nodejs.org/static/images/logo.svg', 
 						checkJobIdentifier: 'check_nodejs',
 						checkCommand: 'nvm -v;',
 						installJobIdentifier: 'install_nodejs',
@@ -1932,6 +1969,7 @@ function PreFlightChecks() {
 					data={{
 						name: 'NPM',
 						description: 'Node Package Manager',
+						iconUrl: 'https://raw.githubusercontent.com/npm/logos/master/npm%20square/n-64.png',
 						checkJobIdentifier: 'check_npm',
 						checkCommand: 'npm -v;',
 						installJobIdentifier: 'install_npm',
@@ -1944,6 +1982,7 @@ function PreFlightChecks() {
 						name: 'PHP',
 						description:
 							'PHP on the command line enables required functionality.',
+						iconUrl: 'https://www.php.net/images/logos/php-logo.svg',
 						checkJobIdentifier: 'check_php',
 						checkCommand: 'php -v;',
 						installJobIdentifier: 'install_php',
@@ -1955,6 +1994,7 @@ function PreFlightChecks() {
 					data={{
 						name: 'Composer',
 						description: 'A Dependency Manager for PHP',
+						iconUrl: 'https://getcomposer.org/img/logo-composer-transparent3.png',
 						checkJobIdentifier: 'check_composer',
 						checkCommand: 'composer -v;',
 						installJobIdentifier: 'install_composer',
@@ -1967,6 +2007,7 @@ function PreFlightChecks() {
 					data={{
 						name: 'Docker',
 						description: 'Docker is...',
+						iconUrl: 'https://www.docker.com/sites/default/files/d8/styles/role_icon/public/2019-07/Moby-logo.png?itok=sYH_JEaJ',
 						checkJobIdentifier: 'check_docker',
 						checkCommand: 'docker -v;',
 						downloadLink: 'https://docs.docker.com/get-docker/',
@@ -1978,9 +2019,23 @@ function PreFlightChecks() {
 					data={{
 						name: 'Docker Compose',
 						description: 'Docker compose is...',
+						iconUrl: 'https://raw.githubusercontent.com/docker/compose/master/logo.png',
 						checkJobIdentifier: 'check_docker_compose',
 						checkCommand: 'docker-compose -v;',
 						instructionText: __( 'Make sure that Docker Desktop is open by opening it from Applications/Docker.app' ),
+					}}
+					doingStatusChecks={doingStatusChecks}
+				/>
+
+				<PreFlighter
+					data={{
+						name: 'SVN',
+						description: 'SVN is how you push updates to WP.org',
+						iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/22/Apache_Subversion_logo.svg',
+						checkJobIdentifier: 'check_svn',
+						checkCommand: 'svn --version;',
+						installJobIdentifier: 'install_svn',
+						installCommand: 'brew install subversion',
 					}}
 					doingStatusChecks={doingStatusChecks}
 				/>
@@ -1992,6 +2047,7 @@ function PreFlightChecks() {
 function ManualPreFlighter(props) {
 	const [checkResponse, setCheckResponse] = useState(null);
 	const [installResponse, setInstallResponse] = useState(null);
+	const [modalOpen, setModalOpen] = useState(false);
 
 	const fileStreamer = useFetchOnRepeat(
 		'/wp-content/wpps-studio-data/wpps_' +
@@ -2179,23 +2235,49 @@ function ManualPreFlighter(props) {
 		);
 	}
 
+	function maybeRenderModal() {
+		if (!checkResponse) {
+			return '';
+		}
+		if ( ! modalOpen ) {
+			return (
+				<button className="btn btn-info" onClick={() => {
+					setModalOpen( true );
+				}}>
+					Details
+				</button>
+			)
+		}
+
+		return(
+			<Modal
+				title="Information and response"
+				closeModal={() => {
+					setModalOpen(false);
+				}}
+			>
+				{renderCheckResponse()}
+			</Modal>
+		)
+	}
+
 	return (
 		<div className="card shadow-lg compact side bg-base-200">
 			<div className="flex-row items-center space-x-4 card-body">
 				<div>
-					<div className="avatar">
-						<div className="rounded-full w-14 h-14 shadow bg-primary-content">
-							<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxXQXrsWLSWHf1vdT32y-xMzTipJONoU-FCQ&usqp=CAU" />
-						</div>
+					
+					<div className="w-14 h-14">
+						<img src={props.data.iconUrl} />
 					</div>
+					
 				</div>
 				<div className="grid gap-1">
 					<h2 className="card-title">{props.data.name}</h2>
 					<p className="text-base-content text-opacity-40">
 						{props.data.description}
 					</p>
-					<p>{renderCheckStatus()}</p>
-					{renderCheckResponse()}
+					{renderCheckStatus()}
+					{maybeRenderModal()}
 				</div>
 			</div>
 		</div>
