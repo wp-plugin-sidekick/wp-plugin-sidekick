@@ -653,10 +653,6 @@ function LintingComponent(props) {
 									}}
 								>
 									{(() => {
-										console.log(
-											'Details',
-											props?.status?.details
-										);
 										if (!props?.status?.details) {
 											return;
 										}
@@ -1701,6 +1697,7 @@ function SpinningGears(props) {
 function PreFlighter(props) {
 	const [checkResponse, setCheckResponse] = useState(null);
 	const [installResponse, setInstallResponse] = useState(null);
+	const [forceVersionResponse, setForceVersionResponse] = useState(null);
 	const [modalOpen, setModalOpen] = useState(false);
 	
 
@@ -1738,6 +1735,35 @@ function PreFlighter(props) {
 			.then((data) => {
 				const response = JSON.parse(data);
 				setCheckResponse(response);
+				if ( response?.details?.exitcode === 0 ) {
+					forceVersion();
+				}
+			});
+	}
+
+	function forceVersion() {
+		if ( ! props.data.forceVersionCommand ) {
+			return false;
+		}
+		fetch(
+			wppsApiEndpoints.whichChecker +
+				'?' +
+				new URLSearchParams({
+					job_identifier: props.data.forceVersionJobIdentifier,
+					command: props.data.forceVersionCommand,
+				}),
+			{
+				method: 'GET',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+				},
+			}
+		)
+			.then((response) => response.json())
+			.then((data) => {
+				const response = JSON.parse(data);
+				setForceVersionResponse(response);
 			});
 	}
 
@@ -1959,9 +1985,11 @@ function PreFlightChecks() {
 							'NodeJS runs javascript and enables package managers like NPM.',
 						iconUrl: 'https://nodejs.org/static/images/logo.svg', 
 						checkJobIdentifier: 'check_nodejs',
-						checkCommand: 'nvm --version;',
+						checkCommand: 'brew list --versions npm@16',
 						installJobIdentifier: 'install_nodejs',
-						installCommand: 'brew install nvm',
+						installCommand: 'brew install node@16',
+						forceVersionJobIdentifier: 'force_nodejs_version',
+						forceVersionCommand: 'brew link npm@16 --force --overwrite',
 					}}
 					doingStatusChecks={doingStatusChecks}
 				/>
@@ -1984,9 +2012,11 @@ function PreFlightChecks() {
 							'PHP on the command line enables required functionality.',
 						iconUrl: 'https://www.php.net/images/logos/php-logo.svg',
 						checkJobIdentifier: 'check_php',
-						checkCommand: 'php --version;',
+						checkCommand: 'brew list --versions php@7.4',
 						installJobIdentifier: 'install_php',
 						installCommand: 'brew install php@7.4',
+						forceVersionJobIdentifier: 'force_php_version',
+						forceVersionCommand: 'brew link php@7.4 --force --overwrite',
 					}}
 					doingStatusChecks={doingStatusChecks}
 				/>
@@ -1996,7 +2026,7 @@ function PreFlightChecks() {
 						description: 'A Dependency Manager for PHP',
 						iconUrl: 'https://getcomposer.org/img/logo-composer-transparent3.png',
 						checkJobIdentifier: 'check_composer',
-						checkCommand: 'composer --version;',
+						checkCommand: 'brew list --versions composer',
 						installJobIdentifier: 'install_composer',
 						installCommand: 'brew install composer',
 					}}
@@ -2033,7 +2063,7 @@ function PreFlightChecks() {
 						description: 'SVN is how you push updates to WP.org',
 						iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/22/Apache_Subversion_logo.svg',
 						checkJobIdentifier: 'check_svn',
-						checkCommand: 'svn --version;',
+						checkCommand: 'brew list --versions svn',
 						installJobIdentifier: 'install_svn',
 						installCommand: 'brew install subversion',
 					}}
