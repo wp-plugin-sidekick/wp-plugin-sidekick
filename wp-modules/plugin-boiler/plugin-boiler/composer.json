@@ -1,0 +1,11 @@
+{
+    "require": {
+        "wpps/get-module-data": "^1.0"
+    },
+    "extra": {
+        "installer-types": ["wp-module"],
+        "installer-paths": {
+            "wp-modules-external/{$name}": ["type:wp-module"]
+        }
+    }
+}
