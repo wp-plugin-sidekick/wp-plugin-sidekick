@@ -1968,7 +1968,7 @@ function PreFlightChecks() {
 				<PreFlighter
 					data={{
 						name: 'NPM',
-						description: 'Node Package Manager',
+						description: 'NPM is the command line client that allows developers to install and publish packages from a public collection of packages of open-source code for Node.js.',
 						iconUrl: 'https://raw.githubusercontent.com/npm/logos/master/npm%20square/n-64.png',
 						checkJobIdentifier: 'check_npm',
 						checkCommand: 'npm --version;',
@@ -2006,7 +2006,7 @@ function PreFlightChecks() {
 				<ManualPreFlighter
 					data={{
 						name: 'Docker',
-						description: 'Docker is...',
+						description: 'Docker provides the ability to package and run an application in a loosely isolated environment called a container',
 						iconUrl: 'https://www.docker.com/sites/default/files/d8/styles/role_icon/public/2019-07/Moby-logo.png?itok=sYH_JEaJ',
 						checkJobIdentifier: 'check_docker',
 						checkCommand: 'docker --version;',
@@ -2018,7 +2018,7 @@ function PreFlightChecks() {
 				<ManualPreFlighter
 					data={{
 						name: 'Docker Compose',
-						description: 'Docker compose is...',
+						description: 'A tool for defining and running multi-container Docker applications. With Compose, you use a YAML file to configure your application’s services.',
 						iconUrl: 'https://raw.githubusercontent.com/docker/compose/master/logo.png',
 						checkJobIdentifier: 'check_docker_compose',
 						checkCommand: 'docker-compose --version;',
