@@ -1945,7 +1945,7 @@ function PreFlightChecks() {
 							'Homebrew is a way to install and manage packages on Linux/MacOS systems.',
 						iconUrl: 'https://brew.sh/assets/img/homebrew-256x256.png', 
 						checkJobIdentifier: 'check_homebrew',
-						checkCommand: 'brew -v;',
+						checkCommand: 'brew --version;',
 						installJobIdentifier: 'install_homebrew',
 						installCommand:
 							'/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
@@ -1959,7 +1959,7 @@ function PreFlightChecks() {
 							'NodeJS runs javascript and enables package managers like NPM.',
 						iconUrl: 'https://nodejs.org/static/images/logo.svg', 
 						checkJobIdentifier: 'check_nodejs',
-						checkCommand: 'nvm -v;',
+						checkCommand: 'nvm --version;',
 						installJobIdentifier: 'install_nodejs',
 						installCommand: 'brew install nvm',
 					}}
@@ -1971,7 +1971,7 @@ function PreFlightChecks() {
 						description: 'Node Package Manager',
 						iconUrl: 'https://raw.githubusercontent.com/npm/logos/master/npm%20square/n-64.png',
 						checkJobIdentifier: 'check_npm',
-						checkCommand: 'npm -v;',
+						checkCommand: 'npm --version;',
 						installJobIdentifier: 'install_npm',
 						installCommand: 'brew install npm',
 					}}
@@ -1984,7 +1984,7 @@ function PreFlightChecks() {
 							'PHP on the command line enables required functionality.',
 						iconUrl: 'https://www.php.net/images/logos/php-logo.svg',
 						checkJobIdentifier: 'check_php',
-						checkCommand: 'php -v;',
+						checkCommand: 'php --version;',
 						installJobIdentifier: 'install_php',
 						installCommand: 'brew install php@7.4',
 					}}
@@ -1996,7 +1996,7 @@ function PreFlightChecks() {
 						description: 'A Dependency Manager for PHP',
 						iconUrl: 'https://getcomposer.org/img/logo-composer-transparent3.png',
 						checkJobIdentifier: 'check_composer',
-						checkCommand: 'composer -v;',
+						checkCommand: 'composer --version;',
 						installJobIdentifier: 'install_composer',
 						installCommand: 'brew install composer',
 					}}
@@ -2009,7 +2009,7 @@ function PreFlightChecks() {
 						description: 'Docker is...',
 						iconUrl: 'https://www.docker.com/sites/default/files/d8/styles/role_icon/public/2019-07/Moby-logo.png?itok=sYH_JEaJ',
 						checkJobIdentifier: 'check_docker',
-						checkCommand: 'docker -v;',
+						checkCommand: 'docker --version;',
 						downloadLink: 'https://docs.docker.com/get-docker/',
 					}}
 					doingStatusChecks={doingStatusChecks}
@@ -2021,7 +2021,7 @@ function PreFlightChecks() {
 						description: 'Docker compose is...',
 						iconUrl: 'https://raw.githubusercontent.com/docker/compose/master/logo.png',
 						checkJobIdentifier: 'check_docker_compose',
-						checkCommand: 'docker-compose -v;',
+						checkCommand: 'docker-compose --version;',
 						instructionText: __( 'Make sure that Docker Desktop is open by opening it from Applications/Docker.app' ),
 					}}
 					doingStatusChecks={doingStatusChecks}
