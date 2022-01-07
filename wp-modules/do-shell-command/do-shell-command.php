@@ -25,6 +25,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return WP_Error|array
  */
 function do_shell_command( $command, $job_identifier, $current_working_directory = __DIR__ ) {
+
+	// Before we do anything, kill any commands that might already be running with this Job ID.
+	update_file_option( $params['job_identifier'], false );
+	usleep( 10000 );
+
 	// Close the session so that PHP doesn't block other connections until this is complete.
 	session_write_close();
 
@@ -58,9 +63,9 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 		$output = stream_get_contents( $pipes[1] );
 
 		// Set a database option which we'll use to keep this command alive indefinitely, until stopped.
-		update_file_option( 'wpps_' . $job_identifier, true, true );
-		update_file_option( 'wpps_' . $job_identifier . '_error', $error, true );
-		update_file_option( 'wpps_' . $job_identifier . '_output', $output, true );
+		update_file_option( $job_identifier, true, true );
+		update_file_option( $job_identifier . '_error', $error, true );
+		update_file_option( $job_identifier . '_output', $output, true );
 	} else {
 		return new \WP_Error( 'error', __( 'Something went wrong.', '' ) );
 	}
@@ -76,7 +81,7 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 			$stay_alive = false;
 		} else {
 			// Check to see if a command came in to kill this process, or if it should stay alive (true).
-			$stay_alive = boolval( get_file_option( 'wpps_' . $job_identifier ) );
+			$stay_alive = boolval( get_file_option( $job_identifier ) );
 		}
 
 		// And regardless of the database, if the command itself has finished, close this request.
@@ -93,11 +98,11 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 			$error  = stream_get_contents( $pipes[2] );
 			$output = stream_get_contents( $pipes[1] );
 
-			$error_appended  = get_file_option( 'wpps_' . $job_identifier . '_error' ) . $error;
-			$output_appended = get_file_option( 'wpps_' . $job_identifier . '_output' ) . $output;
+			$error_appended  = get_file_option( $job_identifier . '_error' ) . $error;
+			$output_appended = get_file_option( $job_identifier . '_output' ) . $output;
 
-			update_file_option( 'wpps_' . $job_identifier . '_error', $error_appended );
-			update_file_option( 'wpps_' . $job_identifier . '_output', $output_appended );
+			update_file_option( $job_identifier . '_error', $error_appended );
+			update_file_option( $job_identifier . '_output', $output_appended );
 
 			// Wait 10000 microseconds seconds before checking if we should keep this process alive again.
 			usleep( 10000 );
@@ -112,11 +117,14 @@ function do_shell_command( $command, $job_identifier, $current_working_directory
 			$error  = stream_get_contents( $pipes[2] );
 			$output = stream_get_contents( $pipes[1] );
 
-			$error_appended  = get_file_option( 'wpps_' . $job_identifier . '_error' ) . $error;
-			$output_appended = get_file_option( 'wpps_' . $job_identifier . '_output' ) . $output;
+			$error_appended  = get_file_option( $job_identifier . '_error' ) . $error;
+			$output_appended = get_file_option( $job_identifier . '_output' ) . $output;
 
 			// Kill the process.
 			shell_exec( 'kill -9 ' . $pid ); // phpcs:ignore
+
+			// Make sure the status in the file is updated as well.
+			update_file_option( $job_identifier, false );
 
 			$return = wp_json_encode(
 				array(

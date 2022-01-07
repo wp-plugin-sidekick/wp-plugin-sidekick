@@ -5,27 +5,104 @@
 import { __ } from '@wordpress/i18n';
 
 import { useState, useEffect, useRef, createContext } from 'react';
+import { useFetchOnRepeat } from './../non-visual/useFetchOnRepeat.js';
 
 export const AomContext = createContext([{}, function () {}]);
 
-export function useStream(initial) {
-	const [data, set] = useState(initial);
-	const ref = useRef(data);
+export function useShellCommand(props) {
+	
+	const [isRunning, setIsRunning] = useState(false);
+	const [response, setResponse] = useState();
+	const responseRef = useRef(response);
 
-	useEffect(() => {
-		console.log(data, ref.current);
-	}, [data]);
+	// Set up a file streamer, which checks the contents of a file every few seconds.
+	const statusStreamer = useFetchOnRepeat('/wp-content/wpps-studio-data/' + props.jobIdentifier );
+	const responseStreamer = useFetchOnRepeat('/wp-content/wpps-studio-data/' + props.jobIdentifier + '_output' );
+	
+	useEffect( () => {
+		// Upon init, check if this task is already running in the background.
+		if ( ! statusStreamer.status ) {
+			statusStreamer.start();
+		}
+	}, [] );
 
+	useEffect( () => {
+		console.log( statusStreamer );
+		// If the action completed on its own (or doesn't exist), disable the responseStreamer.
+		if ( statusStreamer.error || ! statusStreamer.response || statusStreamer.response === 0 || statusStreamer.response === '0' ) {
+			console.log( 'stopping the stream' );
+			responseStreamer.stop();
+			statusStreamer.stop();
+			stop();
+		} 
+		
+		// If, upon initialization, the action is already running in the background, start streaming the response.
+		if ( statusStreamer.response === '1' ) {
+			setIsRunning( true );
+			responseStreamer.start();
+		}
+	}, [statusStreamer.response] );
+	
 	// Keeps the state and ref equal. See https://css-tricks.com/dealing-with-stale-props-and-states-in-reacts-functional-components/
-	function setDataAsync(newState) {
-		ref.current = newState;
-		set(newState);
-		console.log(newState);
+	function setResponseAsync(newState) {
+		responseRef.current = newState;
+		setResponse(newState);
+	}
+
+	function run() {
+		setIsRunning( true );
+		statusStreamer.start();
+		responseStreamer.start();
+		return new Promise((resolve, reject) => {
+			fetch(wppsApiEndpoints.runShellCommand, {
+				method: 'POST',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					location: props.location,
+					job_identifier: props.jobIdentifier,
+					command: props.command,
+				}),
+			})
+				.then((response) => response.json())
+				.then((data) => {
+					const response = JSON.parse(data);
+					setIsRunning( false );
+					setResponseAsync( response );
+					resolve(data);
+				});
+		});
+	}
+	
+	function stop() {
+		return new Promise((resolve, reject) => {
+			fetch(wppsApiEndpoints.killShellCommand, {
+				method: 'POST',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					job_identifier: props.jobIdentifier,
+				}),
+			})
+				.then((response) => response.json())
+				.then((data) => {
+					setIsRunning( false );
+					responseStreamer.stop();
+					resolve(data);
+				});
+		});
 	}
 
 	return {
-		data: ref.current,
-		set: setDataAsync,
+		run,
+		stop,
+		response: responseRef.current,
+		streamingOutput: responseStreamer.response,
+		isRunning: isRunning,
 	};
 }
 

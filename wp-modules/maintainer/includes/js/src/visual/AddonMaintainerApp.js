@@ -8,7 +8,7 @@ import {
 	AomContext,
 	useCurrentPluginPointer,
 	usePlugins,
-	useStream,
+	useShellCommand,
 	runShellCommand,
 	killModuleShellCommand,
 	runLinter,
@@ -110,7 +110,7 @@ function CreateModuleButtonAndModal() {
 
 		return (
 			<Modal
-				title="Create a new module"
+				title="Add a new module"
 				closeModal={() => {
 					setModalOpen(false);
 				}}
@@ -134,7 +134,7 @@ function CreateModuleButtonAndModal() {
 					setModalOpen(true);
 				}}
 			>
-				Create A New Module
+				Add A New Module
 			</button>
 			{maybeRenderModal()}
 		</>
@@ -210,7 +210,7 @@ function AddOnHeader() {
 
 function DevArea() {
 	const { plugins, currentPluginData } = useContext(AomContext);
-	const [currentTab, setCurrentTab] = useState(1);
+	const [currentTab, setCurrentTab] = useState('development');
 
 	// NPM Run Dev file streamer.
 	const npmRunDevFileStreamer = useFetchOnRepeat(
@@ -223,9 +223,54 @@ function DevArea() {
 	if (!currentPluginData) {
 		return '';
 	}
+	
+	function renderTabBody() {
+	
+		return (
+			<>
+				<div hidden={currentTab === 'development' ? false : true }><DevelopmentArea /></div>
+				<div hidden={currentTab === 'linting' ? false : true }><LintingArea /></div>
+				<div hidden={currentTab === 'testing' ? false : true }><TestingArea /></div>
+				<div hidden={currentTab === 'fixers' ? false : true }><FixersArea /></div>
+			</>
+		)
+	}
+	
+	return (
+		<div className="grid grid-cols-1 gap-4 grid-flow-row auto-rows-min">
+			
+			<div class="card shadow-lg bg-neutral">
+				<div class="card-body">
+					<div class="card">
+						<div class="tabs tabs-boxed bg-base-300">
+							<a class={ "tab" + ( currentTab === 'development' ? ' tab-active' : '' )} onClick={() => { setCurrentTab('development') }}>Development</a>
+							<a class={ "tab" + ( currentTab === 'fixers' ? ' tab-active' : '' )} onClick={() => { setCurrentTab('fixers') }}>Fixers</a> 
+							<a class={ "tab" + ( currentTab === 'linting' ? ' tab-active' : '' )} onClick={() => { setCurrentTab('linting') }}>Linting</a> 
+							<a class={ "tab" + ( currentTab === 'testing' ? ' tab-active' : '' )} onClick={() => { setCurrentTab('testing') }}>Testing</a> 
+							
+						</div>
+					</div>
+					{ renderTabBody() }
+				</div>
+			</div>
+		</div>
+	)
 
 	return (
 		<div className="grid grid-cols-1 gap-4 grid-flow-row auto-rows-min">
+			
+			<div class="card shadow-lg bg-neutral">
+				<div class="card-body">
+					<h2 class="text-4m font-bold card-title">Tools</h2>
+					<div class="tabs">
+						<a class="tab tab-lg tab-lifted">Development</a>
+						<a class="tab tab-lg tab-lifted">Linting</a> 
+						<a class="tab tab-lg tab-lifted tab-active">Testing</a> 
+					</div>
+					{ renderTabBody() }
+				</div>
+			</div>
+			
 			<LintingArea />
 			<FixersArea />
 			<div>
@@ -340,117 +385,249 @@ function FixersArea(props) {
 
 	return (
 		<>
-			<div>
-				<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
-					<div className="flex px-2 mx-2 w-full">
-						<div className="flex-grow">
-							<span className="text-lg font-bold">Fixers</span>
-						</div>
-						<span className="text-lg mr-4">Run fixers</span>
-						<input
-							type="checkbox"
-							className="toggle"
-							checked={inProgress}
-							onChange={(event) => {
-								if (event.target.checked) {
-									setFixingPhpLint(true);
-									runFixer({
-										location: currentPluginData.dirname,
-										job_identifier: 'phplintfix',
-										currentPluginData,
-										plugins,
-									}).then(() => {
-										setFixingPhpLint(false);
-									});
-
-									setFixingCssLint(true);
-									runFixer({
-										location: currentPluginData.dirname,
-										job_identifier: 'csslintfix',
-										currentPluginData,
-										plugins,
-									}).then(() => {
-										setFixingCssLint(false);
-									});
-
-									setFixingJsLint(true);
-									runFixer({
-										location: currentPluginData.dirname,
-										job_identifier: 'jslintfix',
-										currentPluginData,
-										plugins,
-									}).then(() => {
-										setFixingJsLint(false);
-									});
-								} else {
-									setInProgress(false);
-									//npmRunDevFileStreamer.stop();
-								}
-							}}
-						/>
-					</div>
-				</div>
-				<div className="card lg:card-side bordered bg-base-100 w-full">
-					<div className="card-body">
-						<div
-							className="card shadow-lg compact side bg-base-200 cursor-pointer"
-							onClick={() => {}}
-						>
-							<div className="grid grid-cols-2 items-center card-body">
-								<LintingComponent
-									title={__('Fix PHP Linting')}
-									description={__(
-										'Automatically fixes PHP code to adhere to WordPress coding standards (where possible).'
-									)}
-									inProgress={fixingPhpLint}
-									status={
-										currentPluginData?.devStatus?.phplintfix
-									}
+			<div className="fixers-area">
+				<div className="mt-4">
+					<div class="card bg-base-100 p-4">
+						<div class="form-control">
+							<label class="cursor-pointer label">
+								<span className="text-lg mr-4">Run Fixers</span>
+								<input
+									type="checkbox"
+									className="toggle"
+									checked={inProgress}
+									onChange={(event) => {
+										if (event.target.checked) {
+											setFixingPhpLint(true);
+											runFixer({
+												location: currentPluginData.dirname,
+												job_identifier: 'phplintfix',
+												currentPluginData,
+												plugins,
+											}).then(() => {
+												setFixingPhpLint(false);
+											});
+		
+											setFixingCssLint(true);
+											runFixer({
+												location: currentPluginData.dirname,
+												job_identifier: 'csslintfix',
+												currentPluginData,
+												plugins,
+											}).then(() => {
+												setFixingCssLint(false);
+											});
+		
+											setFixingJsLint(true);
+											runFixer({
+												location: currentPluginData.dirname,
+												job_identifier: 'jslintfix',
+												currentPluginData,
+												plugins,
+											}).then(() => {
+												setFixingJsLint(false);
+											});
+										} else {
+											setInProgress(false);
+											//npmRunDevFileStreamer.stop();
+										}
+									}}
 								/>
-								<LintingComponent
-									title={__('Fix CSS Linting')}
-									description={__(
-										'Automatically fixes CSS code to adhere to WordPress coding standards (where possible).'
-									)}
-									inProgress={fixingCssLint}
-									status={
-										currentPluginData?.devStatus?.csslintfix
-									}
-								/>
-								<LintingComponent
-									title={__('Fix Javascript Linting')}
-									description={__(
-										'Automatically fixes Javascript code to adhere to WordPress coding standards (where possible).'
-									)}
-									inProgress={fixingJsLint}
-									status={
-										currentPluginData?.devStatus?.jslintfix
-									}
-								/>
-								<LintingComponent
-									title={__('Fix File Headers')}
-									description={__(
-										'Automatically fixes file headers and namespaces to comply with the module in which they are contained.'
-									)}
-									inProgress={fixingJsLint}
-									status={
-										currentPluginData?.devStatus?.jslintfix
-									}
-								/>
-								<LintingComponent
-									title={__('Fix Text Domains')}
-									description={__(
-										"Automatically adjust all translatable function textdomains to match the plugin's textdomain."
-									)}
-									inProgress={fixingJsLint}
-									status={
-										currentPluginData?.devStatus?.jslintfix
-									}
-								/>
-							</div>
+							</label>
 						</div>
 					</div>
 				</div>
+				<ActionStatusContainer>
+					<ActionStatus
+						title={__('Fix PHP Linting')}
+						description={__(
+							'Automatically fixes PHP code to adhere to WordPress coding standards (where possible).'
+						)}
+						inProgress={fixingPhpLint}
+						status={
+							currentPluginData?.devStatus?.phplintfix
+						}
+					/>
+					<ActionStatus
+						title={__('Fix CSS Linting')}
+						description={__(
+							'Automatically fixes CSS code to adhere to WordPress coding standards (where possible).'
+						)}
+						inProgress={fixingCssLint}
+						status={
+							currentPluginData?.devStatus?.csslintfix
+						}
+					/>
+					<ActionStatus
+						title={__('Fix Javascript Linting')}
+						description={__(
+							'Automatically fixes Javascript code to adhere to WordPress coding standards (where possible).'
+						)}
+						inProgress={fixingJsLint}
+						status={
+							currentPluginData?.devStatus?.jslintfix
+						}
+					/>
+					<ActionStatus
+						title={__('Fix File Headers')}
+						description={__(
+							'Automatically fixes file headers and namespaces to comply with the module in which they are contained.'
+						)}
+						inProgress={fixingJsLint}
+						status={
+							currentPluginData?.devStatus?.jslintfix
+						}
+					/>
+					<ActionStatus
+						title={__('Fix Text Domains')}
+						description={__(
+							"Automatically adjust all translatable function textdomains to match the plugin's textdomain."
+						)}
+						inProgress={fixingJsLint}
+						status={
+							currentPluginData?.devStatus?.jslintfix
+						}
+					/>
+				</ActionStatusContainer>
+			</div>
+		</>
+	);
+}
+
+function ActionStatusContainer(props) {
+	
+	return (
+		<>
+			<div className="card lg:card-side bordered w-full">
+				<div
+					className="card shadow-lg compact side"
+				>
+					<div className="grid grid-cols-2 items-center gap-4 mt-4">
+						{ props.children }
+					</div>
+				</div>
+			</div>
+		</>
+	)
+}
+
+function TestingArea(props) {
+	const { plugins, currentPluginData } = useContext(AomContext);
+	
+	const phpunit = useShellCommand({
+		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
+		jobIdentifier: currentPluginData.dirname + '_' + 'phpunit',
+		command: 'sh phpunit.sh -p ' + currentPluginData.dirname
+	});
+
+	return (
+		<>
+			<div className="testing-area">
+				<div className="mt-4">
+					<div class="card bg-base-100 p-4">
+						<div class="form-control">
+							<label class="cursor-pointer label">
+								<span className="text-lg mr-4">Run Tests</span>
+								<input
+									type="checkbox"
+									className="toggle"
+									checked={phpunit.isRunning}
+									onChange={(event) => {
+										if (event.target.checked) {
+											phpunit.run();
+										} else {
+											phpunit.stop();
+										}
+									}}
+								/>
+							</label>
+						</div>
+					</div>
+				</div>
+				<ActionStatusContainer>
+					<ActionStatus
+						title={__('Integration Tests (PHPUnit)')}
+						description={__(
+							'Runs integration tests with WordPress'
+						)}
+						inProgress={phpunit.isRunning}
+						status={
+							phpunit.response
+						}
+						streamingOutput={
+							phpunit.streamingOutput
+						}
+					/>
+				</ActionStatusContainer>
+			</div>
+		</>
+	);
+}
+
+function DevelopmentArea(props) {
+	const { plugins, currentPluginData } = useContext(AomContext);
+
+	const pingGoogle = useShellCommand({
+		location: wpPluginsDir,
+		jobIdentifier: currentPluginData.dirname + '_' + 'pingGoogle',
+		command: 'ping google.com',
+	});
+
+	return (
+		<>
+			<div className="development-area">
+				<div className="mt-4">
+					<div class="card bg-base-100 p-4">
+						<div class="form-control">
+							<label class="cursor-pointer label">
+								<span className="text-lg mr-4">Install all dependencies (npm install)</span>
+								<input
+									type="checkbox"
+									className="toggle"
+									checked={pingGoogle.isRunning}
+									onChange={(event) => {
+										if (event.target.checked) {
+											pingGoogle.run();
+										} else {
+											pingGoogle.stop();
+										}
+									}}
+								/>
+							</label>
+						</div>
+						<div class="form-control">
+							<label class="cursor-pointer label">
+								<span className="text-lg mr-4">Enable dev mode (npm run dev)</span>
+								<input
+									type="checkbox"
+									className="toggle"
+									checked={pingGoogle.isRunning}
+									onChange={(event) => {
+										if (event.target.checked) {
+											pingGoogle.run();
+										} else {
+											pingGoogle.stop();
+										}
+									}}
+								/>
+							</label>
+						</div>
+					</div>
+				</div>
+				<ActionStatusContainer>
+					<ActionStatus
+						title={__('Pinging google')}
+						description={__(
+							'Runs integration tests with WordPress'
+						)}
+						inProgress={pingGoogle.isRunning}
+						status={
+							pingGoogle.response
+						}
+						streamingOutput={
+							pingGoogle.streamingOutput
+						}
+					/>
+				</ActionStatusContainer>
 			</div>
 		</>
 	);
@@ -462,12 +639,28 @@ function LintingArea(props) {
 	const [lintingPHPInProgress, setLintingPHPInProgress] = useState(false);
 	const [lintingCssInProgress, setLintingCssInProgress] = useState(false);
 	const [lintingJsInProgress, setLintingJsInProgress] = useState(false);
-	const [phpunitInProgress, setPhpunitInProgress] = useState(false);
+	
+	const lintPhp = useShellCommand({
+		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
+		jobIdentifier: currentPluginData.dirname + '_' + 'lint_php',
+		command: 'sh phpcs.sh -p ' + wpPluginsDir + currentPluginData.dirname + ' -n ' + currentPluginData.namespace + ' -t ' + currentPluginData.TextDomain,
+	});
+	
+	const lintCss = useShellCommand({
+		location: wpContentDir,
+		jobIdentifier: currentPluginData.dirname + '_' + 'lint_css',
+		command: 'npm run lint:css "./plugins/' + currentPluginData.dirname + '/**/*.*css"; '
+	});
+	
+	const lintJs = useShellCommand({
+		location: wpContentDir,
+		jobIdentifier: currentPluginData.dirname + '_' + 'lint_css',
+		command: 'npm run lint:js "./plugins/' + currentPluginData.dirname + '"; '
+	});
 
 	useEffect(() => {
 		if (
 			lintingPHPInProgress ||
-			phpunitInProgress ||
 			lintingCssInProgress ||
 			lintingJsInProgress
 		) {
@@ -475,142 +668,91 @@ function LintingArea(props) {
 		} else {
 			setInProgress(false);
 		}
-	}, [lintingPHPInProgress, phpunitInProgress]);
+	}, [lintingPHPInProgress]);
 
 	return (
 		<>
-			<div>
-				<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
-					<div className="flex px-2 mx-2 w-full">
-						<div className="flex-grow">
-							<span className="text-lg font-bold">
-								Tests, checks, and linting
-							</span>
+			<div className="linsting-area">
+				
+					<div class="card bg-base-100 mt-4 p-4">
+						<div class="form-control">
+							<label class="cursor-pointer label">
+								<span className="text-lg mr-4">Run Linters</span>
+								<input
+									type="checkbox"
+									className="toggle"
+									checked={inProgress}
+									onChange={(event) => {
+										if (event.target.checked) {
+											lintPhp.run();
+											lintCss.run();
+											lintJs.run();
+										} else {
+											lintPhp.stop();
+											lintCss.stop();
+											lintJs.stop();
+											
+										}
+									}}
+								/>
+							</label>
 						</div>
-						<span className="text-lg mr-4">Lint/Test</span>
-						<input
-							type="checkbox"
-							className="toggle"
-							checked={inProgress}
-							onChange={(event) => {
-								if (event.target.checked) {
-									setLintingPHPInProgress(true);
-									phplint({
-										location: currentPluginData.dirname,
-										job_identifier: 'phplint',
-										currentPluginData,
-										plugins,
-									}).then(() => {
-										setLintingPHPInProgress(false);
-									});
-
-									setLintingCssInProgress(true);
-									runLinter({
-										location: currentPluginData.dirname,
-										job_identifier: 'csslint',
-										currentPluginData,
-										plugins,
-									}).then(() => {
-										setLintingCssInProgress(false);
-									});
-
-									setLintingJsInProgress(true);
-									runLinter({
-										location: currentPluginData.dirname,
-										job_identifier: 'jslint',
-										currentPluginData,
-										plugins,
-									}).then(() => {
-										setLintingJsInProgress(false);
-									});
-
-									setPhpunitInProgress(true);
-									phpUnit({
-										location: currentPluginData.dirname,
-										job_identifier: 'phpunit',
-										currentPluginData,
-										plugins,
-									}).then(() => {
-										setPhpunitInProgress(false);
-									});
-								} else {
-									disableDevelopmentMode(currentPluginData);
-									//npmRunDevFileStreamer.stop();
-								}
-							}}
-						/>
-					</div>
 				</div>
-				<div className="card lg:card-side bordered bg-base-100 w-full">
-					<div className="card-body">
-						<div
-							className="card shadow-lg compact side bg-base-200 cursor-pointer"
-							onClick={() => {}}
-						>
-							<div className="grid grid-cols-2 items-center card-body">
-								<LintingComponent
-									title={__('PHP Linting')}
-									description={__(
-										'Checks to make sure PHP files confirm to WordPress Coding Standards'
-									)}
-									inProgress={lintingPHPInProgress}
-									status={
-										currentPluginData?.devStatus?.phplint
-									}
-								/>
-								<LintingComponent
-									title={__('CSS Linting')}
-									description={__(
-										'Checks to make sure CSS files confirm to WordPress Coding Standards'
-									)}
-									inProgress={lintingCssInProgress}
-									status={
-										currentPluginData?.devStatus?.csslint
-									}
-								/>
-								<LintingComponent
-									title={__('Javascript Linting')}
-									description={__(
-										'Checks to make sure javascript files confirm to WordPress Coding Standards'
-									)}
-									inProgress={lintingCssInProgress}
-									status={
-										currentPluginData?.devStatus?.jslint
-									}
-								/>
-								<LintingComponent
-									title={__('Integration Tests (PHPUnit)')}
-									description={__(
-										'Runs integration tests with WordPress'
-									)}
-									inProgress={phpunitInProgress}
-									status={
-										currentPluginData?.devStatus?.phpunit
-									}
-								/>
-							</div>
-						</div>
-					</div>
-				</div>
+				<ActionStatusContainer>
+					<ActionStatus
+						title={__('PHP Linting')}
+						description={__(
+							'Checks to make sure PHP files confirm to WordPress Coding Standards'
+						)}
+						inProgress={lintPhp.isRunning}
+						status={
+							lintPhp.response
+						}
+						streamingOutput={
+							lintPhp.streamingOutput
+						}
+					/>
+					<ActionStatus
+						title={__('CSS Linting')}
+						description={__(
+							'Checks to make sure CSS files confirm to WordPress Coding Standards'
+						)}
+						inProgress={lintCss.isRunning}
+						status={
+							lintCss.response
+						}
+						streamingOutput={
+							lintCss.streamingOutput
+						}
+					/>
+					<ActionStatus
+						title={__('Javascript Linting')}
+						description={__(
+							'Checks to make sure javascript files confirm to WordPress Coding Standards'
+						)}
+						inProgress={lintJs.isRunning}
+						status={
+							lintJs.response
+						}
+						streamingOutput={
+							lintJs.streamingOutput
+						}
+					/>
+				</ActionStatusContainer>
 			</div>
 		</>
 	);
 }
 
-function LintingComponent(props) {
+function ActionStatus(props) {
 	const [modalOpen, setModalOpen] = useState(false);
+	console.log( 'ActionStatus props', props );
 	return (
-		<div>
+		<div className="card p-4 bg-base-300">
 			<div className="flex items-center">
 				<h2 className="card-title">{props.title}</h2>
 				<span>
 					{(() => {
-						if (props.inProgress) {
-							return (
-								<div className="btn btn-ghost loading"></div>
-							);
-						}
-
 						return (
 							<>
 								{(() => {
@@ -629,15 +771,14 @@ function LintingComponent(props) {
 														</div>
 														<TerminalWindow>
 															{
-																props.status
-																	.output
+																props?.streamingOutput
 															}
 														</TerminalWindow>
 														<div className="text-lg">
 															Errors
 														</div>
 														<TerminalWindow>
-															{props.status.error}
+															{props?.status?.error}
 														</TerminalWindow>
 													</div>
 												</div>
@@ -647,14 +788,17 @@ function LintingComponent(props) {
 								})()}
 
 								<div
-									className="btn"
+									className="btn ml-4"
 									onClick={() => {
 										setModalOpen(true);
 									}}
 								>
 									{(() => {
-										if (!props?.status?.details) {
-											return;
+										if (props.inProgress) {
+											return <div className="btn btn-ghost loading"></div>;
+										}
+										if ( ! props?.status ) {
+											return '...';
 										}
 										if (
 											props?.status?.details?.exitcode ===
@@ -662,19 +806,7 @@ function LintingComponent(props) {
 										) {
 											return '✅';
 										}
-										return (
-											<svg
-												style={{
-													stroke: 'hsla(var(--er)',
-												}}
-												xmlns="http://www.w3.org/2000/svg"
-												fill="none"
-												className="inline-block w-6 h-6"
-												viewBox="0 0 24 24"
-											>
-												<path d="M6 18L18 6M6 6l12 12"></path>
-											</svg>
-										);
+										return '❌';
 									})()}
 								</div>
 							</>

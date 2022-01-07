@@ -19,6 +19,7 @@ function render_app() {
 	if ( ! isset( $_GET['addonmaintainer'] ) ) {
 		return;
 	}
+	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 	?>
 	<html>
 		<head>
@@ -29,6 +30,8 @@ function render_app() {
 		<body>
 		<div id="addonmaintainer"></div>
 		<script type="text/javascript">
+			var wpContentDir =  '<?php echo esc_html( $wp_filesystem->wp_content_dir() ); ?>';
+			var wpPluginsDir =  '<?php echo esc_html( $wp_filesystem->wp_plugins_dir() ); ?>';
 			var wppsApiEndpoints = {
 				generatePlugin: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/generateplugin',
 				generateModule: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/generatemodule',

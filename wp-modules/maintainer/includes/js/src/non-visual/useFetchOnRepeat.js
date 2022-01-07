@@ -60,8 +60,9 @@ export function useFetchOnRepeat( url ) {
 	const [paused, setPaused] = useState( false );
 	const [stopped, setStopped] = useState( true );
 	const [doItAgain, setDoItAgain] = useState( false );
-
-	const [fullResponse, setFullResponse] = useState('');
+	const [error, setError] = useState( false );
+	
+	const [fullResponse, setFullResponse] = useState('...');
 
 	// When the user navigates away from this tab, pause fetching on repeat.
 	onTabUnactiveFunctions.push( pause );
@@ -82,7 +83,7 @@ export function useFetchOnRepeat( url ) {
 		if ( ! paused && ! stopped ) {
 			setTimeout( () => {
 				fetchUrl( url );
-			}, 1000 );
+			}, 3000 );
 		}
 	}
 
@@ -113,7 +114,12 @@ export function useFetchOnRepeat( url ) {
 				},
 			}
 		)
-		.then(response => response.text() )
+		.then( (response) => {
+			if ( response.status !== 200 ) {
+				setError( response.status );
+			}
+			return response.text();
+		})
 		.then( ( data ) => {
 			setFullResponse(data);
 
@@ -121,12 +127,18 @@ export function useFetchOnRepeat( url ) {
 				setDoItAgain( true );
 			}
 
+		})
+		.catch( ( error ) => {
+			console.log( 'Error', error );
+			setError( error );
 		});
 	}
 
 	return {
 		start,
 		stop,
+		isStreaming: stopped ? false : true, 
 		response: fullResponse,
+		error: error,
 	}
 }

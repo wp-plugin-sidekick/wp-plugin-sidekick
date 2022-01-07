@@ -1,10 +1,10 @@
 while getopts 'p:n:t:f:' flag; do
-  case "${flag}" in
-    p) plugindir=${OPTARG} ;;
-	n) namespace=${OPTARG} ;;
-	t) textdomain=${OPTARG} ;;
-	f) fix=${OPTARG} ;;
-  esac
+	case "${flag}" in
+		p) plugindir=${OPTARG} ;;
+		n) namespace=${OPTARG} ;;
+		t) textdomain=${OPTARG} ;;
+		f) fix=${OPTARG} ;;
+	esac
 done
 
 

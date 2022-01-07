@@ -109,7 +109,7 @@ function fix_plugin_file_header( string $file_contents, array $strings ) {
  * @param string $file_contents The incoming contents of the file we are fixing the header of.
  */
 function get_plugin_namespace( string $file_contents ) {
-	$pattern = '~namespace\K \K.*(?=;)~';
+	$pattern = '~namespace \K.+?(?=;|\\\\)~';
 
 	// Find the namespace deifition.
 	$match_found = preg_match( $pattern, $file_contents, $matches );
@@ -130,8 +130,8 @@ function get_plugin_namespace( string $file_contents ) {
  */
 function fix_namespace( string $file_contents, string $namespace ) {
 
-	$pattern = '~namespace .*;~';
-	$fixed   = 'namespace ' . $namespace . ';';
+	$pattern = '~namespace .+?(?=;|\\\\)~';
+	$fixed   = 'namespace ' . $namespace;
 
 	// Find the namespace deifition.
 	$match_found = preg_match( $pattern, $file_contents, $matches );

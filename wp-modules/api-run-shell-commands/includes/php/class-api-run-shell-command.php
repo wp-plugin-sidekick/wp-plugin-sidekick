@@ -176,13 +176,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 	public function run_shell_command( $request ) {
 		$params = wp_parse_args( $request->get_params(), $this->default_args() );
 
-		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
-
-		$go_to_location = 'cd ' . $wp_filesystem->wp_plugins_dir() . $params['location'] . '; ';
-		$command        = $go_to_location . $params['command'] . '; ';
-		$job_identifier = $params['job_identifier'];
-
-		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier );
+		$result = \WPPS\DoShellCommand\do_shell_command( $params['command'], $params['job_identifier'], $params['location'] );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );
@@ -202,7 +196,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
-		\WPPS\DoShellCommand\update_file_option( 'wpps_' . $params['job_identifier'], false );
+		\WPPS\DoShellCommand\update_file_option( $params['job_identifier'], false );
 
 		// The item was successfully created.
 		return new \WP_REST_Response( true, 200 );
