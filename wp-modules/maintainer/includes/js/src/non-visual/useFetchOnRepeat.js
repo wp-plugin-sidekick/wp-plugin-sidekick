@@ -13,6 +13,8 @@ import {
 	createContext
 } from 'react';
 
+let anotherRoundTimeout = [];
+
 // Listen for tab changes in this browser.
 document.addEventListener('visibilitychange', () => {
 	if (document['hidden']) {
@@ -57,10 +59,15 @@ function handleVisibilityChange( tabIsVisible ) {
 }
 
 export function useFetchOnRepeat( url ) {
-	const [paused, setPaused] = useState( false );
+	const [paused, setPaused] = useState( true );
+	const pausedRef = useRef(paused);
+
 	const [stopped, setStopped] = useState( true );
+	const stoppedRef = useRef(stopped);
+
 	const [doItAgain, setDoItAgain] = useState( false );
 	const [error, setError] = useState( false );
+	const [lastFetchTime, setLastFetchTime] = useState( false );
 	
 	const [fullResponse, setFullResponse] = useState('...');
 
@@ -69,6 +76,18 @@ export function useFetchOnRepeat( url ) {
 
 	// When the user navigates back to this tab, resume fetching on repeat.
 	onTabActiveFunctions.push( unPause );
+
+	// Keeps the state and ref equal. See https://css-tricks.com/dealing-with-stale-props-and-states-in-reacts-functional-components/
+	function setStoppedAsync(newState) {
+		stoppedRef.current = newState;
+		setStopped(newState);
+	}
+
+	// Keeps the state and ref equal. See https://css-tricks.com/dealing-with-stale-props-and-states-in-reacts-functional-components/
+	function setPausedAsync(newState) {
+		pausedRef.current = newState;
+		setPaused(newState);
+	}
 
 	useEffect(() => {
 		setDoItAgain( false );
@@ -80,26 +99,30 @@ export function useFetchOnRepeat( url ) {
 	}, [paused, stopped] );
 
 	function triggerAnotherRound() {
-		if ( ! paused && ! stopped ) {
-			setTimeout( () => {
-				fetchUrl( url );
-			}, 3000 );
+		if ( ! pausedRef.current && ! stoppedRef.current ) {
+			clearTimeout( anotherRoundTimeout[url] );
+			anotherRoundTimeout[url] = setTimeout( () => {
+				if ( ! pausedRef.current && ! stoppedRef.current ) {
+					fetchUrl( url );
+				}
+			}, 2000 );
 		}
 	}
 
 	function start() {
-		setStopped( false );
+		setStoppedAsync( false );
+		setPausedAsync( false );
 	}
 
 	function stop() {
-		setStopped( true );
+		setStoppedAsync( true );
 	}
 
 	function pause() {
-		setPaused( true );
+		setPausedAsync( true );
 	}
 	function unPause() {
-		setPaused( false );
+		setPausedAsync( false );
 	}
 
 	function fetchUrl( fetchUrl ) {
@@ -123,12 +146,15 @@ export function useFetchOnRepeat( url ) {
 		.then( ( data ) => {
 			setFullResponse(data);
 
-			if ( ! paused && ! stopped ) {
+			setLastFetchTime( Date.now() );
+
+			if ( ! pausedRef.current && ! stoppedRef.current ) {
 				setDoItAgain( true );
 			}
 
 		})
 		.catch( ( error ) => {
+			setLastFetchTime( Date.now() );
 			console.log( 'Error', error );
 			setError( error );
 		});
@@ -140,5 +166,6 @@ export function useFetchOnRepeat( url ) {
 		isStreaming: stopped ? false : true, 
 		response: fullResponse,
 		error: error,
+		lastFetchTime: lastFetchTime
 	}
 }

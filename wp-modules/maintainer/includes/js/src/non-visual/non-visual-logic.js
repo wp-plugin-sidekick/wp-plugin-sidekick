@@ -18,22 +18,23 @@ export function useShellCommand(props) {
 	// Set up a file streamer, which checks the contents of a file every few seconds.
 	const statusStreamer = useFetchOnRepeat('/wp-content/wpps-studio-data/' + props.jobIdentifier );
 	const responseStreamer = useFetchOnRepeat('/wp-content/wpps-studio-data/' + props.jobIdentifier + '_output' );
-	
+
 	useEffect( () => {
 		// Upon init, check if this task is already running in the background.
 		if ( ! statusStreamer.status ) {
+			console.log( 'Starting the status cherker...');
 			statusStreamer.start();
 		}
 	}, [] );
 
 	useEffect( () => {
-		console.log( statusStreamer );
+		if ( ! statusStreamer.lastFetchTime ) {
+			return;
+		}
 		// If the action completed on its own (or doesn't exist), disable the responseStreamer.
 		if ( statusStreamer.error || ! statusStreamer.response || statusStreamer.response === 0 || statusStreamer.response === '0' ) {
-			console.log( 'stopping the stream' );
 			responseStreamer.stop();
 			statusStreamer.stop();
-			stop();
 		} 
 		
 		// If, upon initialization, the action is already running in the background, start streaming the response.
@@ -41,7 +42,7 @@ export function useShellCommand(props) {
 			setIsRunning( true );
 			responseStreamer.start();
 		}
-	}, [statusStreamer.response] );
+	}, [statusStreamer.lastFetchTime] );
 	
 	// Keeps the state and ref equal. See https://css-tricks.com/dealing-with-stale-props-and-states-in-reacts-functional-components/
 	function setResponseAsync(newState) {
@@ -91,6 +92,7 @@ export function useShellCommand(props) {
 				.then((response) => response.json())
 				.then((data) => {
 					setIsRunning( false );
+					statusStreamer.stop();
 					responseStreamer.stop();
 					resolve(data);
 				});
@@ -101,7 +103,7 @@ export function useShellCommand(props) {
 		run,
 		stop,
 		response: responseRef.current,
-		streamingOutput: responseStreamer.response,
+		streamingOutput: isRunning ? responseStreamer.response : responseRef.current?.output, 
 		isRunning: isRunning,
 	};
 }

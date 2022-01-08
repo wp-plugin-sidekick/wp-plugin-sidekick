@@ -654,7 +654,7 @@ function LintingArea(props) {
 	
 	const lintJs = useShellCommand({
 		location: wpContentDir,
-		jobIdentifier: currentPluginData.dirname + '_' + 'lint_css',
+		jobIdentifier: currentPluginData.dirname + '_' + 'lint_js',
 		command: 'npm run lint:js "./plugins/' + currentPluginData.dirname + '"; '
 	});
 
@@ -746,7 +746,7 @@ function LintingArea(props) {
 
 function ActionStatus(props) {
 	const [modalOpen, setModalOpen] = useState(false);
-	console.log( 'ActionStatus props', props );
+
 	return (
 		<div className="card p-4 bg-base-300">
 			<div className="flex items-center">
