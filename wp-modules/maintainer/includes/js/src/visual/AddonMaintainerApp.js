@@ -764,7 +764,7 @@ function ActionStatus(props) {
 													setModalOpen(false);
 												}}
 											>
-												<div className="grid gap-5 p-10">
+												<div className="grid gap-5 p-10 w-screen max-w-full">
 													<div className="grid grid-cols-1 gap-5">
 														<div className="text-lg">
 															Output

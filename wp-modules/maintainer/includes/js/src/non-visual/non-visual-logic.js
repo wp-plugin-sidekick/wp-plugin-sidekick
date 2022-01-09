@@ -54,6 +54,7 @@ export function useShellCommand(props) {
 		setIsRunning( true );
 		statusStreamer.start();
 		responseStreamer.start();
+		setResponseAsync(false);
 		return new Promise((resolve, reject) => {
 			fetch(wppsApiEndpoints.runShellCommand, {
 				method: 'POST',

@@ -110,6 +110,7 @@ export function useFetchOnRepeat( url ) {
 	}
 
 	function start() {
+		setFullResponse( false );
 		setStoppedAsync( false );
 		setPausedAsync( false );
 	}
