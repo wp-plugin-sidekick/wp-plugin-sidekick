@@ -400,7 +400,7 @@ function FixersArea(props) {
 					<div class="card bg-base-100 p-4">
 						<div class="form-control">
 							<label class="cursor-pointer label">
-								<span className="text-lg mr-4">Run Fixers</span>
+								<span className="text-lg mr-4">Run all fixers</span>
 								<input
 									type="checkbox"
 									className="toggle"
@@ -427,39 +427,21 @@ function FixersArea(props) {
 						description={__(
 							'Automatically fixes PHP code to adhere to WordPress coding standards (where possible).'
 						)}
-						inProgress={lintFixPhp.isRunning}
-						status={
-							lintFixPhp.response
-						}
-						streamingOutput={
-							lintFixPhp.streamingOutput
-						}
+						sshCommandHook={ lintFixPhp }
 					/>
 					<ActionStatus
 						title={__('Fix CSS Linting')}
 						description={__(
 							'Automatically fixes CSS code to adhere to WordPress coding standards (where possible).'
 						)}
-						inProgress={lintFixCss.isRunning}
-						status={
-							lintFixCss.response
-						}
-						streamingOutput={
-							lintFixCss.streamingOutput
-						}
+						sshCommandHook={ lintFixCss }
 					/>
 					<ActionStatus
 						title={__('Fix Javascript Linting')}
 						description={__(
 							'Automatically fixes Javascript code to adhere to WordPress coding standards (where possible).'
 						)}
-						inProgress={lintFixJs.isRunning}
-						status={
-							lintFixJs.response
-						}
-						streamingOutput={
-							lintFixJs.streamingOutput
-						}
+						sshCommandHook={ lintFixJs }
 					/>
 					<ActionStatus
 						title={__('Fix File Headers')}
@@ -514,7 +496,7 @@ function TestingArea(props) {
 					<div class="card bg-base-100 p-4">
 						<div class="form-control">
 							<label class="cursor-pointer label">
-								<span className="text-lg mr-4">Run Tests</span>
+								<span className="text-lg mr-4">Run all tests</span>
 								<input
 									type="checkbox"
 									className="toggle"
@@ -537,13 +519,7 @@ function TestingArea(props) {
 						description={__(
 							'Runs integration tests with WordPress'
 						)}
-						inProgress={phpunit.isRunning}
-						status={
-							phpunit.response
-						}
-						streamingOutput={
-							phpunit.streamingOutput
-						}
+						sshCommandHook={ phpunit }
 					/>
 				</ActionStatusContainer>
 			</div>
@@ -607,13 +583,7 @@ function DevelopmentArea(props) {
 						description={__(
 							'Runs integration tests with WordPress'
 						)}
-						inProgress={pingGoogle.isRunning}
-						status={
-							pingGoogle.response
-						}
-						streamingOutput={
-							pingGoogle.streamingOutput
-						}
+						sshCommandHook={ pingGoogle }
 					/>
 				</ActionStatusContainer>
 			</div>
@@ -668,7 +638,7 @@ function LintingArea(props) {
 					<div class="card bg-base-100 mt-4 p-4">
 						<div class="form-control">
 							<label class="cursor-pointer label">
-								<span className="text-lg mr-4">Run Linters</span>
+								<span className="text-lg mr-4">Run all linters</span>
 								<input
 									type="checkbox"
 									className="toggle"
@@ -695,39 +665,21 @@ function LintingArea(props) {
 						description={__(
 							'Checks to make sure PHP files confirm to WordPress Coding Standards'
 						)}
-						inProgress={lintPhp.isRunning}
-						status={
-							lintPhp.response
-						}
-						streamingOutput={
-							lintPhp.streamingOutput
-						}
+						sshCommandHook={ lintPhp }
 					/>
 					<ActionStatus
 						title={__('CSS Linting')}
 						description={__(
 							'Checks to make sure CSS files confirm to WordPress Coding Standards'
 						)}
-						inProgress={lintCss.isRunning}
-						status={
-							lintCss.response
-						}
-						streamingOutput={
-							lintCss.streamingOutput
-						}
+						sshCommandHook={ lintCss }
 					/>
 					<ActionStatus
 						title={__('Javascript Linting')}
 						description={__(
 							'Checks to make sure javascript files confirm to WordPress Coding Standards'
 						)}
-						inProgress={lintJs.isRunning}
-						status={
-							lintJs.response
-						}
-						streamingOutput={
-							lintJs.streamingOutput
-						}
+						sshCommandHook={ lintJs }
 					/>
 				</ActionStatusContainer>
 			</div>
@@ -741,69 +693,83 @@ function ActionStatus(props) {
 	return (
 		<div className="card p-4 bg-base-300">
 			<div className="flex items-center">
-				<h2 className="card-title">{props.title}</h2>
-				<span>
-					{(() => {
+				
+				{(() => {
+					if (modalOpen) {
 						return (
-							<>
-								{(() => {
-									if (modalOpen) {
-										return (
-											<Modal
-												title={props.title}
-												closeModal={() => {
-													setModalOpen(false);
-												}}
-											>
-												<div className="grid gap-5 p-10 w-screen max-w-full">
-													<div className="grid grid-cols-1 gap-5">
-														<div className="text-lg">
-															Output
-														</div>
-														<TerminalWindow>
-															{
-																props?.streamingOutput
-															}
-														</TerminalWindow>
-														<div className="text-lg">
-															Errors
-														</div>
-														<TerminalWindow>
-															{props?.status?.error}
-														</TerminalWindow>
-													</div>
-												</div>
-											</Modal>
-										);
-									}
-								})()}
-
-								<div
-									className="btn ml-4"
-									onClick={() => {
-										setModalOpen(true);
-									}}
-								>
-									{(() => {
-										if (props.inProgress) {
-											return <div className="btn btn-ghost loading"></div>;
-										}
-										if ( ! props?.status ) {
-											return '...';
-										}
-										if (
-											props?.status?.details?.exitcode ===
-											0
-										) {
-											return '✅';
-										}
-										return '❌';
-									})()}
+							<Modal
+								title={props.title}
+								closeModal={() => {
+									setModalOpen(false);
+								}}
+							>
+								<div className="grid gap-5 p-10 w-screen max-w-full">
+									<div className="grid grid-cols-1 gap-5">
+										<div className="text-lg">
+											Output
+										</div>
+										<TerminalWindow>
+											{
+												props?.sshCommandHook?.streamingOutput
+											}
+										</TerminalWindow>
+										<div className="text-lg">
+											Errors
+										</div>
+										<TerminalWindow>
+											{props?.sshCommandHook?.response?.error}
+										</TerminalWindow>
+									</div>
 								</div>
-							</>
+							</Modal>
 						);
-					})()}
-				</span>
+					}
+				})()}
+
+				<div class="card flex-row flex flex-1 bg-base-100 p-2 w-full mb-2">
+					<span class="self-center flex flex-grow text-lg mr-4 p-1">{props.title}</span>
+					<div class="flex flex-grow-0">
+						<div class="form-control">
+							<label class="cursor-pointer label">
+								<input
+									type="checkbox"
+									className="toggle"
+									checked={props?.sshCommandHook?.isRunning}
+									onChange={(event) => {
+										if (event.target.checked) {
+											props?.sshCommandHook.run();
+										} else {
+											props?.sshCommandHook.stop();
+										}
+									}}
+								/>
+							</label>
+						</div>
+						<div
+							className={ "btn btn-square ml-4" }
+							onClick={() => {
+								setModalOpen(true);
+							}}
+						>
+							{(() => {
+								if ( props?.sshCommandHook?.isRunning ) {
+									return '🟡';
+								}
+								if ( ! props?.sshCommandHook?.response && ! props?.sshCommandHook?.isRunning ) {
+									return '⚪️';
+								}
+								
+								if (
+									props?.sshCommandHook?.response?.details?.exitcode ===
+									0
+								) {
+									return '✅';
+								}
+								return '❌';
+							})()}
+						</div>
+					</div>
+				</div>
 			</div>
 			<p className="text-base-content text-opacity-40">
 				{props.description}

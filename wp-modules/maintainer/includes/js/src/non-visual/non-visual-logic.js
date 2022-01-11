@@ -42,7 +42,7 @@ export function useShellCommand(props) {
 		} 
 		
 		// If, upon initialization, the action is already running in the background, start streaming the response.
-		if ( statusStreamer.response === '1' ) {
+		if ( statusStreamer.response === '1' && ! responseStreamer.isStreaming ) {
 			setIsRunning( true );
 			responseStreamer.start();
 		}

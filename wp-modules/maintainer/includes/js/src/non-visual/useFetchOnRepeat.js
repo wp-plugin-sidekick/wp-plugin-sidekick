@@ -146,10 +146,7 @@ export function useFetchOnRepeat( url, fetchDelay = 1000 ) {
 			return response.text();
 		})
 		.then( ( data ) => {
-			console.log( 'Response', data );
-			if ( data ) {
-				setFullResponse(data);
-			}
+			setFullResponse(data);
 
 			setLastFetchTime( Date.now() );
 
