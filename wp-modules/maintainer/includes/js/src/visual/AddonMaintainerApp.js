@@ -369,19 +369,29 @@ function DevArea() {
 }
 
 function FixersArea(props) {
-	const { plugins, currentPluginData } = useContext(AomContext);
+	const { currentPluginData } = useContext(AomContext);
 	const [inProgress, setInProgress] = useState(false);
-	const [fixingPhpLint, setFixingPhpLint] = useState(false);
-	const [fixingCssLint, setFixingCssLint] = useState(false);
-	const [fixingJsLint, setFixingJsLint] = useState(false);
 
-	useEffect(() => {
-		if (fixingPhpLint || fixingCssLint || fixingJsLint) {
-			setInProgress(true);
-		} else {
-			setInProgress(false);
-		}
-	}, [fixingCssLint, fixingJsLint]);
+	const lintFixPhp = useShellCommand({
+		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
+		jobIdentifier: currentPluginData.dirname + '_' + 'lint_fix_php',
+		command: 'sh phpcs.sh -f 1  -p ' + wpPluginsDir + currentPluginData.dirname + ' -n ' + currentPluginData.namespace + ' -t ' + currentPluginData.TextDomain,
+		streamResponse: false,
+	});
+	
+	const lintFixCss = useShellCommand({
+		location: wpContentDir,
+		jobIdentifier: currentPluginData.dirname + '_' + 'lint_fix_css',
+		command: 'npm run lint:css "./plugins/' + currentPluginData.dirname + '/**/*.*css"  -- --fix',
+		streamResponse: false,
+	});
+	
+	const lintFixJs = useShellCommand({
+		location: wpContentDir,
+		jobIdentifier: currentPluginData.dirname + '_' + 'lint_fix_js',
+		command: 'npm run lint:js "./plugins/' + currentPluginData.dirname + '" -- --fix',
+		streamResponse: false,
+	});
 
 	return (
 		<>
@@ -397,38 +407,13 @@ function FixersArea(props) {
 									checked={inProgress}
 									onChange={(event) => {
 										if (event.target.checked) {
-											setFixingPhpLint(true);
-											runFixer({
-												location: currentPluginData.dirname,
-												job_identifier: 'phplintfix',
-												currentPluginData,
-												plugins,
-											}).then(() => {
-												setFixingPhpLint(false);
-											});
-		
-											setFixingCssLint(true);
-											runFixer({
-												location: currentPluginData.dirname,
-												job_identifier: 'csslintfix',
-												currentPluginData,
-												plugins,
-											}).then(() => {
-												setFixingCssLint(false);
-											});
-		
-											setFixingJsLint(true);
-											runFixer({
-												location: currentPluginData.dirname,
-												job_identifier: 'jslintfix',
-												currentPluginData,
-												plugins,
-											}).then(() => {
-												setFixingJsLint(false);
-											});
+											lintFixPhp.run();
+											lintFixCss.run();
+											lintFixJs.run();
 										} else {
-											setInProgress(false);
-											//npmRunDevFileStreamer.stop();
+											lintFixPhp.stop();
+											lintFixCss.stop();
+											lintFixJs.stop();
 										}
 									}}
 								/>
@@ -442,9 +427,12 @@ function FixersArea(props) {
 						description={__(
 							'Automatically fixes PHP code to adhere to WordPress coding standards (where possible).'
 						)}
-						inProgress={fixingPhpLint}
+						inProgress={lintFixPhp.isRunning}
 						status={
-							currentPluginData?.devStatus?.phplintfix
+							lintFixPhp.response
+						}
+						streamingOutput={
+							lintFixPhp.streamingOutput
 						}
 					/>
 					<ActionStatus
@@ -452,9 +440,12 @@ function FixersArea(props) {
 						description={__(
 							'Automatically fixes CSS code to adhere to WordPress coding standards (where possible).'
 						)}
-						inProgress={fixingCssLint}
+						inProgress={lintFixCss.isRunning}
 						status={
-							currentPluginData?.devStatus?.csslintfix
+							lintFixCss.response
+						}
+						streamingOutput={
+							lintFixCss.streamingOutput
 						}
 					/>
 					<ActionStatus
@@ -462,9 +453,12 @@ function FixersArea(props) {
 						description={__(
 							'Automatically fixes Javascript code to adhere to WordPress coding standards (where possible).'
 						)}
-						inProgress={fixingJsLint}
+						inProgress={lintFixJs.isRunning}
 						status={
-							currentPluginData?.devStatus?.jslintfix
+							lintFixJs.response
+						}
+						streamingOutput={
+							lintFixJs.streamingOutput
 						}
 					/>
 					<ActionStatus
@@ -472,20 +466,14 @@ function FixersArea(props) {
 						description={__(
 							'Automatically fixes file headers and namespaces to comply with the module in which they are contained.'
 						)}
-						inProgress={fixingJsLint}
-						status={
-							currentPluginData?.devStatus?.jslintfix
-						}
+						
 					/>
 					<ActionStatus
 						title={__('Fix Text Domains')}
 						description={__(
 							"Automatically adjust all translatable function textdomains to match the plugin's textdomain."
 						)}
-						inProgress={fixingJsLint}
-						status={
-							currentPluginData?.devStatus?.jslintfix
-						}
+						
 					/>
 				</ActionStatusContainer>
 			</div>
@@ -516,7 +504,7 @@ function TestingArea(props) {
 	const phpunit = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
 		jobIdentifier: currentPluginData.dirname + '_' + 'phpunit',
-		command: 'sh phpunit.sh -p ' + currentPluginData.dirname
+		command: 'sh phpunit.sh -p ' + currentPluginData.dirname,
 	});
 
 	return (
@@ -644,18 +632,21 @@ function LintingArea(props) {
 		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
 		jobIdentifier: currentPluginData.dirname + '_' + 'lint_php',
 		command: 'sh phpcs.sh -p ' + wpPluginsDir + currentPluginData.dirname + ' -n ' + currentPluginData.namespace + ' -t ' + currentPluginData.TextDomain,
+		streamResponse: false,
 	});
 	
 	const lintCss = useShellCommand({
 		location: wpContentDir,
 		jobIdentifier: currentPluginData.dirname + '_' + 'lint_css',
-		command: 'npm run lint:css "./plugins/' + currentPluginData.dirname + '/**/*.*css"; '
+		command: 'npm run lint:css "./plugins/' + currentPluginData.dirname + '/**/*.*css"',
+		streamResponse: false,
 	});
 	
 	const lintJs = useShellCommand({
 		location: wpContentDir,
 		jobIdentifier: currentPluginData.dirname + '_' + 'lint_js',
-		command: 'npm run lint:js "./plugins/' + currentPluginData.dirname + '"; '
+		command: 'npm run lint:js "./plugins/' + currentPluginData.dirname + '"',
+		streamResponse: false,
 	});
 
 	useEffect(() => {

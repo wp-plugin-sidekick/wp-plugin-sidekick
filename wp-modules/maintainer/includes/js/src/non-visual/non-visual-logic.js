@@ -14,10 +14,14 @@ export function useShellCommand(props) {
 	const [isRunning, setIsRunning] = useState(false);
 	const [response, setResponse] = useState();
 	const responseRef = useRef(response);
+	let streamResponse = true;
+	if ( props?.streamResponse === false ) {
+		streamResponse = false;
+	}
 
 	// Set up a file streamer, which checks the contents of a file every few seconds.
-	const statusStreamer = useFetchOnRepeat('/wp-content/wpps-studio-data/' + props.jobIdentifier );
-	const responseStreamer = useFetchOnRepeat('/wp-content/wpps-studio-data/' + props.jobIdentifier + '_output' );
+	const statusStreamer = useFetchOnRepeat('/wp-content/wpps-studio-data/' + props.jobIdentifier, props.streamFetchDelay ? props.streamFetchDelay : 1000 );
+	const responseStreamer = useFetchOnRepeat('/wp-content/wpps-studio-data/' + props.jobIdentifier + '_output', props.streamFetchDelay ? props.streamFetchDelay : 1000 );
 
 	useEffect( () => {
 		// Upon init, check if this task is already running in the background.
@@ -52,8 +56,10 @@ export function useShellCommand(props) {
 
 	function run() {
 		setIsRunning( true );
-		statusStreamer.start();
-		responseStreamer.start();
+		if ( streamResponse ) {
+			statusStreamer.start();
+			responseStreamer.start();
+		}
 		setResponseAsync(false);
 		return new Promise((resolve, reject) => {
 			fetch(wppsApiEndpoints.runShellCommand, {

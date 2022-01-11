@@ -58,7 +58,7 @@ function handleVisibilityChange( tabIsVisible ) {
 	}
 }
 
-export function useFetchOnRepeat( url ) {
+export function useFetchOnRepeat( url, fetchDelay = 1000 ) {
 	const [paused, setPaused] = useState( true );
 	const pausedRef = useRef(paused);
 
@@ -70,6 +70,7 @@ export function useFetchOnRepeat( url ) {
 	const [lastFetchTime, setLastFetchTime] = useState( false );
 	
 	const [fullResponse, setFullResponse] = useState('...');
+	const [statusCode, setStatusCode] = useState();
 
 	// When the user navigates away from this tab, pause fetching on repeat.
 	onTabUnactiveFunctions.push( pause );
@@ -105,7 +106,7 @@ export function useFetchOnRepeat( url ) {
 				if ( ! pausedRef.current && ! stoppedRef.current ) {
 					fetchUrl( url );
 				}
-			}, 2000 );
+			}, fetchDelay );
 		}
 	}
 
@@ -145,7 +146,10 @@ export function useFetchOnRepeat( url ) {
 			return response.text();
 		})
 		.then( ( data ) => {
-			setFullResponse(data);
+			console.log( 'Response', data );
+			if ( data ) {
+				setFullResponse(data);
+			}
 
 			setLastFetchTime( Date.now() );
 
@@ -167,6 +171,7 @@ export function useFetchOnRepeat( url ) {
 		isStreaming: stopped ? false : true, 
 		response: fullResponse,
 		error: error,
-		lastFetchTime: lastFetchTime
+		lastFetchTime: lastFetchTime,
+		statusCode,
 	}
 }
