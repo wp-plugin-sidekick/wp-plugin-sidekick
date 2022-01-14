@@ -95,23 +95,8 @@ function get_managable_plugins() {
 			'.php' // Strip away the .php part.
 		);
 
-		$manageable_plugins[ $dirname ]['namespace'] = get_plugin_namespace( $plugins_path . $key );
-
 		$manageable_plugins[ $dirname ]['modules'] = \WPPS\ModuleDataFunctions\get_plugin_modules( $dirname );
 	}
 
 	return $manageable_plugins;
-}
-
-function get_plugin_namespace( $plugin_file ) {
-	$wp_filesystem_api = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
-	// Open the file.
-	$file_contents = $wp_filesystem_api->get_contents( $plugin_file );
-	preg_match_all( '/(?<=namespace).*(?=;)/', $file_contents, $matches );
-
-	if ( isset( $matches[0][0] ) ){
-		return $matches[0][0];
-	}
-
-	return '';
 }

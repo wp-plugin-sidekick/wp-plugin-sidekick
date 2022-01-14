@@ -68,7 +68,7 @@ class Api_String_Fixer extends \WP_REST_Controller {
 			'plugin_name' => $params['pluginData']['Name'],
 			'plugin_dirname' => $params['pluginData']['dirname'],
 			'plugin_textdomain' => $params['pluginData']['TextDomain'],
-			'plugin_namespace' => $params['pluginData']['namespace'],
+			'plugin_namespace' => $params['pluginData']['Namespace'],
 			'plugin_description' => $params['pluginData']['description'],
 			'plugin_uri' => $params['pluginData']['PluginURI'],
 			'min_wp_version' => $params['pluginData']['RequiresWP'],
@@ -76,28 +76,26 @@ class Api_String_Fixer extends \WP_REST_Controller {
 			'UpdateURI' => $params['pluginData']['updateUri'],
 		);
 	
-		$wp_filesystem     = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
-		$plugins_dir       = $wp_filesystem->wp_plugins_dir();
-		$plugin_path        = $plugins_dir . $params['pluginData']['dirname'];
+		$wp_filesystem    = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+		$plugins_dir      = $wp_filesystem->wp_plugins_dir();
+		$plugin_path      = $plugins_dir . $params['pluginData']['dirname'];
+		$plugin_file_path = $plugin_path . '/' . $params['pluginData']['dirname'] . '.php';
 
 		// Fix strings.
-		//$strings_fixed = \WPPS\StringFixer\recursive_dir_string_fixer( $plugin_path, $plugin_args, 'plugin' );
+		$strings_fixed = \WPPS\StringFixer\fix_plugin_strings( $plugin_file_path, $plugin_args );
 
-		
-		
 		$modules_glob = glob( $plugin_path . '/wp-modules/*' );
 
 		// Loop through each module in this plugin and fix all module strings.
 		foreach ( $params['pluginData']['modules'] as $module ) {
 			$module_args = array(
-				'plugin_namespace'   => $params['pluginData']['namespace'],
+				'plugin_namespace'   => $params['pluginData']['Namespace'],
 				'plugin_dirname'     => $params['pluginData']['dirname'],
 				'module_name'        => $module['name'],
 				'module_namespace'   => $module['namespace'],
 				'module_description' => $module['description'],
 			);
-
-			$strings_fixed = \WPPS\StringFixer\recursive_dir_string_fixer( $module['dir'], $module_args, 'module' );
+			$strings_fixed = \WPPS\StringFixer\recursive_module_string_fixer( $module['dir'], $module_args );
 		}
 
 		if ( ! $strings_fixed ) {
@@ -106,7 +104,7 @@ class Api_String_Fixer extends \WP_REST_Controller {
 			return new \WP_REST_Response(
 				array(
 					'success'     => true,
-					'message'     => __( 'Plugin successfully created.', 'wpps' ),
+					'message'     => __( 'Plugin/Module headers, namespace definitions, and package tags successfully updated.', 'wpps' ),
 					'plugin_data' => $params,
 				),
 				200

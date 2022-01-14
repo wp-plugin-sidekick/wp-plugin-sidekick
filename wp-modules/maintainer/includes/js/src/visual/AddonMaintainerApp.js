@@ -421,10 +421,12 @@ function FixersArea(props) {
 											lintFixPhp.run();
 											lintFixCss.run();
 											lintFixJs.run();
+											stringFixer.run();
 										} else {
 											lintFixPhp.stop();
 											lintFixCss.stop();
 											lintFixJs.stop();
+											stringFixer.stop();
 										}
 									}}
 								/>
@@ -433,35 +435,35 @@ function FixersArea(props) {
 					</div>
 				</div>
 				<ActionStatusContainer>
-					<ActionStatus
+					<SshCommandStatus
 						title={__('Fix PHP Linting')}
 						description={__(
 							'Automatically fixes PHP code to adhere to WordPress coding standards (where possible).'
 						)}
 						sshCommandHook={ lintFixPhp }
 					/>
-					<ActionStatus
+					<SshCommandStatus
 						title={__('Fix CSS Linting')}
 						description={__(
 							'Automatically fixes CSS code to adhere to WordPress coding standards (where possible).'
 						)}
 						sshCommandHook={ lintFixCss }
 					/>
-					<ActionStatus
+					<SshCommandStatus
 						title={__('Fix Javascript Linting')}
 						description={__(
 							'Automatically fixes Javascript code to adhere to WordPress coding standards (where possible).'
 						)}
 						sshCommandHook={ lintFixJs }
 					/>
-					<ActionStatus
+					<FetchActionStatus
 						title={__('Fix File Headers')}
 						description={__(
 							'Automatically fixes file headers and namespaces to comply with the module in which they are contained.'
 						)}
-						sshCommandHook={stringFixer}
+						fetchHook={stringFixer}
 					/>
-					<ActionStatus
+					<SshCommandStatus
 						title={__('Fix Text Domains')}
 						description={__(
 							"Automatically adjust all translatable function textdomains to match the plugin's textdomain."
@@ -525,7 +527,7 @@ function TestingArea(props) {
 					</div>
 				</div>
 				<ActionStatusContainer>
-					<ActionStatus
+					<SshCommandStatus
 						title={__('Integration Tests (PHPUnit)')}
 						description={__(
 							'Runs integration tests with WordPress'
@@ -589,7 +591,7 @@ function DevelopmentArea(props) {
 					</div>
 				</div>
 				<ActionStatusContainer>
-					<ActionStatus
+					<SshCommandStatus
 						title={__('Pinging google')}
 						description={__(
 							'Runs integration tests with WordPress'
@@ -671,21 +673,21 @@ function LintingArea(props) {
 						</div>
 				</div>
 				<ActionStatusContainer>
-					<ActionStatus
+					<SshCommandStatus
 						title={__('PHP Linting')}
 						description={__(
 							'Checks to make sure PHP files confirm to WordPress Coding Standards'
 						)}
 						sshCommandHook={ lintPhp }
 					/>
-					<ActionStatus
+					<SshCommandStatus
 						title={__('CSS Linting')}
 						description={__(
 							'Checks to make sure CSS files confirm to WordPress Coding Standards'
 						)}
 						sshCommandHook={ lintCss }
 					/>
-					<ActionStatus
+					<SshCommandStatus
 						title={__('Javascript Linting')}
 						description={__(
 							'Checks to make sure javascript files confirm to WordPress Coding Standards'
@@ -698,7 +700,7 @@ function LintingArea(props) {
 	);
 }
 
-function ActionStatus(props) {
+function SshCommandStatus(props) {
 	const [modalOpen, setModalOpen] = useState(false);
 
 	return (
@@ -766,14 +768,97 @@ function ActionStatus(props) {
 								if ( props?.sshCommandHook?.isRunning ) {
 									return '🟡';
 								}
-								if ( ! props?.sshCommandHook?.response && ! props?.sshCommandHook?.isRunning ) {
+								if ( ( ! props?.sshCommandHook?.response && ! props?.sshCommandHook?.isRunning ) ) {
 									return '⚪️';
 								}
 								
 								if (
-									props?.sshCommandHook?.response?.details?.exitcode ===
-									0
+									props?.sshCommandHook?.response?.details?.exitcode === 0 ||
+									props?.sshCommandHook.success
 								) {
+									return '✅';
+								}
+								return '❌';
+							})()}
+						</div>
+					</div>
+				</div>
+			</div>
+			<p className="text-base-content text-opacity-40">
+				{props.description}
+			</p>
+		</div>
+	);
+}
+
+
+function FetchActionStatus(props) {
+	const [modalOpen, setModalOpen] = useState(false);
+
+	return (
+		<div className="card p-4 bg-base-300">
+			<div className="flex items-center">
+				
+				{(() => {
+					if (modalOpen) {
+						return (
+							<Modal
+								title={props.title}
+								closeModal={() => {
+									setModalOpen(false);
+								}}
+							>
+								<div className="grid gap-5 p-10 w-screen max-w-full">
+									<div className="grid grid-cols-1 gap-5">
+										<div className="text-lg">
+											Response
+										</div>
+										<TerminalWindow>
+											{
+												JSON.stringify( props?.fetchHook?.response, null, 5 )
+											}
+										</TerminalWindow>
+									</div>
+								</div>
+							</Modal>
+						);
+					}
+				})()}
+
+				<div class="card flex-row flex flex-1 bg-base-100 p-2 w-full mb-2">
+					<span class="self-center flex flex-grow text-lg mr-4 p-1">{props.title}</span>
+					<div class="flex flex-grow-0">
+						<div class="form-control">
+							<label class="cursor-pointer label">
+								<input
+									type="checkbox"
+									className="toggle"
+									checked={props?.fetchHook?.isRunning}
+									onChange={(event) => {
+										if (event.target.checked) {
+											props?.fetchHook.run();
+										} else {
+											props?.fetchHook.stop();
+										}
+									}}
+								/>
+							</label>
+						</div>
+						<div
+							className={ "btn btn-square ml-4" }
+							onClick={() => {
+								setModalOpen(true);
+							}}
+						>
+							{(() => {
+								if ( props?.fetchHook?.isRunning ) {
+									return '🟡';
+								}
+								if ( ( ! props?.fetchHook?.response && ! props?.fetchHook?.isRunning ) ) {
+									return '⚪️';
+								}
+								
+								if ( props?.fetchHook.success ) {
 									return '✅';
 								}
 								return '❌';

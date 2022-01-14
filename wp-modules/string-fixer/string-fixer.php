@@ -16,13 +16,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Fix main plugin file strings.
+ *
+ * @param string $file The incoming contents of the file we are fixing the header of.
+ * @param array  $strings The relevant strings used to create the plugin file header.
+
+ */
+function fix_plugin_strings( string $file, array $strings ) {
+	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+
+	// Open the file.
+	$file_contents = $wp_filesystem->get_contents( $file );
+
+	$file_contents = fix_plugin_file_header( $file_contents, $strings );
+	$file_contents = fix_plugin_namespace( $file_contents, $strings['plugin_namespace'] );
+
+	$wp_filesystem->put_contents( $file, $file_contents );
+}
+
+/**
  * Recursively loop through a directories files, fixing strings as we go.
  *
  * @param string $dir The directory where strings will be recursively replaced.
  * @param array  $strings The relevant strings used to create the plugin file header.
- * @param string $mode Either 'module' or 'plugin' to indicate the type off strings to fix.
  */
-function recursive_dir_string_fixer( string $dir, array $strings, string $mode ) {
+function recursive_module_string_fixer( string $dir, array $strings ) {
+	echo '
+	';
+	echo $dir;
 	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 	$dir_list      = glob( $dir . '/*' );
 	$result        = false;
@@ -31,40 +52,34 @@ function recursive_dir_string_fixer( string $dir, array $strings, string $mode )
 	foreach ( $dir_list as $dir_file ) {
 
 		// Rename strings.
-		$result = fix_strings( $dir_file, $strings, $mode );
-
+		$result = fix_module_strings( $dir_file, $strings );
+		
 		// If this is a directory, loop through it.
-		recursive_dir_string_fixer( $dir_file, $strings, $mode );
+		if ( $wp_filesystem->is_dir( $dir_file ) ) {
+			if ( strpos( $dir_file, 'node_modules') === false ) {
+				recursive_module_string_fixer( $dir_file, $strings );
+			}
+		}
 	}
 
 	return $result;
 }
 
 /**
- * Rename all strings in a file.
+ * Fix strings in a module.
  *
  * @param string $file The incoming contents of the file we are fixing the header of.
  * @param array  $strings The relevant strings used to create the plugin file header.
- * @param string $mode Either 'module' or 'plugin' to indicate the type off strings to fix.
  */
-function fix_strings( string $file, array $strings, string $mode ) {
+function fix_module_strings( string $file, array $strings ) {
 	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
 	// Open the file.
 	$file_contents = $wp_filesystem->get_contents( $file );
 
-	// Make sure the file header is correct.
-	if ( 'plugin' === $mode ) {
-		$file_contents = fix_plugin_file_header( $file_contents, $strings );
-		$file_contents = fix_plugin_namespace( $file_contents, $strings['plugin_namespace'] );
-		$file_contents = fix_package_tag( $file_contents, $strings['plugin_dirname'] );
-	}
-
-	if ( 'module' === $mode ) {
-		$file_contents = fix_module_file_header( $file_contents, $strings );
-		$file_contents = fix_module_namespace( $file_contents, $strings['plugin_namespace'], $strings['module_namespace'] );
-		//$file_contents = fix_package_tag( $file_contents, $strings['module_plugin'] );
-	}
+	$file_contents = fix_module_file_header( $file_contents, $strings );
+	$file_contents = fix_module_namespace( $file_contents, $strings['plugin_namespace'], $strings['module_namespace'] );
+	$file_contents = fix_package_tag( $file_contents, $strings['plugin_dirname'] );
 
 	$wp_filesystem->put_contents( $file, $file_contents );
 
@@ -87,6 +102,7 @@ function fix_plugin_file_header( string $file_contents, array $strings ) {
  * Text Domain: ' . $strings['plugin_textdomain'] . '
  * Domain Path: languages
  * License: ' . $strings['plugin_license'] . '
+ * Namespace: ' . $strings['plugin_namespace'] . '
  *
  * @package ' . $strings['plugin_dirname'] . '
  */';
@@ -105,19 +121,28 @@ function fix_plugin_file_header( string $file_contents, array $strings ) {
 }
 
 /**
- * Get the namespace in a file.
+ * Get a plugin's namespace.
  *
- * @param string $file_contents The incoming contents of the file we are fixing the header of.
+ * @param string $plugin_dirname The directory name of the plugin in question.
  */
-function get_plugin_namespace( string $file_contents ) {
-	$pattern = '~namespace \K.+?(?=;|\\\\)~';
+function get_plugin_namespace( string $plugin_dirname ) {
+	// Check if get_plugins() function exists. This is required on the front end of the
+	// site, since it is in a file that is normally only loaded in the admin.
+	if ( ! function_exists( 'get_plugins' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
 
-	// Find the namespace deifition.
-	$match_found = preg_match( $pattern, $file_contents, $matches );
+	$installed_plugins = \get_plugins();
 
-	// Replace it if found.
-	if ( $match_found ) {
-		return $matches[0];
+	foreach ( $installed_plugins as $key => $installed_plugin ) {
+		$dirname = basename(
+			$key, // Get the key which holds the folder/file name.
+			'.php' // Strip away the .php part.
+		);
+		
+		if ( $dirname === $plugin_dirname ) {
+			return $installed_plugin['Namespace'];
+		}
 	}
 
 	return false;
@@ -155,7 +180,7 @@ function fix_plugin_namespace( string $file_contents, string $namespace ) {
 function fix_module_namespace( string $file_contents, string $plugin_namespace, string $module_namespace ) {
 
 	$pattern = '~namespace .+?(?=;)~';
-	$fixed   = 'namespace' . $plugin_namespace . '\\' . $module_namespace;
+	$fixed   = 'namespace ' . $plugin_namespace . '\\' . $module_namespace;
 
 	// Find the namespace deifition.
 	$match_found = preg_match_all( $pattern, $file_contents, $matches );
@@ -191,7 +216,6 @@ function fix_module_file_header( string $file_contents, array $strings ) {
  * @package ' . $strings['plugin_dirname'] . '
  */';
 	}
-
 	$pattern = '~\/\*\*[^*] \* Module Name:[^;]*\*/~';
 
 	// Find the file header.
@@ -248,3 +272,14 @@ function default_module_args() {
 		'module_description' => ''
 	);
 }
+
+/**
+ * Filter in that we would like to include "namespace" in plugin header data retrieval.
+ *
+ * @param string $plugin_dirname The directory name of the plugin in question.
+ */
+function add_namespace_as_plugin_header( $additional_plugin_headers ) {
+	$additional_plugin_headers['Namespace'] = 'Namespace';
+	return $additional_plugin_headers;
+}
+add_filter( 'extra_plugin_headers', __NAMESPACE__ . '\add_namespace_as_plugin_header' );

@@ -36,9 +36,10 @@ export function useFetch(props) {
 			})
 			.then((response) => response.json())
 			.then((data) => {
-				const response = JSON.parse(data);
+				console.log( data );
+				
 				setIsRunning( false );
-				setResponseAsync( response );
+				setResponseAsync( data );
 				resolve(data);
 			});
 		});
@@ -54,6 +55,7 @@ export function useFetch(props) {
 		stop,
 		response: responseRef.current,
 		isRunning: isRunning,
+		success: responseRef.current?.success
 	};
 }
 
