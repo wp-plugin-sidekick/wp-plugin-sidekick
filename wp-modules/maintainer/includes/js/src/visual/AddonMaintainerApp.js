@@ -9,6 +9,7 @@ import {
 	useCurrentPluginPointer,
 	usePlugins,
 	useShellCommand,
+	useFetch,
 	runShellCommand,
 	killModuleShellCommand,
 	runLinter,
@@ -371,6 +372,9 @@ function DevArea() {
 function FixersArea(props) {
 	const { currentPluginData } = useContext(AomContext);
 	const [inProgress, setInProgress] = useState(false);
+	const [stringFixerResponse, setStringFixerResponse] = useState();
+
+	console.log( currentPluginData );
 
 	const lintFixPhp = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
@@ -391,6 +395,13 @@ function FixersArea(props) {
 		jobIdentifier: currentPluginData.dirname + '_' + 'lint_fix_js',
 		command: 'npm run lint:js "./plugins/' + currentPluginData.dirname + '" -- --fix',
 		streamResponse: false,
+	});
+
+	const stringFixer = useFetch({
+		url: wppsApiEndpoints['stringfixer'],
+		body: JSON.stringify({
+			pluginData: currentPluginData
+		}),
 	});
 
 	return (
@@ -448,7 +459,7 @@ function FixersArea(props) {
 						description={__(
 							'Automatically fixes file headers and namespaces to comply with the module in which they are contained.'
 						)}
-						
+						sshCommandHook={stringFixer}
 					/>
 					<ActionStatus
 						title={__('Fix Text Domains')}

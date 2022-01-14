@@ -45,20 +45,7 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 	 * The default args to auto-fill for any request.
 	 */
 	public function default_args() {
-		return array(
-			'plugin_name'        => '',
-			'plugin_dirname'     => '',
-			'plugin_textdomain'  => '',
-			'plugin_namespace'   => '',
-			'plugin_description' => '',
-			'plugin_version'     => '1.0.0',
-			'plugin_author'      => '',
-			'plugin_uri'         => '',
-			'min_wp_version'     => '',
-			'min_php_version'    => '',
-			'plugin_license'     => 'GPLv2 or later',
-			'update_uri'         => '',
-		);
+		return \WPPS\StringFixer\default_plugin_args();
 	}
 
 	/**

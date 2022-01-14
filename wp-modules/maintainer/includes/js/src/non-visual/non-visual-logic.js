@@ -9,6 +9,54 @@ import { useFetchOnRepeat } from './../non-visual/useFetchOnRepeat.js';
 
 export const AomContext = createContext([{}, function () {}]);
 
+
+export function useFetch(props) {
+	
+	const [isRunning, setIsRunning] = useState(false);
+	const [response, setResponse] = useState();
+	const responseRef = useRef(response);
+	
+	// Keeps the state and ref equal. See https://css-tricks.com/dealing-with-stale-props-and-states-in-reacts-functional-components/
+	function setResponseAsync(newState) {
+		responseRef.current = newState;
+		setResponse(newState);
+	}
+
+	function run() {
+		setIsRunning( true );
+		setResponseAsync(false);
+		return new Promise((resolve, reject) => {
+			fetch(props.url, {
+				method: 'POST',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+				},
+				body: props.body,
+			})
+			.then((response) => response.json())
+			.then((data) => {
+				const response = JSON.parse(data);
+				setIsRunning( false );
+				setResponseAsync( response );
+				resolve(data);
+			});
+		});
+	}
+	
+	function stop() {
+		// Possibly look at adding a signal param to the fetch call in the run() function.
+		setIsRunning( false ); 
+	}
+
+	return {
+		run,
+		stop,
+		response: responseRef.current,
+		isRunning: isRunning,
+	};
+}
+
 export function useShellCommand(props) {
 	
 	const [isRunning, setIsRunning] = useState(false);

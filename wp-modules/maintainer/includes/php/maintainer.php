@@ -36,6 +36,7 @@ function render_app() {
 				generatePlugin: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/generateplugin',
 				generateModule: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/generatemodule',
 				runShellCommand: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/runshellcommand',
+				stringfixer: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/stringfixer',
 				whichChecker: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/whichchecker',
 				phplint: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/phplint',
 				phplintfix: '<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/wp-json/wpps/v1/phplintfix',
@@ -108,5 +109,9 @@ function get_plugin_namespace( $plugin_file ) {
 	$file_contents = $wp_filesystem_api->get_contents( $plugin_file );
 	preg_match_all( '/(?<=namespace).*(?=;)/', $file_contents, $matches );
 
-	return $matches[0];
+	if ( isset( $matches[0][0] ) ){
+		return $matches[0][0];
+	}
+
+	return '';
 }
