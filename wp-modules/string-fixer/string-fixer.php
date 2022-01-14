@@ -41,9 +41,6 @@ function fix_plugin_strings( string $file, array $strings ) {
  * @param array  $strings The relevant strings used to create the plugin file header.
  */
 function recursive_module_string_fixer( string $dir, array $strings ) {
-	echo '
-	';
-	echo $dir;
 	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 	$dir_list      = glob( $dir . '/*' );
 	$result        = false;
@@ -56,7 +53,10 @@ function recursive_module_string_fixer( string $dir, array $strings ) {
 		
 		// If this is a directory, loop through it.
 		if ( $wp_filesystem->is_dir( $dir_file ) ) {
-			if ( strpos( $dir_file, 'node_modules') === false ) {
+			if (
+				strpos( $dir_file, 'node_modules') === false &&
+				strpos( $dir_file, 'vendor') === false
+			) {
 				recursive_module_string_fixer( $dir_file, $strings );
 			}
 		}
