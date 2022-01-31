@@ -1452,9 +1452,7 @@ function ModuleForm(props) {
 	const [step, setStep] = useState(1);
 	const [moduleName, setModuleName] = useState('My Awesome Module');
 	const [moduleBoiler, setModuleBoiler] = useState(null);
-	const [moduleNamespace, setModuleNamespace] = useState(
-		currentPluginData.namespace + '\\MyAwesomeModule'
-	);
+	const [moduleNamespace, setModuleNamespace] = useState('MyAwesomeModule');
 	const [moduleDescription, setModuleDescription] = useState(
 		'This is my awesome module. It does this, and it does that too!'
 	);

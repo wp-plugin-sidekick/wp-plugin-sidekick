@@ -70,9 +70,23 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 
 		// Rename the main plugin file.
 		rename( $new_plugin_dir . '/plugin-boiler.php', $new_plugin_dir . '/' . $params['plugin_dirname'] . '.php' );
-
+	
 		// Fix strings.
-		$strings_fixed = \WPPS\StringFixer\recursive_dir_string_fixer( $new_plugin_dir, $params, 'plugin' );
+		$strings_fixed = \WPPS\StringFixer\fix_plugin_strings( $new_plugin_dir . '/' . $params['plugin_dirname'] . '.php', $params );
+
+		$modules_in_plugin = \WPPS\ModuleDataFunctions\get_plugin_modules( $params['plugin_dirname'] );
+
+		// Loop through each module in this plugin and fix all module strings.
+		foreach ( $modules_in_plugin as $module ) {
+			$module_args = array(
+				'plugin_namespace'   => $params['plugin_namespace'],
+				'plugin_dirname'     => $params['plugin_dirname'],
+				'module_name'        => $module['name'],
+				'module_namespace'   => $module['namespace'],
+				'module_description' => $module['description'],
+			);
+			$strings_fixed = \WPPS\StringFixer\recursive_module_string_fixer( $module['dir'], $module_args );
+		}
 
 		if ( ! $strings_fixed ) {
 			return new \WP_REST_Response( $strings_fixed, 400 );

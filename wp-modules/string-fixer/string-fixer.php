@@ -32,6 +32,8 @@ function fix_plugin_strings( string $file, array $strings ) {
 	$file_contents = fix_plugin_namespace( $file_contents, $strings['plugin_namespace'] );
 
 	$wp_filesystem->put_contents( $file, $file_contents );
+
+	return true;
 }
 
 /**
@@ -93,6 +95,7 @@ function fix_module_strings( string $file, array $strings ) {
  * @param array  $strings The relevant strings used to create the plugin file header.
  */
 function fix_plugin_file_header( string $file_contents, array $strings ) {
+
 	$fixed_file_header = '/**
  * Plugin Name: ' . $strings['plugin_name'] . '
  * Plugin URI: ' . $strings['plugin_uri'] . '
@@ -191,6 +194,17 @@ function fix_module_namespace( string $file_contents, string $plugin_namespace, 
 	}
 
 	return $file_contents;
+}
+
+/**
+ * Find an old namespace
+ *
+ * @param string $file_contents The incoming contents of the file we are fixing the header of.
+ * @param string $plugin_namespace The namespace of the plugin (top level).
+ * @param string $module_namespace The namespace of the module (second level).
+ */
+function replace_namespace_usages( string $plugin_dir, string $old_plugin_namespace, string $new_plugin_namespace ) {
+
 }
 
 /**
