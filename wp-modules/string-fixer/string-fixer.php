@@ -159,7 +159,7 @@ function get_plugin_namespace( string $plugin_dirname ) {
  */
 function fix_plugin_namespace( string $file_contents, string $namespace ) {
 
-	$pattern = '~namespace .+?(?=;|\\\\)~';
+	$pattern = '~namespace [A-Z].+?(?=;|\\\\)~';
 	$fixed   = 'namespace ' . $namespace;
 
 	// Find the namespace deifition.
@@ -182,7 +182,7 @@ function fix_plugin_namespace( string $file_contents, string $namespace ) {
  */
 function fix_module_namespace( string $file_contents, string $plugin_namespace, string $module_namespace ) {
 
-	$pattern = '~namespace .+?(?=;)~';
+	$pattern = '~namespace [A-Z].+?(?=;)~';
 	$fixed   = 'namespace ' . $plugin_namespace . '\\' . $module_namespace;
 
 	// Find the namespace deifition.
