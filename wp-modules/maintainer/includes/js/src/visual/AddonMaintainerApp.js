@@ -379,7 +379,7 @@ function FixersArea(props) {
 	const lintFixPhp = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
 		jobIdentifier: currentPluginData.dirname + '_' + 'lint_fix_php',
-		command: 'sh phpcs.sh -f 1  -p ' + wpPluginsDir + currentPluginData.dirname + ' -n ' + currentPluginData.namespace + ' -t ' + currentPluginData.TextDomain,
+		command: 'sh phpcs.sh -f 1  -p ' + wpPluginsDir + currentPluginData.dirname + ' -n ' + currentPluginData.Namespace + ' -t ' + currentPluginData.TextDomain,
 		streamResponse: false,
 	});
 	
@@ -614,7 +614,7 @@ function LintingArea(props) {
 	const lintPhp = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
 		jobIdentifier: currentPluginData.dirname + '_' + 'lint_php',
-		command: 'sh phpcs.sh -p ' + wpPluginsDir + currentPluginData.dirname + ' -n ' + currentPluginData.namespace + ' -t ' + currentPluginData.TextDomain,
+		command: 'sh phpcs.sh -p ' + wpPluginsDir + currentPluginData.dirname + ' -n ' + currentPluginData.Namespace + ' -t ' + currentPluginData.TextDomain,
 		streamResponse: false,
 	});
 	
