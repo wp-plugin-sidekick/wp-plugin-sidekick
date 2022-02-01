@@ -544,57 +544,47 @@ function DevelopmentArea(props) {
 	const { plugins, currentPluginData } = useContext(AomContext);
 
 	const pingGoogle = useShellCommand({
-		location: wpPluginsDir,
+		location: wpPluginsDir + '/' + currentPluginData.dirname,
 		jobIdentifier: currentPluginData.dirname + '_' + 'pingGoogle',
 		command: 'ping google.com',
+	});
+
+	const installNPMDependencies = useShellCommand({
+		location: wpPluginsDir + '/' + currentPluginData.dirname,
+		jobIdentifier: currentPluginData.dirname + '_' + 'installNpmDependencies',
+		command: 'npm run installation',
+	});
+
+	const npmRunDev = useShellCommand({
+		location: wpPluginsDir + '/' + currentPluginData.dirname,
+		jobIdentifier: currentPluginData.dirname + '_' + 'npmRunDev',
+		command: 'npm run dev',
 	});
 
 	return (
 		<>
 			<div className="development-area">
-				<div className="mt-4">
-					<div class="card bg-base-100 p-4">
-						<div class="form-control">
-							<label class="cursor-pointer label">
-								<span className="text-lg mr-4">Install all dependencies (npm install)</span>
-								<input
-									type="checkbox"
-									className="toggle"
-									checked={pingGoogle.isRunning}
-									onChange={(event) => {
-										if (event.target.checked) {
-											pingGoogle.run();
-										} else {
-											pingGoogle.stop();
-										}
-									}}
-								/>
-							</label>
-						</div>
-						<div class="form-control">
-							<label class="cursor-pointer label">
-								<span className="text-lg mr-4">Enable dev mode (npm run dev)</span>
-								<input
-									type="checkbox"
-									className="toggle"
-									checked={pingGoogle.isRunning}
-									onChange={(event) => {
-										if (event.target.checked) {
-											pingGoogle.run();
-										} else {
-											pingGoogle.stop();
-										}
-									}}
-								/>
-							</label>
-						</div>
-					</div>
-				</div>
 				<ActionStatusContainer>
+					<SshCommandStatus
+						title={__('Install NPM dependencies')}
+						description={__(
+							'Loops through each module and runs "npm run install"'
+						)}
+						sshCommandHook={ installNPMDependencies }
+					/>
+			
+					<SshCommandStatus
+						title={__('Enable dev mode')}
+						description={__(
+							'Loops through each module and runs "npm run dev"'
+						)}
+						sshCommandHook={ npmRunDev }
+					/>
+				
 					<SshCommandStatus
 						title={__('Pinging google')}
 						description={__(
-							'Runs integration tests with WordPress'
+							'Pings google.com on repeat indefinitely'
 						)}
 						sshCommandHook={ pingGoogle }
 					/>
@@ -646,31 +636,30 @@ function LintingArea(props) {
 
 	return (
 		<>
-			<div className="linsting-area">
-				
-					<div class="card bg-base-100 mt-4 p-4">
-						<div class="form-control">
-							<label class="cursor-pointer label">
-								<span className="text-lg mr-4">Run all linters</span>
-								<input
-									type="checkbox"
-									className="toggle"
-									checked={inProgress}
-									onChange={(event) => {
-										if (event.target.checked) {
-											lintPhp.run();
-											lintCss.run();
-											lintJs.run();
-										} else {
-											lintPhp.stop();
-											lintCss.stop();
-											lintJs.stop();
-											
-										}
-									}}
-								/>
-							</label>
-						</div>
+			<div className="linting-area">
+				<div class="card bg-base-100 mt-4 p-4">
+					<div class="form-control">
+						<label class="cursor-pointer label">
+							<span className="text-lg mr-4">Run all linters</span>
+							<input
+								type="checkbox"
+								className="toggle"
+								checked={inProgress}
+								onChange={(event) => {
+									if (event.target.checked) {
+										lintPhp.run();
+										lintCss.run();
+										lintJs.run();
+									} else {
+										lintPhp.stop();
+										lintCss.stop();
+										lintJs.stop();
+										
+									}
+								}}
+							/>
+						</label>
+					</div>
 				</div>
 				<ActionStatusContainer>
 					<SshCommandStatus
@@ -2168,7 +2157,7 @@ function PreFlightChecks() {
 							'NodeJS runs javascript and enables package managers like NPM.',
 						iconUrl: 'https://nodejs.org/static/images/logo.svg', 
 						checkJobIdentifier: 'check_nodejs',
-						checkCommand: 'brew list --versions npm@16',
+						checkCommand: 'brew list --versions node@16',
 						installJobIdentifier: 'install_nodejs',
 						installCommand: 'brew install node@16',
 						forceVersionJobIdentifier: 'force_nodejs_version',
