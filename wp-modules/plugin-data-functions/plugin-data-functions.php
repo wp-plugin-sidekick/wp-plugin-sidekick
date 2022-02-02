@@ -40,6 +40,21 @@ function default_plugin_args() {
 	);
 }
 
+/**
+ * Get the list of plugins that currently exist.
+ *
+ * @param string $plugin_dirname The name of the directory of the plugin in question.
+ * @return array
+ */
+function get_plugin_data( $plugin_dirname ) {
+	$all_plugins = get_all_plugins();
+
+	if ( $all_plugins[ $plugin_dirname ] ) {
+		return $all_plugins[ $plugin_dirname ];
+	}
+
+	return false;
+}
 
 /**
  * Get the list of plugins that currently exist.

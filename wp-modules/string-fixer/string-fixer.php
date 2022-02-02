@@ -133,26 +133,8 @@ function fix_plugin_file_header( string $file_contents, array $strings ) {
  * @param string $plugin_dirname The directory name of the plugin in question.
  */
 function get_plugin_namespace( string $plugin_dirname ) {
-	// Check if get_plugins() function exists. This is required on the front end of the
-	// site, since it is in a file that is normally only loaded in the admin.
-	if ( ! function_exists( 'get_plugins' ) ) {
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-	}
-
-	$installed_plugins = \get_plugins();
-
-	foreach ( $installed_plugins as $key => $installed_plugin ) {
-		$dirname = basename(
-			$key, // Get the key which holds the folder/file name.
-			'.php' // Strip away the .php part.
-		);
-
-		if ( $dirname === $plugin_dirname ) {
-			return $installed_plugin['Namespace'];
-		}
-	}
-
-	return false;
+	$plugin_data = \WPPS\PluginDataFunctions\get_plugin_data( $plugin_dirname );
+	return $plugin_data['plugin_namespace'];
 }
 
 /**

@@ -65,14 +65,14 @@ class Api_Generate_Module extends \WP_REST_Controller {
 
 		$wp_filesystem      = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 		$plugins_dir        = $wp_filesystem->wp_plugins_dir();
-		$plugin_dir         = $plugins_dir . '/' . $params['module_plugin'] . '/wp-modules/';
+		$wp_modules_dir     = $plugins_dir . '/' . $params['module_plugin'] . '/wp-modules/';
 		$boiler_dir         = $plugins_dir . '/wp-plugin-studio/wp-modules/module-boilers/module-boilers/' . $params['module_boiler'];
 		$new_module_dirname = sanitize_title_with_dashes( $params['module_name'] );
-		$new_module_dir     = $plugin_dir . sanitize_title_with_dashes( $params['module_name'] );
+		$new_module_dir     = $wp_modules_dir . sanitize_title_with_dashes( $params['module_name'] );
 
 		// Ensure the wp-modules directory exists.
-		if ( ! file_exists( $plugin_dir ) ) {
-			$wp_filesystem->mkdir( $plugin_dir );
+		if ( ! file_exists( $wp_modules_dir ) ) {
+			$wp_filesystem->mkdir( $wp_modules_dir );
 		}
 
 		// Create the new module directory.
@@ -85,8 +85,8 @@ class Api_Generate_Module extends \WP_REST_Controller {
 		rename( $new_module_dir . '/' . $params['module_boiler'] . '.php', $new_module_dir . '/' . $new_module_dirname . '.php' );
 
 		// Add plugin data to module args.
-		$params['plugin_namespace' ] = \WPPS\StringFixer\get_plugin_namespace($params['module_plugin']);
-		$params['plugin_dirname' ] = $params['module_plugin'];
+		$params['plugin_namespace' ] = \WPPS\StringFixer\get_plugin_namespace( $params['module_plugin'] );
+		$params['plugin_dirname' ]   = $params['module_plugin'];
 
 		// Fix strings
 		$strings_fixed = \WPPS\StringFixer\recursive_module_string_fixer( $new_module_dir, $params );
