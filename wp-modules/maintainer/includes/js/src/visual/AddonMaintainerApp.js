@@ -194,7 +194,7 @@ function AddOnHeader() {
 		<div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box z-0 relative">
 			<div className="flex flex-grow px-2 mx-2">
 				<span className="text-lg font-bold">
-					{currentPluginData.Name}
+					{currentPluginData.plugin_name}
 				</span>
 			</div>
 			<div className="flex flex-grow-0">
@@ -216,7 +216,7 @@ function DevArea() {
 	// NPM Run Dev file streamer.
 	const npmRunDevFileStreamer = useFetchOnRepeat(
 		'/wp-content/wpps-studio-data/wpps_' +
-			currentPluginData.dirname +
+			currentPluginData.plugin_dirname +
 			'_pinggoogle' +
 			'_output'
 	);
@@ -378,22 +378,22 @@ function FixersArea(props) {
 
 	const lintFixPhp = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
-		jobIdentifier: currentPluginData.dirname + '_' + 'lint_fix_php',
-		command: 'sh phpcs.sh -f 1  -p ' + wpPluginsDir + currentPluginData.dirname + ' -n ' + currentPluginData.Namespace + ' -t ' + currentPluginData.TextDomain,
+		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_php',
+		command: 'sh phpcs.sh -f 1  -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintFixCss = useShellCommand({
 		location: wpContentDir,
-		jobIdentifier: currentPluginData.dirname + '_' + 'lint_fix_css',
-		command: 'npm run lint:css "./plugins/' + currentPluginData.dirname + '/**/*.*css"  -- --fix',
+		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_css',
+		command: 'npm run lint:css "./plugins/' + currentPluginData.plugin_dirname + '/**/*.*css"  -- --fix',
 		streamResponse: false,
 	});
 	
 	const lintFixJs = useShellCommand({
 		location: wpContentDir,
-		jobIdentifier: currentPluginData.dirname + '_' + 'lint_fix_js',
-		command: 'npm run lint:js "./plugins/' + currentPluginData.dirname + '" -- --fix',
+		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_js',
+		command: 'npm run lint:js "./plugins/' + currentPluginData.plugin_dirname + '" -- --fix',
 		streamResponse: false,
 	});
 
@@ -498,8 +498,8 @@ function TestingArea(props) {
 	
 	const phpunit = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
-		jobIdentifier: currentPluginData.dirname + '_' + 'phpunit',
-		command: 'sh phpunit.sh -p ' + currentPluginData.dirname,
+		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'phpunit',
+		command: 'sh phpunit.sh -p ' + currentPluginData.plugin_dirname,
 	});
 
 	return (
@@ -544,20 +544,20 @@ function DevelopmentArea(props) {
 	const { plugins, currentPluginData } = useContext(AomContext);
 
 	const pingGoogle = useShellCommand({
-		location: wpPluginsDir + '/' + currentPluginData.dirname,
-		jobIdentifier: currentPluginData.dirname + '_' + 'pingGoogle',
+		location: wpPluginsDir + '/' + currentPluginData.plugin_dirname,
+		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'pingGoogle',
 		command: 'ping google.com',
 	});
 
 	const installNPMDependencies = useShellCommand({
-		location: wpPluginsDir + '/' + currentPluginData.dirname,
-		jobIdentifier: currentPluginData.dirname + '_' + 'installNpmDependencies',
+		location: wpPluginsDir + '/' + currentPluginData.plugin_dirname,
+		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'installNpmDependencies',
 		command: 'npm run installation',
 	});
 
 	const npmRunDev = useShellCommand({
-		location: wpPluginsDir + '/' + currentPluginData.dirname,
-		jobIdentifier: currentPluginData.dirname + '_' + 'npmRunDev',
+		location: wpPluginsDir + '/' + currentPluginData.plugin_dirname,
+		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'npmRunDev',
 		command: 'npm run dev',
 	});
 
@@ -603,22 +603,22 @@ function LintingArea(props) {
 	
 	const lintPhp = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
-		jobIdentifier: currentPluginData.dirname + '_' + 'lint_php',
-		command: 'sh phpcs.sh -p ' + wpPluginsDir + currentPluginData.dirname + ' -n ' + currentPluginData.Namespace + ' -t ' + currentPluginData.TextDomain,
+		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_php',
+		command: 'sh phpcs.sh -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintCss = useShellCommand({
 		location: wpContentDir,
-		jobIdentifier: currentPluginData.dirname + '_' + 'lint_css',
-		command: 'npm run lint:css "./plugins/' + currentPluginData.dirname + '/**/*.*css"',
+		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_css',
+		command: 'npm run lint:css "./plugins/' + currentPluginData.plugin_dirname + '/**/*.*css"',
 		streamResponse: false,
 	});
 	
 	const lintJs = useShellCommand({
 		location: wpContentDir,
-		jobIdentifier: currentPluginData.dirname + '_' + 'lint_js',
-		command: 'npm run lint:js "./plugins/' + currentPluginData.dirname + '"',
+		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_js',
+		command: 'npm run lint:js "./plugins/' + currentPluginData.plugin_dirname + '"',
 		streamResponse: false,
 	});
 
@@ -873,10 +873,10 @@ function ManageableAddOns(props) {
 		for (const plugin in plugins.data) {
 			pluginsRendered.push(
 				<option
-					key={plugins.data[plugin].dirname}
-					value={plugins.data[plugin].dirname}
+					key={plugins.data[plugin].plugin_dirname}
+					value={plugins.data[plugin].plugin_dirname}
 				>
-					{plugins.data[plugin].Name}
+					{plugins.data[plugin].plugin_name}
 				</option>
 			);
 		}
@@ -898,7 +898,7 @@ function ManageableAddOns(props) {
 					}}
 					value={
 						currentPluginData
-							? currentPluginData.dirname
+							? currentPluginData.plugin_dirname
 							: 'Choose a plugin'
 					}
 				>
@@ -917,7 +917,7 @@ function ManageableModules(props) {
 		return '';
 	}
 
-	const modules = currentPluginData.modules;
+	const modules = currentPluginData.plugin_modules;
 
 	if (!modules) {
 		return 'No modules found';
@@ -967,7 +967,7 @@ function ManageableModules(props) {
 									className="block text-lg"
 									onChange={(event) => {
 										plugins.setModuleName(
-											currentPluginData.dirname,
+											currentPluginData.plugin_dirname,
 											modules[module].slug,
 											event.target.value
 										);
@@ -1002,7 +1002,7 @@ function ManageableModules(props) {
 							className="close-button flex flex-grow-0"
 							onClick={() => {
 								plugins.deleteModule(
-									currentPluginData.dirname,
+									currentPluginData.plugin_dirname,
 									modules[module].slug
 								);
 							}}
@@ -1262,10 +1262,10 @@ function PluginForm(props) {
 				plugin_namespace: pluginNamespace,
 				plugin_description: pluginDescription,
 				plugin_uri: pluginUri,
-				min_wp_version: minWpVersion,
-				min_php_version: minPhpVersion,
+				plugin_min_wp_version: minWpVersion,
+				plugin_min_php_version: minPhpVersion,
 				plugin_license: pluginLicense,
-				update_uri: updateUri,
+				plugin_update_uri: updateUri,
 			}),
 		})
 			.then((response) => response.json())
@@ -1460,7 +1460,7 @@ function ModuleForm(props) {
 				module_namespace: moduleNamespace,
 				module_description: moduleDescription,
 				module_boiler: moduleBoiler,
-				module_plugin: currentPluginData.dirname,
+				module_plugin: currentPluginData.plugin_dirname,
 			}),
 		})
 			.then((response) => response.json())
@@ -1468,7 +1468,7 @@ function ModuleForm(props) {
 				if (data.success) {
 					//setCurrentPlugin(data.plugin_data.plugin_dirname);
 					plugins.setPluginModules(
-						currentPluginData.dirname,
+						currentPluginData.plugin_dirname,
 						data.modules
 					);
 					//props.uponSuccess();

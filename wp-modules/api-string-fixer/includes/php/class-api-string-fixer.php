@@ -41,20 +41,6 @@ class Api_String_Fixer extends \WP_REST_Controller {
 	}
 
 	/**
-	 * The default args to auto-fill for any request.
-	 */
-	public function default_args() {
-		$default_plugin_args = \WPPS\StringFixer\default_plugin_args();
-		$default_module_args = \WPPS\StringFixer\default_module_args();
-
-		return array(
-			'plugin_dirname'      => '',
-			'plugin_args' => \WPPS\StringFixer\default_plugin_args(),
-			'modules' => \WPPS\StringFixer\default_module_args(),
-		);
-	}
-
-	/**
 	 * Fix strings.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
@@ -63,34 +49,21 @@ class Api_String_Fixer extends \WP_REST_Controller {
 	public function string_fixer( $request ) {
 		$params = $request->get_params();
 
-		// Set keys to what the string fixer wants.
-		$plugin_args = array(
-			'plugin_name' => $params['pluginData']['Name'],
-			'plugin_dirname' => $params['pluginData']['dirname'],
-			'plugin_textdomain' => $params['pluginData']['TextDomain'],
-			'plugin_namespace' => $params['pluginData']['Namespace'],
-			'plugin_description' => $params['pluginData']['description'],
-			'plugin_uri' => $params['pluginData']['PluginURI'],
-			'min_wp_version' => $params['pluginData']['RequiresWP'],
-			'min_php_version' => $params['pluginData']['RequiresPHP'],
-			'UpdateURI' => $params['pluginData']['updateUri'],
-		);
-	
 		$wp_filesystem    = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 		$plugins_dir      = $wp_filesystem->wp_plugins_dir();
-		$plugin_path      = $plugins_dir . $params['pluginData']['dirname'];
-		$plugin_file_path = $plugin_path . '/' . $params['pluginData']['dirname'] . '.php';
+		$plugin_path      = $plugins_dir . $params['pluginData']['plugin_dirname'];
+		$plugin_file_path = $plugin_path . '/' . $params['pluginData']['plugin_dirname'] . '.php';
 
 		// Fix strings.
-		$strings_fixed = \WPPS\StringFixer\fix_plugin_strings( $plugin_file_path, $plugin_args );
+		$strings_fixed = \WPPS\StringFixer\fix_plugin_strings( $plugin_file_path, $params['pluginData'] );
 
 		$modules_glob = glob( $plugin_path . '/wp-modules/*' );
 
 		// Loop through each module in this plugin and fix all module strings.
-		foreach ( $params['pluginData']['modules'] as $module ) {
+		foreach ( $params['pluginData']['plugin_modules'] as $module ) {
 			$module_args = array(
-				'plugin_namespace'   => $params['pluginData']['Namespace'],
-				'plugin_dirname'     => $params['pluginData']['dirname'],
+				'plugin_namespace'   => $params['pluginData']['plugin_namespace'],
+				'plugin_dirname'     => $params['pluginData']['plugin_dirname'],
 				'module_name'        => $module['name'],
 				'module_namespace'   => $module['namespace'],
 				'module_description' => $module['description'],

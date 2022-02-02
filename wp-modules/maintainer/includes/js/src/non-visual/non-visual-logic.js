@@ -351,7 +351,7 @@ export function pingGoogle(props) {
 			body: JSON.stringify({
 				location: props.location,
 				job_identifier:
-					props.currentPluginData.dirname +
+					props.currentPluginData.plugin_dirname +
 					'_' +
 					props.job_identifier,
 				command: props.command,
@@ -375,7 +375,7 @@ export function runNpmRunDev(props) {
 			body: JSON.stringify({
 				location: props.location,
 				job_identifier:
-					props.currentPluginData.dirname +
+					props.currentPluginData.plugin_dirname +
 					'_' +
 					props.job_identifier,
 				command: props.command,
@@ -384,7 +384,7 @@ export function runNpmRunDev(props) {
 			.then((response) => response.json())
 			.then((data) => {
 				props.plugins.setPluginDevStatus(
-					props.currentPluginData.dirname,
+					props.currentPluginData.plugin_dirname,
 					props.job_identifier,
 					JSON.parse(data)
 				);
@@ -403,7 +403,7 @@ export async function killModuleShellCommand(props) {
 		},
 		body: JSON.stringify({
 			job_identifier:
-				props.currentPluginData.dirname + '_' + props.job_identifier,
+				props.currentPluginData.plugin_dirname + '_' + props.job_identifier,
 		}),
 	});
 	const content = await rawResponse.json();
@@ -419,7 +419,7 @@ export function runLinter(props) {
 				new URLSearchParams({
 					location: props.location,
 					job_identifier:
-						props.currentPluginData.dirname +
+						props.currentPluginData.plugin_dirname +
 						'_' +
 						props.job_identifier,
 				}),
@@ -439,7 +439,7 @@ export function runLinter(props) {
 
 				// Set the entire response as a devStatus for the plugin.
 				props.plugins.setPluginDevStatus(
-					props.currentPluginData.dirname,
+					props.currentPluginData.plugin_dirname,
 					props.job_identifier,
 					response
 				);
@@ -457,7 +457,7 @@ export function phplint(props) {
 				new URLSearchParams({
 					location: props.location,
 					job_identifier:
-						props.currentPluginData.dirname +
+						props.currentPluginData.plugin_dirname +
 						'_' +
 						props.job_identifier,
 				}),
@@ -475,7 +475,7 @@ export function phplint(props) {
 
 				// Set the entire response as a devStatus for the plugin.
 				props.plugins.setPluginDevStatus(
-					props.currentPluginData.dirname,
+					props.currentPluginData.plugin_dirname,
 					props.job_identifier,
 					response
 				);
@@ -493,13 +493,13 @@ export function phplint(props) {
 				}
 
 				// But also, separate each message into the corresponding module too.
-				for (module in props.currentPluginData.modules) {
+				for (module in props.currentPluginData.plugin_modules) {
 					const modulePhpcsDevStatus = {};
 					for (const fileName in phplintJson.files) {
 						// If this phplint file is in this module, add it to this module's devStatus object.
 						if (
 							fileName.includes(
-								props.currentPluginData.modules[module].slug
+								props.currentPluginData.plugin_modules[module].slug
 							)
 						) {
 							modulePhpcsDevStatus[fileName] =
@@ -509,8 +509,8 @@ export function phplint(props) {
 
 					// Add the phplint data for this module to this module.
 					props.plugins.setModuleDevStatus(
-						props.currentPluginData.dirname,
-						props.currentPluginData.modules[module].slug,
+						props.currentPluginData.plugin_dirname,
+						props.currentPluginData.plugin_modules[module].slug,
 						'phplint',
 						modulePhpcsDevStatus
 					);
@@ -532,7 +532,7 @@ export function runFixer(props) {
 			body: JSON.stringify({
 				location: props.location,
 				job_identifier:
-					props.currentPluginData.dirname +
+					props.currentPluginData.plugin_dirname +
 					'_' +
 					props.job_identifier,
 			}),
@@ -544,7 +544,7 @@ export function runFixer(props) {
 				console.log('Command', response.details.command);
 				// Set the entire response as a devStatus for the plugin.
 				props.plugins.setPluginDevStatus(
-					props.currentPluginData.dirname,
+					props.currentPluginData.plugin_dirname,
 					props.job_identifier,
 					response
 				);
@@ -562,7 +562,7 @@ export function phpUnit(props) {
 				new URLSearchParams({
 					location: props.location,
 					job_identifier:
-						props.currentPluginData.dirname +
+						props.currentPluginData.plugin_dirname +
 						'_' +
 						props.job_identifier,
 				}),
@@ -580,7 +580,7 @@ export function phpUnit(props) {
 
 				// Set the entire response as a devStatus for the plugin.
 				props.plugins.setPluginDevStatus(
-					props.currentPluginData.dirname,
+					props.currentPluginData.plugin_dirname,
 					props.job_identifier,
 					response
 				);
@@ -594,14 +594,14 @@ export async function enableDevelopmentMode(plugins, currentPluginData) {
 	// Enable phplint.
 	/*
 	phplint({
-		location: currentPluginData.dirname,
+		location: currentPluginData.plugin_dirname,
 		job_identifier: 'phplint',
 		currentPluginData: currentPluginData,
 		plugins: plugins
 	});
 
 	runNpmRunDev({
-		location: currentPluginData.dirname,
+		location: currentPluginData.plugin_dirname,
 		job_identifier: 'npm_run_dev',
 		command: 'npm run dev',
 		currentPluginData: currentPluginData,
@@ -610,7 +610,7 @@ export async function enableDevelopmentMode(plugins, currentPluginData) {
 	*/
 
 	pingGoogle({
-		location: currentPluginData.dirname,
+		location: currentPluginData.plugin_dirname,
 		job_identifier: 'pinggoogle',
 		command: 'ping google.com',
 		currentPluginData,
@@ -621,28 +621,28 @@ export async function enableDevelopmentMode(plugins, currentPluginData) {
 export async function disableDevelopmentMode(currentPluginData) {
 	// Kill phplint.
 	killModuleShellCommand({
-		location: currentPluginData.dirname,
+		location: currentPluginData.plugin_dirname,
 		job_identifier: 'pinggoogle',
 		currentPluginData,
 	});
 
 	// Kill phplint.
 	killModuleShellCommand({
-		location: currentPluginData.dirname,
+		location: currentPluginData.plugin_dirname,
 		job_identifier: 'phplint',
 		currentPluginData,
 	});
 
 	// Kill npm_run_dev.
 	killModuleShellCommand({
-		location: currentPluginData.dirname,
+		location: currentPluginData.plugin_dirname,
 		job_identifier: 'npm_run_dev',
 		currentPluginData,
 	});
 
 	// Kill npm_run_dev:css.
 	killModuleShellCommand({
-		location: currentPluginData.dirname,
+		location: currentPluginData.plugin_dirname,
 		job_identifier: 'npm_run_dev_css',
 		currentPluginData,
 	});

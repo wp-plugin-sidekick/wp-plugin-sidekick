@@ -7,7 +7,7 @@
  * Author: johnstonphilip
  * Text Domain: wpps
  * Domain Path: languages
- * License: GPLv3
+ * License: GPLv2
  *
  * @package WPPS
  */

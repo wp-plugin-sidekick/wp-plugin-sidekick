@@ -45,7 +45,7 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 	 * The default args to auto-fill for any request.
 	 */
 	public function default_args() {
-		return \WPPS\StringFixer\default_plugin_args();
+		return \WPPS\PluginDataFunctions\default_plugin_args();
 	}
 
 	/**
@@ -70,7 +70,7 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 
 		// Rename the main plugin file.
 		rename( $new_plugin_dir . '/plugin-boiler.php', $new_plugin_dir . '/' . $params['plugin_dirname'] . '.php' );
-	
+
 		// Fix strings.
 		$strings_fixed = \WPPS\StringFixer\fix_plugin_strings( $new_plugin_dir . '/' . $params['plugin_dirname'] . '.php', $params );
 

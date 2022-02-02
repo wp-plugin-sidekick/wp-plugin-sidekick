@@ -20,14 +20,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @param string $file The incoming contents of the file we are fixing the header of.
  * @param array  $strings The relevant strings used to create the plugin file header.
-
  */
 function fix_plugin_strings( string $file, array $strings ) {
 	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
 	// Open the file.
 	$file_contents = $wp_filesystem->get_contents( $file );
-
 	$file_contents = fix_plugin_file_header( $file_contents, $strings );
 	$file_contents = fix_plugin_namespace( $file_contents, $strings['plugin_namespace'] );
 
@@ -52,7 +50,7 @@ function recursive_module_string_fixer( string $dir, array $strings ) {
 
 		// Rename strings.
 		$result = fix_module_strings( $dir_file, $strings );
-		
+
 		// If this is a directory, loop through it.
 		if ( $wp_filesystem->is_dir( $dir_file ) ) {
 			if (
@@ -101,10 +99,16 @@ function fix_plugin_file_header( string $file_contents, array $strings ) {
  * Plugin URI: ' . $strings['plugin_uri'] . '
  * Description: ' . $strings['plugin_description'] . '
  * Version: ' . $strings['plugin_version'] . '
- * Author: ' . $strings['author'] . '
+ * Author: ' . $strings['plugin_author'] . '
+ * Author URI: ' . $strings['plugin_author_uri'] . '
  * Text Domain: ' . $strings['plugin_textdomain'] . '
  * Domain Path: languages
  * License: ' . $strings['plugin_license'] . '
+ * License URI: ' . $strings['plugin_license_uri'] . '
+ * Requires at least: ' . $strings['plugin_min_wp_version'] . '
+ * Requires PHP: ' . $strings['plugin_min_php_version'] . '
+ * Network: ' . $strings['plugin_network'] . '
+ * Update URI: ' . $strings['plugin_update_uri'] . '
  * Namespace: ' . $strings['plugin_namespace'] . '
  *
  * @package ' . $strings['plugin_dirname'] . '
@@ -142,7 +146,7 @@ function get_plugin_namespace( string $plugin_dirname ) {
 			$key, // Get the key which holds the folder/file name.
 			'.php' // Strip away the .php part.
 		);
-		
+
 		if ( $dirname === $plugin_dirname ) {
 			return $installed_plugin['Namespace'];
 		}
@@ -247,7 +251,7 @@ function fix_module_file_header( string $file_contents, array $strings ) {
 function fix_package_tag( string $file_contents, string $package ) {
 	$fixed = '* @package ' . $package;
 
-	$pattern = '~\* @package .*~';
+	$pattern = '~\* @package [a-z].*~';
 
 	// Find the file header.
 	$file_contents = preg_replace( $pattern, $fixed, $file_contents );
@@ -256,44 +260,18 @@ function fix_package_tag( string $file_contents, string $package ) {
 }
 
 /**
- * The default args for a plugin header.
- */
-function default_plugin_args() {
-	return array(
-		'plugin_name'        => '',
-		'plugin_dirname'     => '',
-		'plugin_textdomain'  => '',
-		'plugin_namespace'   => '',
-		'plugin_description' => '',
-		'plugin_version'     => '1.0.0',
-		'plugin_author'      => '',
-		'plugin_uri'         => '',
-		'min_wp_version'     => '',
-		'min_php_version'    => '',
-		'plugin_license'     => 'GPLv2 or later',
-		'update_uri'         => '',
-	);
-}
-
-
-/**
- * The default args for a plugin header.
- */
-function default_module_args() {
-	return array(
-		'module_name'        => '',
-		'module_namespace'   => '',
-		'module_description' => ''
-	);
-}
-
-/**
- * Filter in that we would like to include "namespace" in plugin header data retrieval.
+ * Fix a textdomain used for translation to match the plugin's textdomain.
  *
- * @param string $plugin_dirname The directory name of the plugin in question.
+ * @param string $file_contents The incoming contents of the file we are fixing the header of.
+ * @param string $package TThe string to use for the package tag.
  */
-function add_namespace_as_plugin_header( $additional_plugin_headers ) {
-	$additional_plugin_headers['Namespace'] = 'Namespace';
-	return $additional_plugin_headers;
+function fix_textdomain( string $file_contents, string $package ) {
+	$fixed = '* @package ' . $package;
+
+	$pattern = '~\* @package .*~';
+
+	// Find the file header.
+	$file_contents = preg_replace( $pattern, $fixed, $file_contents );
+
+	return $file_contents;
 }
-add_filter( 'extra_plugin_headers', __NAMESPACE__ . '\add_namespace_as_plugin_header' );
