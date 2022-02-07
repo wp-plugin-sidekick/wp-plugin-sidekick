@@ -128,7 +128,7 @@ export function useFetchOnRepeat( url, fetchDelay = 1000 ) {
 	}
 
 	function fetchUrl( fetchUrl ) {
-		// While command above is running, open a stream for its output, grabbing it from the wpps_output file in wp-content/.wppps_studio_data.
+		// While command above is running, open a stream for its output, grabbing it from the wpps_output file in wp-content/.wppps_sidekick_data.
 		fetch(
 			fetchUrl,
 			{

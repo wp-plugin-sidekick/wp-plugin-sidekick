@@ -70,8 +70,8 @@ export function useShellCommand(props) {
 	}
 
 	// Set up a file streamer, which checks the contents of a file every few seconds.
-	const statusStreamer = useFetchOnRepeat('/wp-content/wpps-studio-data/' + props.jobIdentifier, props.streamFetchDelay ? props.streamFetchDelay : 1000 );
-	const responseStreamer = useFetchOnRepeat('/wp-content/wpps-studio-data/' + props.jobIdentifier + '_output', props.streamFetchDelay ? props.streamFetchDelay : 1000 );
+	const statusStreamer = useFetchOnRepeat('/wp-content/wpps-sidekick-data/' + props.jobIdentifier, props.streamFetchDelay ? props.streamFetchDelay : 1000 );
+	const responseStreamer = useFetchOnRepeat('/wp-content/wpps-sidekick-data/' + props.jobIdentifier + '_output', props.streamFetchDelay ? props.streamFetchDelay : 1000 );
 
 	useEffect( () => {
 		// Upon init, check if this task is already running in the background.

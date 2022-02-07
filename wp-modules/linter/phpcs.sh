@@ -26,7 +26,7 @@ if [ ! -d node_modules ] || [ ! -d vendor ]; then
 fi
 
 # Copy the phpcs.xml file from the linter module to wp-content.
-cp ./plugins/wp-plugin-studio/wp-modules/linter/phpcs.xml ./
+cp ./plugins/wp-plugin-sidekick/wp-modules/linter/phpcs.xml ./
 
 # Modify the phpcs.xml file in the linter module to contain the namespace and text domain of the plugin in question.
 sed -i.bak "s/MadeWithWPPS/$namespace/g" phpcs.xml

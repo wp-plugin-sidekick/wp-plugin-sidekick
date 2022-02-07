@@ -1,9 +1,9 @@
 {
-	"name": "wp-plugin-studio",
+	"name": "wp-plugin-sidekick",
 	"version": "1.0.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/johnstonphilip/wp-plugin-studio/"
+		"url": "https://github.com/johnstonphilip/wp-plugin-sidekick/"
 	},
 	"scripts": {
 		"installation": "sh ./.scripts/install.sh",

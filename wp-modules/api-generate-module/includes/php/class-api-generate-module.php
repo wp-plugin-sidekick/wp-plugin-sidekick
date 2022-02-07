@@ -66,7 +66,7 @@ class Api_Generate_Module extends \WP_REST_Controller {
 		$wp_filesystem      = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 		$plugins_dir        = $wp_filesystem->wp_plugins_dir();
 		$wp_modules_dir     = $plugins_dir . '/' . $params['module_plugin'] . '/wp-modules/';
-		$boiler_dir         = $plugins_dir . '/wp-plugin-studio/wp-modules/module-boilers/module-boilers/' . $params['module_boiler'];
+		$boiler_dir         = $plugins_dir . '/wp-plugin-sidekick/wp-modules/module-boilers/module-boilers/' . $params['module_boiler'];
 		$new_module_dirname = sanitize_title_with_dashes( $params['module_name'] );
 		$new_module_dir     = $wp_modules_dir . sanitize_title_with_dashes( $params['module_name'] );
 

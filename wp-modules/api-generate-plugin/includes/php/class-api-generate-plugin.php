@@ -59,7 +59,7 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 
 		$wp_filesystem     = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 		$plugins_dir       = $wp_filesystem->wp_plugins_dir();
-		$plugin_boiler_dir = $plugins_dir . '/wp-plugin-studio/wp-modules/plugin-boiler/plugin-boiler/';
+		$plugin_boiler_dir = $plugins_dir . '/wp-plugin-sidekick/wp-modules/plugin-boiler/plugin-boiler/';
 		$new_plugin_dir    = $plugins_dir . $params['plugin_dirname'];
 
 		// Create the new plugin directory.

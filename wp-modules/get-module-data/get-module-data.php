@@ -3,7 +3,7 @@
  * Module Name: Get Module Data
  * Description: This module contains functions to help you get data about another module.
  *
- * @package wp-plugin-studio
+ * @package wp-plugin-sidekick
  */
 
 declare(strict_types=1);

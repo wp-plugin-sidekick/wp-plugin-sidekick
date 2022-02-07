@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: WP Plugin Studio
- * Plugin URI: https://wppluginstudio.com
+ * Plugin Name: WP Plugin Sidekick
+ * Plugin URI: https://wppluginsidekick.com
  * Description: An interface for building WordPress plugins and themes.
  * Version: 1.0.0.0
  * Author: johnstonphilip

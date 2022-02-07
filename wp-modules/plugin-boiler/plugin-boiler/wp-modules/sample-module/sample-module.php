@@ -4,7 +4,7 @@
  * Description: This is a sample module.
  * Namespace: SampleModule
  *
- * @package wp-plugin-studio
+ * @package wp-plugin-sidekick
  */
 
 declare(strict_types=1);

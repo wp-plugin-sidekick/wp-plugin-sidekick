@@ -215,7 +215,7 @@ function DevArea() {
 
 	// NPM Run Dev file streamer.
 	const npmRunDevFileStreamer = useFetchOnRepeat(
-		'/wp-content/wpps-studio-data/wpps_' +
+		'/wp-content/wpps-sidekick-data/wpps_' +
 			currentPluginData.plugin_dirname +
 			'_pinggoogle' +
 			'_output'
@@ -377,7 +377,7 @@ function FixersArea(props) {
 	console.log( currentPluginData );
 
 	const lintFixPhp = useShellCommand({
-		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
+		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_php',
 		command: 'sh phpcs.sh -f 1  -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
@@ -497,7 +497,7 @@ function TestingArea(props) {
 	const { plugins, currentPluginData } = useContext(AomContext);
 	
 	const phpunit = useShellCommand({
-		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
+		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'phpunit',
 		command: 'sh phpunit.sh -p ' + currentPluginData.plugin_dirname,
 	});
@@ -602,7 +602,7 @@ function LintingArea(props) {
 	const [lintingJsInProgress, setLintingJsInProgress] = useState(false);
 	
 	const lintPhp = useShellCommand({
-		location: wpPluginsDir + 'wp-plugin-studio/wp-modules/linter/',
+		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_php',
 		command: 'sh phpcs.sh -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
@@ -1285,18 +1285,18 @@ function PluginForm(props) {
 			<div className="options">
 				<div className="grid gap-5 p-10">
 					<h2 className="font-sans text-5xl font-black">
-						{__("Let's spin up a new plugin…", 'wp-plugin-studio')}
+						{__("Let's spin up a new plugin…", 'wp-plugin-sidekick')}
 					</h2>
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{__('Plugin Name', 'wp-plugin-studio')}
+							{__('Plugin Name', 'wp-plugin-sidekick')}
 						</label>
 						<input
 							type="text"
 							id="name-with-label"
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
-							placeholder={__('Plugin Name', 'wp-plugin-studio')}
+							placeholder={__('Plugin Name', 'wp-plugin-sidekick')}
 							value={pluginName}
 							onChange={(event) =>
 								setPluginName(event.target.value)
@@ -1306,7 +1306,7 @@ function PluginForm(props) {
 
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{__('Plugin Text Domain', 'wp-plugin-studio')}
+							{__('Plugin Text Domain', 'wp-plugin-sidekick')}
 						</label>
 						<input
 							type="text"
@@ -1315,7 +1315,7 @@ function PluginForm(props) {
 							name="email"
 							placeholder={__(
 								'Plugin Text Domain',
-								'wp-plugin-studio'
+								'wp-plugin-sidekick'
 							)}
 							value={pluginTextDomain}
 							onChange={(event) =>
@@ -1326,7 +1326,7 @@ function PluginForm(props) {
 
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{__('Plugin Namespace', 'wp-plugin-studio')}
+							{__('Plugin Namespace', 'wp-plugin-sidekick')}
 						</label>
 						<input
 							type="text"
@@ -1335,7 +1335,7 @@ function PluginForm(props) {
 							name="email"
 							placeholder={__(
 								'Plugin Namespace',
-								'wp-plugin-studio'
+								'wp-plugin-sidekick'
 							)}
 							value={pluginNamespace}
 							onChange={(event) =>
@@ -1346,7 +1346,7 @@ function PluginForm(props) {
 
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{__('Plugin Description', 'wp-plugin-studio')}
+							{__('Plugin Description', 'wp-plugin-sidekick')}
 						</label>
 						<textarea
 							className="flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
@@ -1364,7 +1364,7 @@ function PluginForm(props) {
 
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{__('Plugin Version', 'wp-plugin-studio')}
+							{__('Plugin Version', 'wp-plugin-sidekick')}
 						</label>
 						<input
 							type="text"
@@ -1373,7 +1373,7 @@ function PluginForm(props) {
 							name="email"
 							placeholder={__(
 								'Plugin Version',
-								'wp-plugin-studio'
+								'wp-plugin-sidekick'
 							)}
 							value={pluginVersion}
 							onChange={(event) =>
@@ -1384,7 +1384,7 @@ function PluginForm(props) {
 
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{__('Plugin Author', 'wp-plugin-studio')}
+							{__('Plugin Author', 'wp-plugin-sidekick')}
 						</label>
 						<input
 							type="text"
@@ -1393,7 +1393,7 @@ function PluginForm(props) {
 							name="email"
 							placeholder={__(
 								'Plugin Author',
-								'wp-plugin-studio'
+								'wp-plugin-sidekick'
 							)}
 							value={pluginAuthor}
 							onChange={(event) =>
@@ -1404,14 +1404,14 @@ function PluginForm(props) {
 
 					<div className="relative ">
 						<label htmlFor="name-with-label">
-							{__('Plugin URI', 'wp-plugin-studio')}
+							{__('Plugin URI', 'wp-plugin-sidekick')}
 						</label>
 						<input
 							type="text"
 							id="name-with-label"
 							className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 							name="email"
-							placeholder={__('Plugin URI', 'wp-plugin-studio')}
+							placeholder={__('Plugin URI', 'wp-plugin-sidekick')}
 							value={pluginUri}
 							onChange={(event) =>
 								setPluginUri(event.target.value)
@@ -1426,7 +1426,7 @@ function PluginForm(props) {
 							createPlugin();
 						}}
 					>
-						{__('Create Plugin', 'wp-plugin-studio')}
+						{__('Create Plugin', 'wp-plugin-sidekick')}
 					</button>
 				</div>
 			</div>
@@ -1496,7 +1496,7 @@ function ModuleForm(props) {
 					<h2 className="text-lg">
 						{__(
 							'Pick a starting point for this module',
-							'wp-plugin-studio'
+							'wp-plugin-sidekick'
 						)}
 					</h2>
 					<div className="grid gap-5">{renderedBoilers}</div>
@@ -1552,7 +1552,7 @@ function ModuleForm(props) {
 				<h2 className="text-lg">
 					{__(
 						'Nice! You chose to start with this module boiler:',
-						'wp-plugin-studio'
+						'wp-plugin-sidekick'
 					)}
 				</h2>
 				<div
@@ -1582,19 +1582,19 @@ function ModuleForm(props) {
 				<h2 className="text-lg">
 					{__(
 						"Now, let's set up your module data",
-						'wp-plugin-studio'
+						'wp-plugin-sidekick'
 					)}
 				</h2>
 				<div className="relative ">
 					<label htmlFor="name-with-label">
-						{__('Module Name', 'wp-plugin-studio')}
+						{__('Module Name', 'wp-plugin-sidekick')}
 					</label>
 					<input
 						type="text"
 						id="name-with-label"
 						className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 						name="email"
-						placeholder={__('Module Name', 'wp-plugin-studio')}
+						placeholder={__('Module Name', 'wp-plugin-sidekick')}
 						value={moduleName}
 						onChange={(event) => setModuleName(event.target.value)}
 					/>
@@ -1602,14 +1602,14 @@ function ModuleForm(props) {
 
 				<div className="relative ">
 					<label htmlFor="name-with-label">
-						{__('Module Namespace', 'wp-plugin-studio')}
+						{__('Module Namespace', 'wp-plugin-sidekick')}
 					</label>
 					<input
 						type="text"
 						id="name-with-label"
 						className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
 						name="email"
-						placeholder={__('Module Namespace', 'wp-plugin-studio')}
+						placeholder={__('Module Namespace', 'wp-plugin-sidekick')}
 						value={moduleNamespace}
 						onChange={(event) =>
 							setModuleNamespace(event.target.value)
@@ -1619,7 +1619,7 @@ function ModuleForm(props) {
 
 				<div className="relative ">
 					<label htmlFor="name-with-label">
-						{__('Module Description', 'wp-plugin-studio')}
+						{__('Module Description', 'wp-plugin-sidekick')}
 					</label>
 					<textarea
 						className="flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
@@ -1642,7 +1642,7 @@ function ModuleForm(props) {
 						createModule();
 					}}
 				>
-					{__('Create Module', 'wp-plugin-studio')}
+					{__('Create Module', 'wp-plugin-sidekick')}
 				</button>
 			</div>
 		);
@@ -1874,7 +1874,7 @@ function PreFlighter(props) {
 	
 
 	const fileStreamer = useFetchOnRepeat(
-		'/wp-content/wpps-studio-data/wpps_' +
+		'/wp-content/wpps-sidekick-data/wpps_' +
 			props.data.installJobIdentifier +
 			'_output'
 	);
@@ -2252,7 +2252,7 @@ function ManualPreFlighter(props) {
 	const [modalOpen, setModalOpen] = useState(false);
 
 	const fileStreamer = useFetchOnRepeat(
-		'/wp-content/wpps-studio-data/wpps_' +
+		'/wp-content/wpps-sidekick-data/wpps_' +
 			props.data.installJobIdentifier +
 			'_output'
 	);

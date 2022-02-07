@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Plugin Boiler
- * Plugin URI: https://wppluginstudio.com
+ * Plugin URI: https://wppluginsidekick.com
  * Description: Plugin Boiler Description
  * Version: 1.0.0
  * Author: pluginboilerauthor

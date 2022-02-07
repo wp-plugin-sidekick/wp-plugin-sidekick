@@ -1,5 +1,5 @@
 {
-	"name": "wp-plugin-studio/wp-plugin-studio",
+	"name": "wp-plugin-sidekick/wp-plugin-sidekick",
 	"type": "wordpress-plugin",
 	"description": "An interface for building WordPress plugins and themes",
 	"license": "GPL-2.0",

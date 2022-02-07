@@ -228,11 +228,11 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		}
 		$plugin_data = get_plugin_data( $path_to_plugin_file );
 
-		// The cwd will be set to wp-plugin-studio/wp-modules/linter directory first so we can use it's phpcs functions without needing them in each plugin/module.
+		// The cwd will be set to wp-plugin-sidekick/wp-modules/linter directory first so we can use it's phpcs functions without needing them in each plugin/module.
 		$command        = 'sh phpcs.sh -p ' . $wp_filesystem->wp_plugins_dir() . $params['location'] . ' -n ' . $namespace . ' -t ' . $plugin_data['TextDomain'];
 		$job_identifier = $params['job_identifier'];
 
-		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/wp-modules/linter/' );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_plugins_dir() . 'wp-plugin-sidekick/wp-modules/linter/' );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );
@@ -267,11 +267,11 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		}
 		$plugin_data = get_plugin_data( $path_to_plugin_file );
 
-		// The cwd will be set to wp-plugin-studio/wp-modules/linter directory first so we can use it's phpcs functions without needing them in each plugin/module.
+		// The cwd will be set to wp-plugin-sidekick/wp-modules/linter directory first so we can use it's phpcs functions without needing them in each plugin/module.
 		$command        = 'sh phpcs.sh -f 1 -p ' . $wp_filesystem->wp_plugins_dir() . $params['location'] . ' -n ' . $namespace . ' -t ' . $plugin_data['TextDomain'];
 		$job_identifier = $params['job_identifier'];
 
-		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/wp-modules/linter/' );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_plugins_dir() . 'wp-plugin-sidekick/wp-modules/linter/' );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );
@@ -293,7 +293,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		$command = 'sh phpunit.sh -p ' . $params['location'];
 		$job_identifier = $params['job_identifier'];
 
-		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_plugins_dir() . 'wp-plugin-studio/wp-modules/linter/' );
+		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_plugins_dir() . 'wp-plugin-sidekick/wp-modules/linter/' );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response( $result, 400 );
@@ -442,7 +442,7 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
 
 		// First, go to the directory containing the dockerfile and build it.
-		$go_to_plugins  = 'cd ' . $wp_filesystem->wp_plugins_dir() . '/wp-plugin-studio;';
+		$go_to_plugins  = 'cd ' . $wp_filesystem->wp_plugins_dir() . '/wp-plugin-sidekick;';
 		$run_zip        = 'node .scripts/makezip.js ' . $params['location'];
 		$command        = $go_to_plugins . $run_zip;
 		$job_identifier = $params['job_identifier'];

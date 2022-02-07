@@ -23,7 +23,7 @@ function render_app() {
 	?>
 	<html>
 		<head>
-			<title>WP Plugin Studio</title>
+			<title>WP Plugin Sidekick</title>
 			<link rel="stylesheet" href="<?php echo esc_url( module_data()['url'] . 'includes/css/build/style.css' ); ?>" media="all">
 			<link rel="stylesheet" href="<?php echo esc_url( module_data()['url'] . 'includes/css/additional/additional-styles.css' ); ?>" media="all">
 		</head>

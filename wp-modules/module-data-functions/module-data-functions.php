@@ -5,7 +5,7 @@
  * Description: This module contains functions for getting data about modules
  * Namespace: ModuleDataFunctions
  *
- * @package wp-plugin-studio
+ * @package wp-plugin-sidekick
  */
 
 declare(strict_types=1);
@@ -88,7 +88,7 @@ function get_module_boilers() {
 
 	$module_boilers = array();
 
-	$plugin_path = $wp_filesystem_api->wp_plugins_dir() . 'wp-plugin-studio';
+	$plugin_path = $wp_filesystem_api->wp_plugins_dir() . 'wp-plugin-sidekick';
 
 	$modules_glob = glob( $plugin_path . '/wp-modules/module-boilers/module-boilers/*' );
 
