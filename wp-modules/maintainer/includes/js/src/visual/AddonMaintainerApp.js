@@ -384,16 +384,16 @@ function FixersArea(props) {
 	});
 	
 	const lintFixCss = useShellCommand({
-		location: wpContentDir,
+		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_css',
-		command: 'npm run lint:css "./plugins/' + currentPluginData.plugin_dirname + '/**/*.*css"  -- --fix',
+		command: 'sh lint-css.sh -f 1  -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintFixJs = useShellCommand({
-		location: wpContentDir,
+		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_js',
-		command: 'npm run lint:js "./plugins/' + currentPluginData.plugin_dirname + '" -- --fix',
+		command: 'sh lint-js.sh -f 1  -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 
@@ -609,16 +609,16 @@ function LintingArea(props) {
 	});
 	
 	const lintCss = useShellCommand({
-		location: wpContentDir,
+		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_css',
-		command: 'npm run lint:css "./plugins/' + currentPluginData.plugin_dirname + '/**/*.*css"',
+		command: 'sh lint-css.sh -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintJs = useShellCommand({
-		location: wpContentDir,
+		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_js',
-		command: 'npm run lint:js "./plugins/' + currentPluginData.plugin_dirname + '"',
+		command: 'sh lint-js.sh -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 
