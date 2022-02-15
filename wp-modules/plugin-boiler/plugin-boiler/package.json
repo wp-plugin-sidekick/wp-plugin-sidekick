@@ -1,6 +1,7 @@
 {
 	"name": "plugin-boiler",
 	"version": "1.0.0",
+	"license": "GPLv2",
 	"repository": {
 		"type": "git",
 		"url": ""
