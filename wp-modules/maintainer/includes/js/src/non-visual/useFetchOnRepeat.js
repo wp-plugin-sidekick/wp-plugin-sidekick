@@ -2,15 +2,12 @@
  * Addon Builder App.
  */
 
-import React, {useState, useRef} from 'react';
 import { __ } from '@wordpress/i18n';
 
 import {
 	useState,
 	useEffect,
-	useContext,
-	useReducer,
-	createContext
+	useRef,
 } from 'react';
 
 let anotherRoundTimeout = [];

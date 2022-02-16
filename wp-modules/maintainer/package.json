@@ -6,24 +6,34 @@
 		"url": "https://github.com/johnstonphilip/addonbuilder/"
 	},
 	"scripts": {
-		"dev": "sh ./.scripts/dev-scripts.sh",
-		"build": "sh ./.scripts/dev-scripts.sh",
-		"lint": "sh ./.scripts/lint-scripts.sh"
+		"build": "wp-scripts build includes/js/src/index.js --output-path=includes/js/build/",
+		"check-engines": "wp-scripts check-engines",
+		"check-licenses": "wp-scripts check-licenses",
+		"format": "wp-scripts format",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"lint:js:fix": "npm run lint:js -- --fix",
+		"lint:md:docs": "wp-scripts lint-md-docs",
+		"lint:md:js": "wp-scripts lint-md-js",
+		"lint:pkg-json": "wp-scripts lint-pkg-json",
+		"packages-update": "wp-scripts packages-update",
+		"dev": "wp-scripts start includes/js/src/index.js --output-path=includes/js/build/",
+		"test:e2e": "wp-scripts test-e2e",
+		"test:unit": "wp-scripts test-unit-js"
 	},
 	"dependencies": {
 		"@wordpress/i18n": "^4.1.1",
 		"daisyui": "^1.11.0"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.14.3",
-		"@babel/plugin-transform-runtime": "^7.14.3",
+		"@wordpress/scripts": "^20.0.2",
 		"autoprefixer": "^10.2.6",
-		"npm-run-all": "^4.1.5",
-		"parcel": "^2.0.0-nightly.635",
 		"postcss": "^8.3.5",
 		"postcss-cli": "^8.3.1",
+		"prettier": "^2.5.1",
+		"prettier-plugin-tailwindcss": "^0.1.4",
+		"tailwindcss": "^3.0.18",
 		"react": "^17.0.2",
-		"react-dom": "^17.0.2",
-		"tailwindcss": "^2.2.4"
+		"react-dom": "^17.0.2"
 	}
 }
