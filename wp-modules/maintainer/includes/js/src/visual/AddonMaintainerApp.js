@@ -379,21 +379,21 @@ function FixersArea(props) {
 	const lintFixPhp = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_php',
-		command: 'sh phpcs.sh -f 1  -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh phpcs.sh -f 1  -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintFixCss = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_css',
-		command: 'sh lint-css.sh -f 1  -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh lint-css.sh -f 1  -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintFixJs = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_js',
-		command: 'sh lint-js.sh -f 1  -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh lint-js.sh -f 1  -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 
@@ -604,21 +604,21 @@ function LintingArea(props) {
 	const lintPhp = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_php',
-		command: 'sh phpcs.sh -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh phpcs.sh -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintCss = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_css',
-		command: 'sh lint-css.sh -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh lint-css.sh -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintJs = useShellCommand({
 		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/linter/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_js',
-		command: 'sh lint-js.sh -p ' + wpPluginsDir + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh lint-js.sh -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 
