@@ -28,7 +28,7 @@ if [ ! -d node_modules ] || [ ! -d vendor ]; then
 fi
 
 # Run the lint command from the wp-content directory.
-if [ "$fix" == "1" ]; then
+if [ "$fix" = "1" ]; then
 	npm run lint:css "$plugindir/**/*.*css"  -- --fix;
 else
 	npm run lint:css "$plugindir/**/*.*css";
