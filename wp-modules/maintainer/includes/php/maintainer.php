@@ -14,6 +14,9 @@ namespace Maintainer;
  * Enqueue the scripts.
  */
 function enqueue_scripts() {
+	if ( ! isset( $_GET['addonmaintainer'] ) ) {
+		return;
+	}
 	remove_all_actions( 'wp_enqueue_scripts' );
 
 	$module_dir_path = module_dir_path( __FILE__ );
@@ -39,6 +42,9 @@ function enqueue_scripts() {
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\enqueue_scripts', 0 );
 
 function remove_global_styles() {
+	if ( ! isset( $_GET['addonmaintainer'] ) ) {
+		return;
+	}
 	remove_action('wp_enqueue_scripts', 'wp_enqueue_global_styles');
 	remove_action('wp_footer', 'wp_enqueue_global_styles', 1);
 }
