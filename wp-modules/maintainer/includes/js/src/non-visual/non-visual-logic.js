@@ -653,7 +653,7 @@ function prepStateForMutation(stateToMutate, readyForMutation = false) {
 		readyForMutation = JSON.parse(JSON.stringify(stateToMutate));
 	}
 
-	for (state in stateToMutate) {
+	for ( const state in stateToMutate) {
 		// Check objects (that are not hooks which contain a "set" function) recursively.
 		if (
 			!stateToMutate[state].set &&
