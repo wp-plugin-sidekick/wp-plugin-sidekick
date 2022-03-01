@@ -66,7 +66,7 @@ function render_app() {
 	<html>
 		<head>
 			<title>WP Plugin Sidekick</title>
-			<?php echo wp_head(); ?>
+			<?php wp_head(); ?>
 			<link rel="stylesheet" href="<?php echo esc_url( module_data()['url'] . 'includes/css/additional/additional-styles.css' ); ?>" media="all">
 		</head>
 		<body>

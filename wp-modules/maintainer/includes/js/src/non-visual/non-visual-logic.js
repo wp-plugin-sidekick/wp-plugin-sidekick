@@ -9,7 +9,6 @@ import { useFetchOnRepeat } from './../non-visual/useFetchOnRepeat.js';
 
 export const AomContext = createContext([{}, function () {}]);
 
-
 export function useFetch(props) {
 	
 	const [isRunning, setIsRunning] = useState(false);
