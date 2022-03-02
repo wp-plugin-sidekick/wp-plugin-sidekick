@@ -27,6 +27,12 @@ if [ ! -f package.json ] || [ ! -f composer.json ]; then
 	cd $wpcontentdir;
 fi
 
+# Make sure that node_modules exists in wp-content.
+if [ ! -d node_modules ]; then
+	# Run npm install in wp-content
+	npm install;
+fi
+
 # Make sure that vendor exists in wp-content.
 if [ ! -d vendor ]; then
 	# Run composer install in wp-content
@@ -34,11 +40,11 @@ if [ ! -d vendor ]; then
 fi
 
 # Start wp-env
-npx wp-env start;
+npx -p @wordpress/env wp-env start
 
 # Run PHPunit inside wp-env, targeting the plugin in question.
 if [ "$multisite" = "1" ]; then
-	npx wp-env run phpunit "phpunit -c /var/www/html/wp-content/plugins/wp-plugin-sidekick/wp-modules/phpunit/phpunit.xml.dist /var/www/html/wp-content/plugins/$plugindirname";
+	npx -p @wordpress/env wp-env run phpunit "WP_MULTISITE=1 phpunit -c /var/www/html/wp-content/plugins/wp-plugin-sidekick/wp-modules/phpunit/phpunit.xml.dist /var/www/html/wp-content/plugins/$plugindirname"
 else
-	npx wp-env run phpunit "WP_MULTISITE=1 phpunit -c /var/www/html/wp-content/plugins/wp-plugin-sidekick/wp-modules/phpunit/phpunit.xml.dist /var/www/html/wp-content/plugins/$plugindirname";
+	npx -p @wordpress/env wp-env run phpunit "phpunit -c /var/www/html/wp-content/plugins/wp-plugin-sidekick/wp-modules/phpunit/phpunit.xml.dist /var/www/html/wp-content/plugins/$plugindirname"
 fi
