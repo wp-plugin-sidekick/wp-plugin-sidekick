@@ -1,4 +1,4 @@
-name: PHP Composer
+name: PHP Linting with WPCS
 
 on:
   push:
