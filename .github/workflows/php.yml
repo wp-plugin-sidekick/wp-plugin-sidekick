@@ -16,12 +16,6 @@ jobs:
   
     - name: Install wpps-scripts
       run: git clone https://github.com/wp-plugin-sidekick/wpps-scripts;
-      
-    - name: Cache Composer dependencies
-      uses: actions/cache@v2
-      with:
-        path: /tmp/composer-cache
-        key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
 
     - name: Run phpcs linting with WordPress Coding Standards
       run: cd wpps-scripts; sh phpcs.sh -p wp-plugin-sidekick -n WPPS -t wpps;
