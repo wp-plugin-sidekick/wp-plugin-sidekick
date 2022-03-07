@@ -13,11 +13,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Install dependencies
+      uses: php-actions/composer@v6
+      with:
+        php_version: "7.4"
+        version: 2
+  
+    - name: Install wpps-scripts
+      run: git clone https://github.com/wp-plugin-sidekick/wpps-scripts;
 
-
-
-    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-    # Docs: https://getcomposer.org/doc/articles/scripts.md
-
-    - name: Run test suite
-      run: cd wp-modules/wpps-scripts; sh phpcs.sh -c 1 -f 1 -p wp-plugin-sidekick -n  -t wpps;
+    - name: Run phpcs linting with WordPress Coding Standards
+      run: cd wpps-scripts; sh phpcs.sh -p wp-plugin-sidekick -n WPPS -t wpps;
