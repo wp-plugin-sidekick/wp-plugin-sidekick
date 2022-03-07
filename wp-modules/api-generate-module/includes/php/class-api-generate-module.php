@@ -85,8 +85,8 @@ class Api_Generate_Module extends \WP_REST_Controller {
 		rename( $new_module_dir . '/' . $params['module_boiler'] . '.php', $new_module_dir . '/' . $new_module_dirname . '.php' );
 
 		// Add plugin data to module args.
-		$params['plugin_namespace' ] = \WPPS\StringFixer\get_plugin_namespace( $params['module_plugin'] );
-		$params['plugin_dirname' ]   = $params['module_plugin'];
+		$params['plugin_namespace'] = \WPPS\StringFixer\get_plugin_namespace( $params['module_plugin'] );
+		$params['plugin_dirname']   = $params['module_plugin'];
 
 		// Fix strings
 		$strings_fixed = \WPPS\StringFixer\recursive_module_string_fixer( $new_module_dir, $params );

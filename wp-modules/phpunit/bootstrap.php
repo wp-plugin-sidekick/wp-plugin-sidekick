@@ -41,7 +41,7 @@ require_once $_tests_dir . '/includes/functions.php';
  * Manually load the plugin being tested.
  */
 function _manually_load_plugin() {
-	$plugins = glob('/var/www/html/wp-content/plugins/*');
+	$plugins = glob( '/var/www/html/wp-content/plugins/*' );
 
 	echo 'Included plugins:';
 	foreach ( $plugins as $plugin ) {
