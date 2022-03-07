@@ -20,4 +20,4 @@ jobs:
     # Docs: https://getcomposer.org/doc/articles/scripts.md
 
     - name: Run test suite
-      run: cd wp-modules/linter; sh phpcs.sh -c 1 -f 1 -p wp-plugin-sidekick -n  -t wpps;
+      run: cd wp-modules/wpps-scripts; sh phpcs.sh -c 1 -f 1 -p wp-plugin-sidekick -n  -t wpps;
