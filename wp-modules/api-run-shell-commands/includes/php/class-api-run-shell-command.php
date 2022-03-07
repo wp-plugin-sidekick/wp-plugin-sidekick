@@ -289,8 +289,8 @@ class Api_Run_Shell_Command extends \WP_REST_Controller {
 	public function phpunit( $request ) {
 		$params = wp_parse_args( $request->get_params(), $this->default_args() );
 
-		$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
-		$command = 'sh phpunit.sh -p ' . $params['location'];
+		$wp_filesystem  = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
+		$command        = 'sh phpunit.sh -p ' . $params['location'];
 		$job_identifier = $params['job_identifier'];
 
 		$result = \WPPS\DoShellCommand\do_shell_command( $command, $job_identifier, $wp_filesystem->wp_plugins_dir() . 'wp-plugin-sidekick/wp-modules/linter/' );

@@ -61,7 +61,7 @@ class Api_String_Fixer extends \WP_REST_Controller {
 
 		// Loop through each module in this plugin and fix all module strings.
 		foreach ( $params['pluginData']['plugin_modules'] as $module ) {
-			$module_args = array(
+			$module_args   = array(
 				'plugin_namespace'   => $params['pluginData']['plugin_namespace'],
 				'plugin_dirname'     => $params['pluginData']['plugin_dirname'],
 				'module_name'        => $module['name'],
@@ -102,7 +102,7 @@ class Api_String_Fixer extends \WP_REST_Controller {
 	 */
 	public function request_args() {
 		$return_args = array(
-			'pluginData'        => array(
+			'pluginData' => array(
 				'required'          => true,
 				'type'              => 'string',
 				'description'       => __( 'The shell command to run.', 'wpps' ),

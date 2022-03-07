@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace Maintainer;
 
-
 /**
  * Enqueue the scripts.
  */
@@ -45,10 +44,10 @@ function remove_global_styles() {
 	if ( ! isset( $_GET['addonmaintainer'] ) ) {
 		return;
 	}
-	remove_action('wp_enqueue_scripts', 'wp_enqueue_global_styles');
-	remove_action('wp_footer', 'wp_enqueue_global_styles', 1);
+	remove_action( 'wp_enqueue_scripts', 'wp_enqueue_global_styles' );
+	remove_action( 'wp_footer', 'wp_enqueue_global_styles', 1 );
 }
-add_action('after_setup_theme', __NAMESPACE__ . '\remove_global_styles', 10, 0);
+add_action( 'after_setup_theme', __NAMESPACE__ . '\remove_global_styles', 10, 0 );
 
 /**
  * Create a page where the app will be populated.
@@ -61,7 +60,7 @@ function render_app() {
 		return;
 	}
 	$wp_filesystem = \WPPS\GetWpFilesystem\get_wp_filesystem_api();
-	
+
 	?>
 	<html>
 		<head>

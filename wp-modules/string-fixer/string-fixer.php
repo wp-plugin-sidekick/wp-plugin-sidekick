@@ -54,8 +54,8 @@ function recursive_module_string_fixer( string $dir, array $strings ) {
 		// If this is a directory, loop through it.
 		if ( $wp_filesystem->is_dir( $dir_file ) ) {
 			if (
-				strpos( $dir_file, 'node_modules') === false &&
-				strpos( $dir_file, 'vendor') === false
+				strpos( $dir_file, 'node_modules' ) === false &&
+				strpos( $dir_file, 'vendor' ) === false
 			) {
 				recursive_module_string_fixer( $dir_file, $strings );
 			}
@@ -93,7 +93,6 @@ function fix_module_strings( string $file, array $strings ) {
  * @param array  $strings The relevant strings used to create the plugin file header.
  */
 function fix_plugin_file_header( string $file_contents, array $strings ) {
-
 	$fixed_file_header = '/**
  * Plugin Name: ' . $strings['plugin_name'] . '
  * Plugin URI: ' . $strings['plugin_uri'] . '
@@ -144,7 +143,6 @@ function get_plugin_namespace( string $plugin_dirname ) {
  * @param string $namespace The namespace to use.
  */
 function fix_plugin_namespace( string $file_contents, string $namespace ) {
-
 	$pattern = '~namespace [A-Z].+?(?=;|\\\\)~';
 	$fixed   = 'namespace ' . $namespace;
 
@@ -167,7 +165,6 @@ function fix_plugin_namespace( string $file_contents, string $namespace ) {
  * @param string $module_namespace The namespace of the module (second level).
  */
 function fix_module_namespace( string $file_contents, string $plugin_namespace, string $module_namespace ) {
-
 	$pattern = '~namespace [A-Z].+?(?=;)~';
 	$fixed   = 'namespace ' . $plugin_namespace . '\\' . $module_namespace;
 
@@ -190,7 +187,6 @@ function fix_module_namespace( string $file_contents, string $plugin_namespace, 
  * @param string $module_namespace The namespace of the module (second level).
  */
 function replace_namespace_usages( string $plugin_dir, string $old_plugin_namespace, string $new_plugin_namespace ) {
-
 }
 
 /**

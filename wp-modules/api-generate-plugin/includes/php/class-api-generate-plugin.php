@@ -78,7 +78,7 @@ class Api_Generate_Plugin extends \WP_REST_Controller {
 
 		// Loop through each module in this plugin and fix all module strings.
 		foreach ( $modules_in_plugin as $module ) {
-			$module_args = array(
+			$module_args   = array(
 				'plugin_namespace'   => $params['plugin_namespace'],
 				'plugin_dirname'     => $params['plugin_dirname'],
 				'module_name'        => $module['name'],
