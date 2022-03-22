@@ -1,12 +1,8 @@
 #!/bin/bash
 
-while getopts 'c:p:n:t:f:' flag; do
+while getopts 'p:' flag; do
 	case "${flag}" in
-		c) cwdiswppslinter=${OPTARG} ;;
 		p) plugindirname=${OPTARG} ;;
-		n) namespace=${OPTARG} ;;
-		t) textdomain=${OPTARG} ;;
-		f) fix=${OPTARG} ;;
 	esac
 done
 
@@ -21,13 +17,7 @@ else
 	scriptsdir="$plugindir/wpps-scripts/"
 fi
 
-#Go to wp-content directory.
-cd "$wpcontentdir";
+cd "$wpcontentdir"
 sh "${scriptsdir}/install-script-dependencies.sh" -c $cwdiswppslinter
 
-# Run the lint command from the wp-content directory.
-if [ "$fix" = "1" ]; then
-	npm run lint:js "$plugindir" -- --config "$scriptsdir.eslintrc" --fix;
-else
-	npm run lint:js "$plugindir" -- --config "$scriptsdir.eslintrc";
-fi
+npm run test:js $plugindir
