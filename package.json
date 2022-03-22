@@ -8,8 +8,5 @@
 	"scripts": {
 		"installation": "sh ./.scripts/install.sh",
 		"dev": "sh ./.scripts/dev.sh"
-	},
-	"devDependencies": {
-		"@wordpress/env": "^4.1.3"
 	}
 }
