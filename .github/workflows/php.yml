@@ -1,0 +1,32 @@
+name: PHP Linting with WPCS
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+  
+    - name: Install wpps-scripts
+      run: git clone https://github.com/wp-plugin-sidekick/wpps-scripts;
+      
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      run: |
+        echo "::set-output name=dir::$(composer config cache-files-dir)"
+    - uses: actions/cache@v2
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/wpps-scripts/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+
+    - name: Run phpcs linting with WordPress Coding Standards
+      run: cd wpps-scripts; sh phpcs.sh -p wp-plugin-sidekick -n WPPS -t wpps;
