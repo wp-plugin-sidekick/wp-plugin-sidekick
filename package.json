@@ -5,8 +5,19 @@
 		"type": "git",
 		"url": "https://github.com/johnstonphilip/wp-plugin-sidekick/"
 	},
+	"wpps_options": "-p wp-plugin-sidekick -n WPPS -t wp-plugin-sidekick",
 	"scripts": {
-		"installation": "sh ./.scripts/install.sh",
-		"dev": "sh ./.scripts/dev.sh"
+		"preinstall": "cd ../../; if [ ! -d wpps-scripts ]; then git clone https://github.com/wp-plugin-sidekick/wpps-scripts wpps-scripts; fi; cd wpps-scripts; git checkout main; git pull origin main;",
+		"dev": "cd ../../wpps-scripts; sh dev.sh $npm_package_wpps_options",
+		"build": "cd ../../wpps-scripts; sh build.sh $npm_package_wpps_options",
+		"test:phpunit": "cd ../../wpps-scripts; sh phpunit.sh $npm_package_wpps_options;",
+		"lint:php": "cd ../../wpps-scripts; sh phpcs.sh $npm_package_wpps_options;",
+		"lint:php:fix": "cd ../../wpps-scripts; sh phpcs.sh $npm_package_wpps_options -f 1;",
+		"lint:js": "cd ../../wpps-scripts; sh lint-js.sh $npm_package_wpps_options",
+		"lint:js:fix": "cd ../../wpps-scripts; sh lint-js.sh $npm_package_wpps_options -f 1;",
+		"lint:css": "cd ../../wpps-scripts; sh lint-css.sh $npm_package_wpps_options;",
+		"lint:css:fix": "cd ../../wpps-scripts; sh lint-css.sh $npm_package_wpps_options -f 1;",
+		"test:js": "cd ../../wpps-scripts; sh test-js.sh $npm_package_wpps_options;",
+		"zip": "cd ../../wpps-scripts; sh zip.sh $npm_package_wpps_options"
 	}
 }

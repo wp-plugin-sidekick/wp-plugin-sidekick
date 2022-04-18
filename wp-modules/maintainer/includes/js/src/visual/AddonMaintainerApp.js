@@ -377,23 +377,23 @@ function FixersArea(props) {
 	console.log( currentPluginData );
 
 	const lintFixPhp = useShellCommand({
-		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/wpps-scripts/',
+		location: wpContentDir + 'wpps-scripts/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_php',
-		command: 'sh phpcs.sh -c 1 -f 1 -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh phpcs.sh -f 1 -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintFixCss = useShellCommand({
-		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/wpps-scripts/',
+		location: wpContentDir + 'wpps-scripts/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_css',
-		command: 'sh lint-css.sh -c 1 -f 1  -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh lint-css.sh -f 1  -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintFixJs = useShellCommand({
-		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/wpps-scripts/',
+		location: wpContentDir + 'wpps-scripts/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_fix_js',
-		command: 'sh lint-js.sh -c 1 -f 1  -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh lint-js.sh -f 1  -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 
@@ -497,9 +497,9 @@ function TestingArea(props) {
 	const { plugins, currentPluginData } = useContext(AomContext);
 	
 	const phpunit = useShellCommand({
-		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/wpps-scripts/',
+		location: wpContentDir + 'wpps-scripts/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'phpunit',
-		command: 'sh phpunit.sh -c 1 -p ' + currentPluginData.plugin_dirname,
+		command: 'sh phpunit.sh -p ' + currentPluginData.plugin_dirname,
 	});
 
 	return (
@@ -552,7 +552,7 @@ function DevelopmentArea(props) {
 	const installNPMDependencies = useShellCommand({
 		location: wpPluginsDir + '/' + currentPluginData.plugin_dirname,
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'installNpmDependencies',
-		command: 'npm run installation',
+		command: 'npm install',
 	});
 
 	const npmRunDev = useShellCommand({
@@ -602,23 +602,23 @@ function LintingArea(props) {
 	const [lintingJsInProgress, setLintingJsInProgress] = useState(false);
 	
 	const lintPhp = useShellCommand({
-		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/wpps-scripts/',
+		location: wpContentDir + 'wpps-scripts/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_php',
-		command: 'sh phpcs.sh -c 1 -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh phpcs.sh -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintCss = useShellCommand({
-		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/wpps-scripts/',
+		location: wpContentDir + 'wpps-scripts/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_css',
-		command: 'sh lint-css.sh -c 1 -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh lint-css.sh -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 	
 	const lintJs = useShellCommand({
-		location: wpPluginsDir + 'wp-plugin-sidekick/wp-modules/wpps-scripts/',
+		location: wpContentDir + 'wpps-scripts/',
 		jobIdentifier: currentPluginData.plugin_dirname + '_' + 'lint_js',
-		command: 'sh lint-js.sh -c 1 -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
+		command: 'sh lint-js.sh -p ' + currentPluginData.plugin_dirname + ' -n ' + currentPluginData.plugin_namespace + ' -t ' + currentPluginData.plugin_textdomain,
 		streamResponse: false,
 	});
 
