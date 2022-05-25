@@ -2,6 +2,7 @@
 /**
  * Module Name: Basic Module
  * Description: This is a basic module, ready for action.
+ * Namespace: BasicModule
  *
  * @package BasicModule
  */

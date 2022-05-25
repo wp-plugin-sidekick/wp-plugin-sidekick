@@ -97,4 +97,4 @@ function render_app() {
 	<?php
 	die();
 }
-add_action( 'template_redirect', __NAMESPACE__ . '\render_app' );
+add_action( 'template_redirect', __NAMESPACE__ . '\render_app', 0 );
