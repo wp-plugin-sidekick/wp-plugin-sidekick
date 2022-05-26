@@ -4,8 +4,8 @@
   "description": "A module for creating a block in WordPress.",
   "main": "index.js",
   "scripts": {
-    "build": "wp-scripts build includes/js/src/index.js --output-path=includes/js/build/",
-    "dev": "wp-scripts start includes/js/src/index.js --output-path=includes/js/build/"
+    "build": "wp-scripts build js/src/index.js --output-path=js/build/",
+    "dev": "wp-scripts start js/src/index.js --output-path=js/build/"
   },
   "author": "",
   "license": "GPL v2 or greater",
